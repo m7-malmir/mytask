@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
+
+<script>
+
+
+
+
+
+
+    
+//#region check group shaba number
+
+
+var is_val_group = "";
+$("#group_cost_grid button.pmdynaform-grid-newitem").css("display", "none")
+
+const inputField = document.getElementById('group_cost_grid');
+
+inputField.addEventListener('input', function(eve) {
+var x =  eve.target.value;
+var rse = validateIranianSheba(x);
+    
+var rowCount = $("#group_cost_grid").getNumberRows();
+
+  for (let i = 1; i <= rowCount; i++) {
+  
+    if (x.length >= 7) {
+      var x = x.slice(5, 7);
+      if (x == "17") {
+        $("#group_cost_grid").setValue(30,i,6); /// ملت
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "70") {
+        $("#group_cost_grid").setValue(22,i,6); /// ملی
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "19") {
+        $("#group_cost_grid").setValue(20,i,6); /// صادرات
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "15") {
+        $("#group_cost_grid").setValue(16,i,6); /// سپه
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "18") {
+        $("#group_cost_grid").setValue(8,i,6); /// تجارت
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "16") {
+        $("#group_cost_grid").setValue(26,i,6); /// کشاورزی
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "14") {
+        $("#group_cost_grid").setValue(28,i,6); /// مسکن
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "21") {
+        $("#group_cost_grid").setValue(32,i,6); /// پست بانک
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "20") {
+        $("#group_cost_grid").setValue(10,i,6); /// توسعه صادرات
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "57") {
+        $("#group_cost_grid").setValue(7,i,6); /// پاسارگاد
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "54") {
+        $("#group_cost_grid").setValue(6,i,6); /// پارسیان
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "55") {
+        $("#group_cost_grid").setValue(1,i,6); /// اقتصاد نوین
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "13") {
+        $("#group_cost_grid").setValue(14,i,6); /// رفاه
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "61") {
+        $("#group_cost_grid").setValue(19,i,6); /// شهر
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "51") {
+        $("#group_cost_grid").setValue(9,i,6); /// توسعه تعاون
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "62") {
+        $("#group_cost_grid").setValue(5,i,6); /// آینده
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "58") {
+        $("#group_cost_grid").setValue(17,i,6); /// سرمایه
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "56") {
+        $("#group_cost_grid").setValue(15,i,6); /// سامان
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "59") {
+        $("#group_cost_grid").setValue(18,i,6); /// سینا
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "11") {
+        $("#group_cost_grid").setValue(21,i,6); /// صنعت و معدن
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "53") {
+        $("#group_cost_grid").setValue(25,i,6); /// کارآفرین
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "78") {
+        $("#group_cost_grid").setValue(12,i,6); /// خاورمیانه
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+      } else if (x == "70") {
+        $("#group_cost_grid").setValue(22,i,6); /// رسالت
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#BEF0CB");
+        
+        
+      } else {
+        $("#group_cost_grid").setValue('',i,6); 
+        $("#group_cost_grid").getControl('',i,5).css("background-color", "#FFF");
+        $("#group_cost_grid").getControl(i,6).css("background-color", "#FFF");
+      }
+          
+    }
+    else {
+      $("#group_cost_grid").setValue('',i,6); 
+      $("#group_cost_grid").getControl('',i,5).css("background-color", "#FFF");
+      $("#group_cost_grid").getControl(i,6).css("background-color", "#FFF");
+    } 
+    
+    if (rse)
+      {
+       $("#group_cost_grid").getControl(rowCount,5).css("background-color", "#BEF0CB");
+       is_val_group = true;
+       $("#group_cost_grid button.pmdynaform-grid-newitem").css("display", "block")
+        rowCount++;
+      }
+      else
+      {
+       $("#group_cost_grid").getControl(rowCount,5).css("background-color", "#FFF");
+       $("#group_cost_grid button.pmdynaform-grid-newitem").css("display", "none")
+      
+       is_val_group = false;
+      }
+       
+
+  }
+
+
+
+
+
+});
+
+</script>
