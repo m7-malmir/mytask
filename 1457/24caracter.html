@@ -1,31 +1,41 @@
 <script>
   /*this work for compare date bigger than 2 hour*/
-  $("#submit0000000001").click( function() {
-var start=$("#34149169966b069203c0707017509906 input[id='form[Turn_Date]']").val().replace(/[_\W]+/g, ""); 
-var end=$("#86248779266b069203ec7a1080411290 input[id='form[entry_date]']").attr("data-jdate").replace(/[_\W]+/g, "");
 
-var starthh=$("#34149169966b069203c0707017509906 input[id='form[Turn_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
-var endhh=$("#86248779266b069203ec7a1080411290 input[id='form[Entry_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
-   var date = end - start;
-   var time = endhh - starthh;
+  $("#submit0000000001").on("click", function() {
+    var start=$("#34149169966b069203c0707017509906 input[id='form[Turn_Date]']").val().replace(/[_\W]+/g, ""); 
+    var end=$("#86248779266b069203ec7a1080411290 input[id='form[entry_date]']").attr("data-jdate").replace(/[_\W]+/g, "");
+    var flag;
+    var starthh=$("#34149169966b069203c0707017509906 input[id='form[Turn_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+    var endhh=$("#86248779266b069203ec7a1080411290 input[id='form[Entry_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
 
-   if(date == 0 || date==70 || date==71){
-      if ((time <= 200 && time > 0) || ((time+2400) <= 200)) {
-        //alert('ok');
-        $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',false);
-      }else{
-       // alert('time not ok');
-       $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',true);
-      }
-    }else if(date == 1 && (time+2400) <= 200){
-      //alert(' ok');
-      $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',false);
-    }else if((date==70 || date==71) && (time+2400) <= 200){
-      //alert('ok');
-      $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',false);
-    }else{
-      //alert('not ok');
-      $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',true);
-    }
+      var date = end - start;
+      var time = endhh - starthh;
+
+      if(date == 0 || date==70 || date==71){
+          if ((time <= 200 && time > 0) || ((time+2400) <= 200)) {
+            //alert('ok');
+            $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',false);
+          }else{
+            flag==false;
+          //alert('time not ok');
+          $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',true);
+          }
+        }else if(date == 1 && (time+2400) <= 200){
+          //alert(' ok');
+          $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',false);
+        }else if((date==70 || date==71) && (time+2400) <= 200){
+          //alert('ok');
+          $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',false);
+        }else{
+          flag==false;
+          //alert('not ok');
+          $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").prop('required',true);
+        }
+        if(flag==true){
+          $("#86248779266b069203ec7a1080411290 input[id='form[Origin_Guard_Desc]']").on("input", function() {
+            $(this).css('background-color','red');
+              flag==false;
+          });
+        }
  });
 </script>
