@@ -7,7 +7,6 @@
     var flag;
     var starthh=$("#34149169966b069203c0707017509906 input[id='form[Turn_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
     var endhh=$("#86248779266b069203ec7a1080411290 input[id='form[Entry_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
-
       var date = end - start;
       var time = endhh - starthh;
 
@@ -38,4 +37,37 @@
           });
         }
  });
+
+
+
+
+ 
+ // last code sent to 1457
+
+ $("#submit0000000001").on("click", function() {
+    
+    var start=$("#34149169966b069203c0707017509906 input[id='form[Turn_Date]']").val().replace(/[_\W]+/g, ""); 
+    var end=$("#86248779266b069203ec7a1080411290 input[id='form[entry_date]']").attr("data-jdate").replace(/[_\W]+/g, "");
+
+    var starthh=$("#34149169966b069203c0707017509906 input[id='form[Turn_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+    var endhh=$("#86248779266b069203ec7a1080411290 input[id='form[Entry_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+
+      var date = end - start;
+      var time = endhh - starthh;
+
+      if(date == 0 || date==70 || date==71){
+          if ((time <= 200 && time > 0) || ((time+2400) <= 200)) {
+          }else{
+             alert('توضیحات را وارد نمایید');
+             return false;
+          }
+        }else if(date == 1 && (time+2400) <= 200){
+    }else if((date==70 || date==71) && (time+2400) <= 200){    
+        }else{
+             alert('توضیحات را وارد نمایید'); 
+          return false;
+        }
+  });
+
+ // last code sent to 1457
 </script>
