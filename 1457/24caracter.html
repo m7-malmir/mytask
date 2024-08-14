@@ -70,4 +70,42 @@
   });
 
  // last code sent to 1457
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ $("#36853027366bc68dc94dd57011636203").click(function () {
+
+var rowCount = $("#Req_Info").getNumberRows();
+var total1 = 0;
+var currency1 = 0;
+
+for (var i = 1; i <= rowCount; i++) {
+    currency1 = getNumber($("#Req_Info").getValue(i, '4'));
+    total1 += currency1;
+}
+var sum_currency1 = sepratorNumber(total1);
+
+$('#sum_confirmed_amount').setValue(sum_currency1);
+
+});
+
+function getNumber(_val) {
+return Number(_val.replace(/[\,]+/g, ""));
+}
+
+function sepratorNumber(_val) {
+return _val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+}
 </script>
