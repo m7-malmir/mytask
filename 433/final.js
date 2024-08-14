@@ -1031,3 +1031,13 @@ $(
 //#endregion
 
 
+
+
+//#region active one input from inactive form
+var rowCount = $("#Req_Info").getNumberRows();
+for(var i=1;i <= rowCount; i++){
+  
+	$("#Req_Info input[id='form[Req_Info]["+i+"][amount_confirmed]']").prop('disabled',false);
+
+}
+//
