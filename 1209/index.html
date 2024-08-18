@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .pmdynaform-grid-thead .glyphicon-info-sign {
+        float:none!important;
+        display: flex;
+    }
+</style>
+<body>
+    
+</body>
+</html>
+<script>
+//#region get each row and send to other grid on ech submit
+   $("#button0000000001").on("click",function(){
+        var row  =   5; //$('#Experiment_Grid').getNumberRows();
+        var row2 = $('#Record_Grid').getNumberRows();
+        var val1 ='';
+        var val2 ='';
+        var val3 ='';
+        var val4 ='';
+        var lab_r = $('#lab_repeat').getValue();
+        var j = 1;
+        var dt = new Date();
+        var time = dt.getHours() + ":" + dt.getMinutes()  + "__" + dt.getFullYear()	+ "/" + dt.getMonth() + "/" + dt.getDate();
+
+        for (var i = (lab_r * row) + 1; i <= ((lab_r + 1)*row);  i++){
+        $('#Record_Grid').addRow();
+        val1 = $('#Experiment_Grid').getText(j,1); 
+                $('#Record_Grid').setText(val1,i,1);
+        
+        val2 = $('#Experiment_Grid').getText(j,2); 
+                $('#Record_Grid').setText(val2,i,2); 
+
+        val3 = $('#Experiment_Grid').getText(j,3); 
+                $('#Record_Grid').setText(val3,i,3); 
+
+        val4 = $('#Experiment_Grid').getText(j,4); 
+                $('#Record_Grid').setText(val4,i,4);
+                $("#Record_Grid").setValue(time, i, 5);
+        
+        
+            j += 1;
+                if($('#Record_Grid').getNumberRows() > ((lab_r+1)*row)){
+
+                $('#Record_Grid').deleteRow();
+                }        
+    }
+});
+//#endregion
+</script>
