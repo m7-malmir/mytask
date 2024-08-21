@@ -1,0 +1,10 @@
+----------------------------------------------------------------------
+SELECT
+  PFML.FIN_MANAGER_UID
+FROM pmt_pay_fin_manager_interface AS PPFMI
+  JOIN pmt_company AS PC
+    ON PPFMI.COMPANY_ID = PC.COMPANY_ID
+  JOIN pmt_fin_manager_listt AS PFML
+    ON PPFMI.FIN_MANAGER_ID = PFML.FIN_MANAGER_ID
+    WHERE PC.COMPANY_ID = @@Company_Name
+----------------------------------------------------------------------    
