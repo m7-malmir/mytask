@@ -1,23 +1,39 @@
 //#region conrtol Shaba_Number
 const Shaba_Number = document.getElementById("Shaba_Number");
 
-Shaba_Number.addEventListener("keypress", function (event) {
-  var x = event.target.value;
 
-  var key = event.which || event.keyCode;
-  if (!(key >= 48 && key <= 57)) {
-    event.preventDefault();
+
+ $('#Shaba_Number').on('paste', function(eve) { 
+  setTimeout(function() {
+    const that = validateIranianSheba(eve.target.value);
+
+    if (that) {
+      $("#Shaba_Number").getControl().css("background-color", "#BEF0CB");
+    } else {
+      $("#Shaba_Number").getControl().css("background-color", "#FFF");
+      alert('شماره شبا معتبر نمی باشد');
+    }
+  }, 2);
+  
+ });
+
+$("#Shaba_Number").on({
+  keypress:function (event) {
+    var x = event.target.value;
+    var key = event.which || event.keyCode;
+      if (!(key >= 48 && key <= 57)) {
+        event.preventDefault();
+      }
+      if (x.length >= 26) {
+        event.preventDefault();
+      }
   }
 
-  if (x.length >= 26) {
-    event.preventDefault();
-  }
 });
 
 Shaba_Number.addEventListener("keydown", function (event) {
   var x = event.target.value;
 
-  // Preventing deletion of the prefix "ir "
   if (event.key === "Backspace" || event.key === "Delete") {
     if (x.length <= 2) {
       event.preventDefault();
@@ -961,23 +977,23 @@ num.addEventListener("input", function (eve) {
 
 //#endregion
 
-//#region Code2 Paste
+// //#region Code2 Paste
 
-$("#Shaba_Number").bind("paste", function (e) {
-  var pastedData = e.originalEvent.clipboardData.getData("text");
-  var rse = validateIranianSheba(pastedData);
+// $("#Shaba_Number").bind("paste", function (e) {
+//   var pastedData = e.originalEvent.clipboardData.getData("text");
+//   var rse = validateIranianSheba(pastedData);
 
-  if (rse == true) {
-    $("#Banks_List").getControl().css("background-color", "#40A2E3");
-    $("#Shaba_Number").getControl().css("background-color", "#40A2E3");
-    //  return true;
-  } else {
-    alert(text1 + text2 + text3);
-    //   return false;
-  }
-});
+//   if (rse == true) {
+//     $("#Banks_List").getControl().css("background-color", "#40A2E3");
+//     $("#Shaba_Number").getControl().css("background-color", "#40A2E3");
+//     //  return true;
+//   } else {
+//     alert(text1 + text2 + text3);
+//     //   return false;
+//   }
+// });
 
-//#endregion
+// //#endregion
 
 //#region checbox with hazine tell
 $(function () {
@@ -1018,8 +1034,6 @@ $("#submit0000000002").click(function () {
 });
 
 //#endregion
-
-
 
 //#region checbox with hazine tell
 

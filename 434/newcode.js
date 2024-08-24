@@ -18,17 +18,7 @@ Shaba_Number.addEventListener("keypress", function (event) {
 
 });
 
-Shaba_Number.addEventListener("keydown", function (event) {
-  var x = event.target.value;
-
-  // Preventing deletion of the prefix "ir "
-  if (event.key === "Backspace" || event.key === "Delete") {
-    if (x.length <= 2) {
-      event.preventDefault();
-    }
-  }
-});
-
+ 
 //#endregion
 
 //#region sum col
@@ -434,7 +424,7 @@ ShowGroupCost();
 
 
 
-/////////
+
 
 //#endregion
 
