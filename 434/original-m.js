@@ -977,7 +977,7 @@ num.addEventListener("input", function (eve) {
 
 //#endregion
 
-// //#region Code2 Paste
+//#region Code2 Paste
 
 // $("#Shaba_Number").bind("paste", function (e) {
 //   var pastedData = e.originalEvent.clipboardData.getData("text");

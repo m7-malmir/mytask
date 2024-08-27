@@ -1,6 +1,6 @@
 <script>
   /*this work for compare date bigger than 2 hour*/
-
+/*
   $("#submit0000000001").on("click", function() {
     var start=$("#34149169966b069203c0707017509906 input[id='form[Turn_Date]']").val().replace(/[_\W]+/g, ""); 
     var end=$("#86248779266b069203ec7a1080411290 input[id='form[entry_date]']").attr("data-jdate").replace(/[_\W]+/g, "");
@@ -68,44 +68,120 @@
           return false;
         }
   });
-
+*/
  // last code sent to 1457
 
 
 
+// || date==70 || date==71
+//&& time > 0) || ((time+2400) <= 200)
+//&& (time+2400) <= 200
+
+
+      var date = end - start;
+      var time = endhh - starthh;
+
+      if(date == 0){
+          if (time > 0 && time <= 200 ) {
+        	    //ok
+          }else{
+               $('#Origin_Guard_Desc').enableValidation();
+              console.log('توضیحات را وارد نمایید');  
+          }
+      }else if(date == 1){
+        if ((time+2400) > 40 && (time+2400) <= 200 ) {
+        	//ok
+          }else{
+             $('#Origin_Guard_Desc').enableValidation();
+            console.log('توضیحات را وارد نمایید'); 
+          }
+    
+      }else if(date==70 || date==71){
+        if ((time+2400) > 40 && (time+2400) <= 200 ) {
+        	//ok
+          }else{
+             $('#Origin_Guard_Desc').enableValidation();
+            console.log('توضیحات را وارد نمایید'); 
+          } 
+      }else{
+        
+             console.log('توضیحات را وارد نمایید'); 
+                $('#Origin_Guard_Desc').enableValidation();
+
+        }
+    
 
 
 
 
+/* last in 1457
 
 
+        $('#Origin_Guard_Desc').disableValidation();
+$("#submitcheck").on("click", function() {
 
 
+$("#entry_date").setValue($("#entry_date").find('input').val());
+  
+  
+    var start=$("#555999755653e33733942a5041926418 input[id='form[Turn_Date]']").val().replace(/[_\W]+/g, ""); 
+    var end=$("#853179931653e357873c109016469388 input[id='form[entry_date]']").attr("data-jdate").replace(/[_\W]+/g, "");
+
+    var starthh=$("#555999755653e33733942a5041926418 input[id='form[Turn_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+    var endhh=$("#853179931653e357873c109016469388 input[id='form[Entry_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+
+      var date = end - start;
+      var time = endhh - starthh;
+
+      if(date == 0 || date==70 || date==71){
+          if ((time <= 200 && time > 0) || ((time+2400) <= 200)) {
+        	
+          }else{
+       $('#Origin_Guard_Desc').enableValidation();
+
+             alert('توضیحات را وارد نمایید');
+             
+          }
+        }else if(date == 1 && (time+2400) <= 200){
+       
+    
+        }else if((date==70 || date==71) && (time+2400) <= 200){
+       
+         
+          
+        }else{
+        
+             alert('توضیحات را وارد نمایید'); 
+                $('#Origin_Guard_Desc').enableValidation();
+
+        }
+    
+
+  });
+*/
 
 
+//  $("#36853027366bc68dc94dd57011636203").click(function () {
 
+// var rowCount = $("#Req_Info").getNumberRows();
+// var total1 = 0;
+// var currency1 = 0;
 
- $("#36853027366bc68dc94dd57011636203").click(function () {
+// for (var i = 1; i <= rowCount; i++) {
+//     currency1 = getNumber($("#Req_Info").getValue(i, '4'));
+//     total1 += currency1;
+// }
+// var sum_currency1 = sepratorNumber(total1);
 
-var rowCount = $("#Req_Info").getNumberRows();
-var total1 = 0;
-var currency1 = 0;
+// $('#sum_confirmed_amount').setValue(sum_currency1);
 
-for (var i = 1; i <= rowCount; i++) {
-    currency1 = getNumber($("#Req_Info").getValue(i, '4'));
-    total1 += currency1;
-}
-var sum_currency1 = sepratorNumber(total1);
+// });
 
-$('#sum_confirmed_amount').setValue(sum_currency1);
+// function getNumber(_val) {
+// return Number(_val.replace(/[\,]+/g, ""));
+// }
 
-});
-
-function getNumber(_val) {
-return Number(_val.replace(/[\,]+/g, ""));
-}
-
-function sepratorNumber(_val) {
-return _val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-}
+// function sepratorNumber(_val) {
+// return _val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+//}
 </script>
