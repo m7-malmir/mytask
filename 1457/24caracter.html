@@ -117,9 +117,8 @@
 /* last in 1457
 
 
-        $('#Origin_Guard_Desc').disableValidation();
+$('#Origin_Guard_Desc').disableValidation();
 $("#submitcheck").on("click", function() {
-
 
 $("#entry_date").setValue($("#entry_date").find('input').val());
   
@@ -143,20 +142,15 @@ $("#entry_date").setValue($("#entry_date").find('input').val());
              
           }
         }else if(date == 1 && (time+2400) <= 200){
-       
-    
+
         }else if((date==70 || date==71) && (time+2400) <= 200){
        
-         
-          
+  
         }else{
-        
              alert('توضیحات را وارد نمایید'); 
                 $('#Origin_Guard_Desc').enableValidation();
 
         }
-    
-
   });
 */
 
@@ -184,4 +178,46 @@ $("#entry_date").setValue($("#entry_date").find('input').val());
 // function sepratorNumber(_val) {
 // return _val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 //}
+
+
+
+
+
+$('#Origin_Guard_Desc').disableValidation();
+$("#submitcheck").on("click", function() {
+
+$("#entry_date").setValue($("#entry_date").find('input').val());
+  
+  
+    var start=$("#555999755653e33733942a5041926418 input[id='form[Turn_Date]']").val().replace(/[_\W]+/g, ""); 
+    var end=$("#853179931653e357873c109016469388 input[id='form[entry_date]']").attr("data-jdate").replace(/[_\W]+/g, "");
+
+    var starthh=$("#555999755653e33733942a5041926418 input[id='form[Turn_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+    var endhh=$("#853179931653e357873c109016469388 input[id='form[Entry_Time_label]']").val().slice(10,16).replace(/[:_\W]+/g, "");
+
+      var date = end - start;
+      var time = endhh - starthh;
+
+      if(date == 0 || date==70 || date==71){
+          if ((time <= 200 && time > 0) || ((time+2400) <= 200)) {
+        	$('#Origin_Guard_Desc').disableValidation();
+          }else{
+       $('#Origin_Guard_Desc').enableValidation();
+
+             alert('توضیحات را وارد نمایید');
+             
+          }
+        }else if(date == 1 && (time+2400) <= 200){
+          $('#Origin_Guard_Desc').disableValidation();
+
+        }else if((date==70 || date==71) && (time+2400) <= 200){
+       $('#Origin_Guard_Desc').disableValidation();
+  
+        }else{
+             alert('توضیحات را وارد نمایید'); 
+                $('#Origin_Guard_Desc').enableValidation();
+
+        }
+  });
+
 </script>
