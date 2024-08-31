@@ -1,0 +1,33 @@
+//#region regex for nation code
+    $("#test").on('input',function(){
+        const nationalCode = document.getElementById('test').value;
+        const resultDiv = $("#test");
+        this.value = this.value.replace(/[^0-9.]/g, ''); //just number
+        this.value = this.value.substr(0,10);//just 10 number
+        if(this.value==='1111111111' || this.value==='2222222222' || this.value==='3333333333'|| this.value==='4444444444'|| this.value==='5555555555'|| this.value==='6666666666'|| this.value==='7777777777'|| this.value==='8888888888'|| this.value==='9999999999'|| this.value==='1234567891'){
+        
+            resultDiv.css('background-color','#F8D7DA');
+            event.preventDefault();
+            return false;
+        }
+        // بررسی فرمت کد ملی
+        if (/^\d{10}$/.test(nationalCode)) {
+        
+            // محاسبه بررسی‌کننده کد ملی
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(nationalCode.charAt(i)) * (10 - i);
+            }
+            const remainder = sum % 11;
+            const controlDigit = parseInt(nationalCode.charAt(9));
+
+            if ((remainder < 2 && remainder === controlDigit) || (remainder >= 2 && 11 - remainder === controlDigit)) {
+                resultDiv.css('background-color','#D1E7DD');
+            } else {
+                resultDiv.css('background-color','#F8D7DA');
+            }
+        } else {
+                resultDiv.css('background-color','#F8D7DA');
+        }
+    });
+//#endregion
