@@ -160,7 +160,7 @@ $("#group_cost_grid").click(function() {
 
   var colIndex = 0;
   var colIndex2 = 0;
-  $("#submit0000000002").on('click',function(){
+  $("#submit0000000001").on('click',function(){
     var gridId = 'person_cost_grid';
     var gridId2 = 'group_cost_grid';
     colIndex = 0;
@@ -284,7 +284,7 @@ function removePoint(_val) {
 //#region items show/hide
 
 $("#Send_File button").text("انتخاب فایل پیوست");
-$("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop("disabled", true);
+$("#446075439665c5bd51c88b8071255988 #submit0000000001").find("button").prop("disabled", true);
 
 //setOnChange Unit_Name
 $("#Sales_Organization").hide();
@@ -536,7 +536,7 @@ $("#group_cost_grid-body").on("input", function (eve) {
         "][g2_shaba_number]']"
     ).val();
     if (myarray.length == 27) {
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002")
+      $("#446075439665c5bd51c88b8071255988 #submit0000000001")
         .find("button")
         .prop("disabled", true);
     }
@@ -840,7 +840,7 @@ $("#group_cost_grid-body").on("input", function (eve) {
           i +
           "][g2_shaba_number]']"
       ).css("background-color", "#BEF0CB");
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002")
+      $("#446075439665c5bd51c88b8071255988 #submit0000000001")
         .find("button")
         .prop("disabled", false);
       is_val_group = true;
@@ -850,7 +850,7 @@ $("#group_cost_grid-body").on("input", function (eve) {
           i +
           "][g2_shaba_number]']"
       ).css("background-color", "#fff");
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002")
+      $("#446075439665c5bd51c88b8071255988 #submit0000000001")
         .find("button")
         .prop("disabled", true);
 
@@ -961,13 +961,13 @@ num.addEventListener("input", function (eve) {
     if (rse) {
       $("#Shaba_Number").getControl().css("background-color", "#BEF0CB");
       is_val_person = true;
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002")
+      $("#446075439665c5bd51c88b8071255988 #submit0000000001")
         .find("button")
         .prop("disabled", false);
     } else {
       $("#Shaba_Number").getControl().css("background-color", "#FFF");
       is_val_person = false;
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002")
+      $("#446075439665c5bd51c88b8071255988 #submit0000000001")
         .find("button")
         .prop("disabled", true);
     }
@@ -977,7 +977,7 @@ num.addEventListener("input", function (eve) {
 
 //#endregion
 
-//#region Code2 Paste
+// //#region Code2 Paste
 
 // $("#Shaba_Number").bind("paste", function (e) {
 //   var pastedData = e.originalEvent.clipboardData.getData("text");
@@ -1024,7 +1024,7 @@ $(function () {
 //#endregion
 
 //#region set status checkbox
-$("#submit0000000002").click(function () {
+$("#submit0000000001").click(function () {
   var Dial_Cost = $("#person_cost_grid").getValue(1, 4);
   if (Dial_Cost == 15) {
     $("#Dial_Cost").setValue(1);
@@ -1034,6 +1034,7 @@ $("#submit0000000002").click(function () {
 });
 
 //#endregion
+
 
 //#region checbox with hazine tell
 
@@ -1058,7 +1059,4 @@ $(function () {
 $("#person_cost_grid-body select option:contains('15 - هزینه مکالمه (تلفن همراه)')").attr("disabled", "disabled");
 
 //#endregion
-
-
-
 
