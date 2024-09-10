@@ -880,6 +880,9 @@ num.addEventListener("input", function (eve) {
     } else if (x == "17") {
       $("#Banks_List").setValue(30); /// ملی
       $("#Banks_List").getControl().css("background-color", "#BEF0CB");
+    } else if (x == "60") {
+      $("#Banks_List").setValue(23); /// مهر ایران
+      $("#Banks_List").getControl().css("background-color", "#BEF0CB");
     } else if (x == "19") {
       $("#Banks_List").setValue(20); /// صادرات
       $("#Banks_List").getControl().css("background-color", "#BEF0CB");
@@ -1036,6 +1039,7 @@ $("#submit0000000001").click(function () {
 //#endregion
 
 
+
 //#region checbox with hazine tell
 
 $(function () {
@@ -1059,4 +1063,7 @@ $(function () {
 $("#person_cost_grid-body select option:contains('15 - هزینه مکالمه (تلفن همراه)')").attr("disabled", "disabled");
 
 //#endregion
+
+
+
 
