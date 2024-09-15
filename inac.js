@@ -18,12 +18,22 @@ Shaba_Number.addEventListener("keypress", function (event) {
 
 });
 
- 
+Shaba_Number.addEventListener("keydown", function (event) {
+  var x = event.target.value;
+
+  // Preventing deletion of the prefix "ir "
+  if (event.key === "Backspace" || event.key === "Delete") {
+    if (x.length <= 2) {
+      event.preventDefault();
+    }
+  }
+});
+
 //#endregion
 
 //#region sum col
 
-var form = "697998046665b06ce80a0a3038164392";
+var form = "36355590866a8882d660216007070261";
 var person_cost_grid = "person_cost_grid";
 var group_cost_grid = "group_cost_grid";
 
@@ -148,7 +158,7 @@ var gridId = "person_cost_grid";
 colIndex = 0;
 setPersianDate(gridId);
 $("#697998046665b06ce80a0a3038164392").saveForm();
-$("#MyFlag").setValue("1");
+//$("#MyFlag").setValue("1");
 });
 
 function setPersianDate(gridId) {
@@ -284,15 +294,18 @@ $("#Shaba_Number").hide();
 $("#Shaba_Number").disableValidation();
 $("#Banks_List").hide();
 $("#Banks_List").disableValidation();
+$("#button0000000001").hide();
+$("#button0000000001").disableValidation();
+
 $("#g1_requested_total").hide();
 $("#g1_confirmed_total").hide();
 
+//$("#person_cost_grid option[value='15']").remove();
 
 /////// show /hide person cost :
 
 function ShowPersonCost() {
 $("#person_cost_grid").show();
-$("#person_cost_grid").enableValidation();
 $("#g1_requested_total").show();
 $("#g1_confirmed_total").show();
 $("#Personnel_Code").show();
@@ -336,8 +349,6 @@ $("#phone_cost_pnl").disableValidation();
 
 function ShowGroupCost() {
 $("#group_cost_grid").show();
-$("#group_cost_grid").enableValidation();
-
 $("#g2_food_cost_total").show();
 $("#g2_travel_cost_total").show();
 $("#g2_call_cost_total").show();
@@ -424,7 +435,7 @@ ShowGroupCost();
 
 
 
-
+/////////
 
 //#endregion
 
@@ -433,17 +444,82 @@ $("#phone_cost_pnl").find(".form-check [type=checkbox]").click(function () {
   if ($(this).is(":checked")) {
     $("#textVar008").setValue(1);
     // var x = $(this).parent().parent().parent().parent().parent().parent().find('#Cost_Grid [type=button]').addClass('hide');
-    var x = $("#697998046665b06ce80a0a3038164392").find("#person_cost_grid [type=button]").addClass("hide");
-    var y = $("#697998046665b06ce80a0a3038164392").find("#person_cost_grid .remove-row").addClass("hide");
+    var x = $("#36355590866a8882d660216007070261").find("#person_cost_grid [type=button]").addClass("hide");
+    var y = $("#36355590866a8882d660216007070261").find("#person_cost_grid .remove-row").addClass("hide");
   } else {
-    var x = $("#697998046665b06ce80a0a3038164392").find("#person_cost_grid [type=button]").removeClass("hide");
-    var y = $("#697998046665b06ce80a0a3038164392").find("#person_cost_grid  .remove-row").removeClass("hide");
+    var x = $("#36355590866a8882d660216007070261").find("#person_cost_grid [type=button]").removeClass("hide");
+    var y = $("#36355590866a8882d660216007070261").find("#person_cost_grid  .remove-row").removeClass("hide");
     $("#textVar008").setValue(0);
     $("#person_cost_grid").showColumn(4);
   }
 });
 
 //#endregion
+
+/*
+//#region check group shaba number
+
+var is_val_group = "";
+
+$("#group_cost_grid button.pmdynaform-grid-newitem").css("display", "none");
+
+const inputField = document.getElementById('group_cost_grid');
+
+inputField.addEventListener('input', function(eve) {
+  
+  var x =  eve.target.value;  
+  var rse = validateIranianSheba(x);
+  var rowCount = $("#group_cost_grid").getNumberRows();
+
+  
+  for (var z = 1; z <= rowCount; z++) {
+  
+    if (x.length >= 7) {
+    
+    var x = x.slice(5, 7);
+
+    if (x == "17") {
+      $("#group_cost_grid").setValue(30,z,6); /// ملی
+      $("#group_cost_grid").getControl(z,6).css("background-color", "#BEF0CB"); 
+      }
+      else if (x == "62") {
+        $("#group_cost_grid").setValue(5,z,6); /// آینده
+        $("#group_cost_grid").getControl(z,6).css("background-color", "#BEF0CB");
+      } 
+      // else {
+      //   $("#group_cost_grid").setValue('',z,6); 
+      //   $("#group_cost_grid").getControl('',z,5).css("background-color", "#FFF");
+      //   $("#group_cost_grid").getControl(z,6).css("background-color", "#FFF");
+      // }         
+      
+    } 
+    else {
+        $("#group_cost_grid").getControl('',z,5).css("background-color", "#FFF");
+        $("#group_cost_grid").getControl(z,6).css("background-color", "#FFF");
+      
+    } 
+  }  
+
+    for(var a =1; a <= rowCount; a++)
+    {
+      if (rse)
+        {
+          $("#group_cost_grid").getControl(a,5).css("background-color", "#BEF0CB");
+           $("#group_cost_grid button.pmdynaform-grid-newitem").css("display", "block")
+                is_val_group = true;
+        }
+        else
+        {
+          $("#group_cost_grid").getControl(a,5).css("background-color", "#FFF");
+           $("#group_cost_grid button.pmdynaform-grid-newitem").css("display", "none")
+                is_val_group = false;
+        }
+    }
+});
+
+
+//#endregion
+*/
 
 //#region new group 
 var io = "";
@@ -459,7 +535,7 @@ $("#group_cost_grid-body").on("input", function(eve) {
 
 	var myarray =$("#group_cost_grid-body input[id='form[group_cost_grid]["+i+"][g2_shaba_number]']").val(); 
     if (myarray.length == 27) {
-        $("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop('disabled',true); 
+        $("#36355590866a8882d660216007070261 #submit0000000002").find("button").prop('disabled',true); 
     }
     if (myarray.length >= 7) {
         myarray  = myarray.slice(5, 7);
@@ -598,11 +674,11 @@ $("#group_cost_grid-body").on("input", function(eve) {
 
  if(rse){
   $("#group_cost_grid-body input[id='form[group_cost_grid]["+i+"][g2_shaba_number]']").css("background-color", "#BEF0CB");
-  $("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop('disabled',false);  
+  $("#36355590866a8882d660216007070261 #submit0000000002").find("button").prop('disabled',false);  
          is_val_group = true;
       } else{
         $("#group_cost_grid-body input[id='form[group_cost_grid]["+i+"][g2_shaba_number]']").css("background-color", "#fff");
-        $("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop('disabled',true);  
+        $("#36355590866a8882d660216007070261 #submit0000000002").find("button").prop('disabled',true);  
  
         is_val_group = false; 
       }
@@ -611,6 +687,28 @@ $("#group_cost_grid-body").on("input", function(eve) {
 
 
 //#endregion
+
+
+//#region final submit
+// $("#submit0000000002").on("click",function(e){
+
+//     var myrow = $("#group_cost_grid").getNumberRows();
+
+//     for (var i = 0; i < myrow; i++) {
+//         myVal =$("#group_cost_grid-body input[id='form[group_cost_grid]["+i+"][g2_shaba_number]']").val();
+        
+//         if (myVal.length > 27){
+// alert('لطفا شماره شبا بطور کامل وارد شود');
+// e.preventDefault();
+//         }
+
+//      }
+
+
+// });
+//#endregion
+
+
 
 //#region check person shaba number
 
@@ -757,14 +855,14 @@ var is_val_person = "";
      {
       $("#Shaba_Number").getControl().css("background-color", "#BEF0CB");
       is_val_person = true;
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop('disabled',false);  
+      $("#36355590866a8882d660216007070261 #submit0000000002").find("button").prop('disabled',false);  
 
      }
      else
      {
       $("#Shaba_Number").getControl().css("background-color", "#FFF");
       is_val_person = false;
-      $("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop('disabled', true);
+      $("#36355590866a8882d660216007070261 #submit0000000002").find("button").prop('disabled', true);
 
      }
    //  console.log(is_val_person);
