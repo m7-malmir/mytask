@@ -45,7 +45,7 @@ Shaba_Number.addEventListener("keydown", function (event) {
 
 //#region sum col
 
-var form = "697998046665b06ce80a0a3038164392";
+var form = "36355590866a8882d660216007070261";
 var person_cost_grid = "person_cost_grid";
 var group_cost_grid = "group_cost_grid";
 
