@@ -373,7 +373,6 @@ $("#First_Goods").setOnchange(function (newValue, oldValue) {
 //#region click for Save_Record1
 
 $("#Save_Record1").click(function () {
-
   // get data
   $("#GoodsDateRequired").setValue($("#GoodsDateRequired").find("input").val());
   let val_First_Goods = $("#First_Goods").getValue();
