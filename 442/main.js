@@ -5,7 +5,6 @@ const Shaba_Number = document.getElementById("Shaba_Number");
  $('#Shaba_Number').on('paste', function(eve) { 
   setTimeout(function() {
     const that = validateIranianSheba(eve.target.value);
-
     if (that) {
       $("#Shaba_Number").getControl().css("background-color", "#BEF0CB");
      // $("#Shaba_Number .pmdynaform-field-control").append('<span class="glyphicon glyphicon-ok"></span>');
@@ -212,6 +211,7 @@ num.addEventListener("input", function (eve) {
       $("#446075439665c5bd51c88b8071255988 #submit0000000002").find("button").prop("disabled", true);
       
     }
+    //  console.log(is_val_person);
   });
 });
 

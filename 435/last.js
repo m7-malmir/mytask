@@ -1,3 +1,64 @@
+
+/*function iso7064Mod97_10(iban) {
+  var remainder = iban,
+      block;
+
+  while (remainder.length > 2){
+    block = remainder.slice(0, 9);
+    remainder = parseInt(block, 10) % 97 + remainder.slice(block.length);
+  }
+
+  return parseInt(remainder, 10) % 97;
+}
+
+function validateIranianSheba(str) {
+  var pattern = /IR[0-9]{24}/;
+  
+  if (str.length !== 26) {
+    return false;
+  }
+
+  if (!pattern.test(str)) {
+    return false;
+  }
+
+  var newStr = str.substr(4);
+  var d1 = str.charCodeAt(0) - 65 + 10;
+  var d2 = str.charCodeAt(1) - 65 + 10;
+  newStr += d1.toString() + d2.toString() + str.substr(2, 2);
+  
+  var remainder = iso7064Mod97_10(newStr);
+  if (remainder !== 1) {
+    return false;
+  }
+
+  return true;
+};
+
+
+$("#button0000000001").click(function () {
+
+  
+  var text1 = "لطفا شماره شبا را بدون فاصله مطابق الگو وارد نمایید\n";
+  var text2 = "تعداد کاراکتر مجاز : 24\n";
+  var text3 = "الگو: IR9999999999999999999999";
+  
+  
+ var rse =  validateIranianSheba($("#Shaba_Number").getValue());
+    
+  if (rse == true){
+    alert('شماره شبا بدرستی وارد شده است');
+
+  }else{
+    
+    alert(text1+text2+text3);
+  
+  }
+  
+
+});
+
+*/
 $(document).ready(function() {
 
     $("#submit0000000001").find("button").prop("disabled", true);
@@ -217,3 +278,176 @@ num.addEventListener("input", function (eve) {
 });
 
 //#endregion
+
+
+ $('#Cost_Grid').hideColumn(3);
+
+ $("#deputy_per").hide();
+
+//////////////////////////////////////
+
+function getNumber(_val) {
+  return Number(_val.replace(/[\,]+/g, ""));
+}
+
+function sepratorNumber(_val) {
+  return _val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+}
+function removePoint(_val) {
+  return _val.toString().replace(/\./g, '');
+}
+
+
+
+
+
+ 
+
+///////////تائید کننده////////////////
+/*
+  var x = 1;
+  var y = 1;
+  var z = 1;
+ 
+  if ($("#Reviewer_Per").getValue() == $("#Reviewer_Per").getText()) {
+
+    $("#Reviewer_Per").css("color", "red");
+    x = 0;
+
+  } else {
+
+    $("#Reviewer_Per").css("color", " #555151");
+    x = 1;
+  }
+  //////مدیر واحد - تصویب کننده/////////////
+
+  if ($("#Unit_Manager_Per").getValue() == $("#Unit_Manager_Per").getText()) {
+
+    $("#Unit_Manager_Per").css("color", "red");
+    y = 0;
+
+  } else {
+
+    $("#Unit_Manager_Per").css("color", " #555151");
+
+    y = 1;
+  }
+//////////درخواست کننده/////////////
+  
+  
+  if ($("#Applicant").getValue() == $("#Applicant").getText()) {
+
+    $("#Applicant").css("color", "red");
+   z = 0;
+
+  } else {
+
+    $("#Applicant").css("color", " #555151");
+
+    z = 1;
+  }
+
+
+
+  if (x == 0 || y == 0 ||z == 0) {
+    alert('لطفا نام شخص را به درستی انتخاب نمایید ');
+    return false;
+  }
+
+*/
+////////////////////
+
+
+///////////////جمع ستونی//////
+
+
+$("#774505615655deb9204e8c6069325942").click(function() { 
+ 
+
+  
+  var rowCount = $("#Cost_Grid").getNumberRows();
+  var total1 = 0;
+  var currency1= 0;
+ 
+  var total2 = 0;
+  var currency2= 0;
+ 
+  for (var i = 1;i <= rowCount;i++) {
+    
+    currency1 = getNumber($("#Cost_Grid").getValue(i, '2'));
+    currency2 = getNumber($("#Cost_Grid").getValue(i, '3'));
+                           
+    total1 += currency1;
+    total2 += currency2;
+   }
+
+  var sum_currency1 =sepratorNumber(total1);
+  var sum_currency2 =sepratorNumber(total2);
+  
+  $('#Requested_Total').setValue(sum_currency1);
+  $('#Confirmed_Total').setValue(sum_currency2);
+
+  });
+//////
+
+  $("#Cost_Grid").click(function() {
+  
+
+    
+    var rowCount = $("#Cost_Grid").getNumberRows();
+    var total1 = 0;
+    var currency1= 0;
+   
+    var total2 = 0;
+    var currency2= 0;
+   
+    for (var i = 1;i <= rowCount;i++) {
+      
+      currency1 = getNumber($("#Cost_Grid").getValue(i, '2'));
+      currency2 = getNumber($("#Cost_Grid").getValue(i, '3'));
+                             
+      total1 += currency1;
+      total2 += currency2;
+     }
+  
+    var sum_currency1 =sepratorNumber(total1);
+    var sum_currency2 =sepratorNumber(total2);
+    
+    $('#Requested_Total').setValue(sum_currency1);
+    $('#Confirmed_Total').setValue(sum_currency2);
+    
+   
+  
+    });
+
+///////////last////////////////
+
+
+$("#submit0000000001").click(function() { 
+
+  var rowCount = $("#Cost_Grid").getNumberRows();
+  var total1 = 0;
+  var currency1= 0;
+ 
+  var total2 = 0;
+  var currency2= 0;
+ 
+  for (var i = 1;i <= rowCount;i++) {
+    
+    currency1 = getNumber($("#Cost_Grid").getValue(i, '2'));
+    currency2 = getNumber($("#Cost_Grid").getValue(i, '3'));
+                           
+    total1 += currency1;
+    total2 += currency2;
+   }
+
+  var sum_currency1 =sepratorNumber(total1);
+  var sum_currency2 =sepratorNumber(total2);
+  
+  $('#Requested_Total').setValue(sum_currency1);
+  $('#Confirmed_Total').setValue(sum_currency2);
+
+  });
+
+  ///////////////////////////////////////
+////////////////////////////
