@@ -1,5 +1,4 @@
 
-$("#Tech_Specifications").disableValidation(3);
 //#region set attr select2
 
 $("#CompanyId").getControl().select2({
@@ -18,11 +17,9 @@ $("#GoodsUnit").getControl().select2({
   placeholder: '----'
 });
 
-$("#First_Goods").getControl().select2({
+ $("#First_Goods").getControl().select2({
   placeholder: '----'
-});
-
-
+}); 
 //#endregion
 
 //#region setting for req_grid
@@ -79,7 +76,7 @@ $("#GoodsDateRequired").getControl().persianDatepicker({
 
 //#region setOnchange for GoodsDateRequired
 
-$("#72549438467069eaa559612001429318").click(function () {
+$("#635284423670666ec88d9a2011871904").click(function () {
   $("#GoodsDateRequired").setValue($("#GoodsDateRequired").find("input").val());
 });
 
@@ -90,7 +87,6 @@ $("#72549438467069eaa559612001429318").click(function () {
 $("#Tech_Specifications").hideColumn(1);
 $("#Req_Grid").hideColumn(11);
 $("#Req_Grid").hideColumn(12);
-$("#Req_Grid").hideColumn(7);
 
 $("#Reference_Process").hide();
 $("#Reference_Process").disableValidation();
@@ -128,7 +124,7 @@ $("#GoodsConsumption_currency").hide();
 $("#GoodsConsumption_currency").disableValidation();
 $("#my_css").hide();
 $("#Tech_Specifications").hide();
-$("#Tech_Specifications").disableValidation();
+//$("#Tech_Specifications").disableValidation();
 $("#Save_Record1").hide();
 $("#Save_Record1").disableValidation();
 $("#Req_Grid").hide();
@@ -182,7 +178,7 @@ $("#Definition_Storekeeper").setOnchange(function (newVal, oldVal) {
     $("#GoodsConsumption_currency").show();
     $("#GoodsConsumption_currency").enableValidation();
     $("#Tech_Specifications").show();
-    $("#Tech_Specifications").enableValidation();
+    //$("#Tech_Specifications").enableValidation();
     $("#Save_Record1").show();
     $("#Save_Record1").enableValidation();
     $("#Req_Grid").show();
@@ -229,7 +225,7 @@ $("#Definition_Storekeeper").setOnchange(function (newVal, oldVal) {
     $("#GoodsConsumption_currency").show();
     $("#GoodsConsumption_currency").enableValidation();
     $("#Tech_Specifications").show();
-    $("#Tech_Specifications").enableValidation();
+    //$("#Tech_Specifications").enableValidation();
     $("#Save_Record1").show();
     $("#Save_Record1").enableValidation();
     $("#Req_Grid").show();
@@ -278,7 +274,7 @@ if ($("#Definition_Storekeeper").getValue() == '1'){
   $("#GoodsConsumption_currency").show();
   $("#GoodsConsumption_currency").enableValidation();
   $("#Tech_Specifications").show();
-  $("#Tech_Specifications").enableValidation();
+  //$("#Tech_Specifications").enableValidation();
   $("#Save_Record1").show();
   $("#Save_Record1").enableValidation();
   $("#Req_Grid").show();
@@ -326,7 +322,7 @@ else if ($("#Definition_Storekeeper").getValue() == '2'){
   $("#GoodsConsumption_currency").show();
   $("#GoodsConsumption_currency").enableValidation();
   $("#Tech_Specifications").show();
-  $("#Tech_Specifications").enableValidation();
+  //$("#Tech_Specifications").enableValidation();
   $("#Save_Record1").show();
   $("#Save_Record1").enableValidation();
   $("#Req_Grid").show();
@@ -409,6 +405,18 @@ $("#Save_Record1").click(function () {
   let GoodsCurrentBalance_currency = $("#GoodsCurrentBalance_currency").getValue();
   let GoodsConsumption_currency = $("#GoodsConsumption_currency").getValue();
   let code1 = $("#CodeItem1").getValue();
+/*
+  var rowCount = $("#Tech_Specifications").getNumberRows();
+
+  for (let f = 1; f < rowCount; f++) {
+     if ($("#Tech_Specifications").getValue(f,3).length != 0) {
+             $("#Tech_Specifications").disableValidation(3);
+     }else{
+             $("#Tech_Specifications").enableValidation(3);
+     }
+  }
+*/
+
 
   // check conditions and set Value
 
@@ -433,7 +441,8 @@ $("#Save_Record1").click(function () {
     alert("تعداد درخواستی نمیتواند صفر باشد");
   } 
   else if ( val_First_Goods != txt_First_Goods && GoodsNumber != 0  ) {
-    
+    $("#Req_Grid").hideColumn(11);
+    $("#Req_Grid").hideColumn(12);
     
     // give data property and generate json
 
@@ -475,15 +484,7 @@ $("#Save_Record1").click(function () {
         $("#Req_Grid").setText(GoodsCurrentBalance_currency, i, 8);
         $("#Req_Grid").setText(GoodsConsumption_currency, i, 9); 
        }
-
     }
-
-
-
-
-
-
-
     $("#Req_Grid").addRow();
     $("#First_Goods").setValue("");
     $("#First_Goods").setText("");
@@ -496,7 +497,7 @@ $("#Save_Record1").click(function () {
     $("#GoodsDateRequired").setValue("");
     $("#GoodsCurrentBalance_currency").setValue("");
     $("#GoodsConsumption_currency").setValue("");
-
+    $("#First_Goods").getControl().select2({placeholder: '----'}); 
 
     var gridField = $("#Req_Grid"); // استفاده از شناسه گرید 'Req_grid'
         
@@ -523,32 +524,37 @@ $("#Save_Record1").click(function () {
     for (let rm = 0; rm <= len; rm++) {
       $("#Tech_Specifications").deleteRow();
     }
-    
-        $("#72549438467069eaa559612001429318").saveForm();
-        $("#submit0000000001").find("button").attr("disabled", false);
-      }
+    $("#635284423670666ec88d9a2011871904").saveForm();
+      var rowCount2 = $("#Req_Grid").getNumberRows();
+      var emptycheck='';
+      for (var i = 1; i <= rowCount2; i++) { 
+          if (
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Goods_Code]']").val().length === 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Required_Items]']").val().length === 0  && 
+              $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Technical_Specifications]']").val().length=== 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Number]']").val().length=== 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Unit]']").val().length=== 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Date_Required]']").val().length=== 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Confirmed_Number_currency]']").val().length=== 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Current_Balance]']").val().length=== 0 &&
+              $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Consumption]']").val().length=== 0 &&
+              $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Goods_Desc]']").val().length=== 0 
+              ) {
+                  emptycheck=true;
+              }
+         }
+  }
+
+
+
+  if (emptycheck==1) {
+      $("#Req_Grid-body .pmdynaform-static").find("div").parent().css('display','');
+      $("#Req_Grid-body .pmdynaform-static").find("div:last").parent().css('display','none');
+  }
+ 
 });
 
 //#endregion
-
-//#region submit
-
-$("#submit0000000001").click(function (event) {
-
-  var req_type = $("#Req_Type").getValue();
-  var req_id = $("#Req_ID").getValue();
-
-  if (req_type == '2') {
-     if(req_id == '3521032a-bb8a-4654-a5db-0de69363' ||  req_id == '33d2a7e2-1a93-41d1-a755-82e6dd7e' ||  req_id == '44631190-0eab-47ee-a364-1cc2095e' ||  req_id == 'a565e8d0-1d3a-4926-9831-e5469b27' ||  req_id == 'ce7cfff9-92f4-46ea-942d-07eab684' ||  req_id == '9ee832d3-c554-4ad9-9134-79f63293' ||  req_id == '0d707a39-c166-4e8a-9511-3a117a96' ||  req_id == '0c7b223f-0bf2-4940-a9e2-13468d1b' ||  req_id == '8f329c5e-222a-4ec2-a4c2-9e15be85'){
-      $('#72549438467069eaa559612001429318').submit();
-    } else {
-      event.preventDefault();
-      alert('شما مجاز به ثبت درخواست اقلام IT نمی باشید');
-    }
-  } else if (req_type == '1') {
-    $('#72549438467069eaa559612001429318').submit();
-  }
-});
 
 
 
@@ -613,7 +619,7 @@ $("#CompanyId").setOnchange(function(newVal){
 
 });
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
- $("#72549438467069eaa559612001429318").click(function()
+ $("#635284423670666ec88d9a2011871904").click(function()
 {  
   if($('#CompanyId').getValue() =="36"){
 
@@ -686,5 +692,10 @@ else if($('#CompanyId').getValue() =="52")
     $("#Req_Location").disableValidation();
  
 }});
-
+//////////
 //#endregion
+
+
+
+$("#Req_Grid").hideColumn(11);
+$("#Req_Grid").hideColumn(12);

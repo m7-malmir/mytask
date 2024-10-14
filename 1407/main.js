@@ -1,30 +1,4 @@
-$("#submit0000000001").click(function (event) {
-    var rowCount3 = $("#Req_Grid").getNumberRows(); 
-    if(rowCount3 >= 1 ){
-            var errors='';    
-            for (var i = 1; i <= rowCount3-1; i++) {
-                if (
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Goods_Code]']").val().length === 0 ||
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Required_Items]']").val().length === 0  || 
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Unit]']").val().length=== 0 ||
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Date_Required]']").val().length=== 0 ||
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Confirmed_Number_currency]']").val().length=== 0 ||
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Current_Balance]']").val().length=== 0 ||
-                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Consumption]']").val().length=== 0 
-                    
-                    ) {
-                        errors=1;
-                    }
-        
-                    }
-                    if(errors==1){
-                        alert("لطفا تعداد تایید شده را وارد نمایید");
-                        event.preventDefault();
-                    }
-        
-        }
-            
-    });
+
     //#region set attr select2a
     
     $("#CompanyId").getControl().select2({
@@ -40,9 +14,9 @@ $("#submit0000000001").click(function (event) {
     $('#Req_Grid').hideColumn(9);
     $('#Req_Grid').hideColumn(10);
     $('#Req_Grid').hideColumn(11);
-    //$('#Req_Grid').hideColumn(12);
-    //$('#Req_Grid').hideColumn(14);
-    //$('#Req_Grid').hideColumn(15);
+    $('#Req_Grid').hideColumn(12);
+    $('#Req_Grid').hideColumn(14);
+    $('#Req_Grid').hideColumn(15);
     $('#NameItem1').hide();
     $('#CodeItem1').hide();
     $('#First_Goods_Property').hide();
@@ -334,6 +308,7 @@ $("#submit0000000001").click(function (event) {
         alert('لطفا نام شخص پست را به درستی انتخاب کنید ');
         return false;
       }
+      
     });
     //#endregion
     
@@ -433,8 +408,4 @@ $("#submit0000000001").click(function (event) {
     });
     
     //#endregion
-    
-    
-    
-    
     
