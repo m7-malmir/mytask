@@ -87,6 +87,7 @@ $("#635284423670666ec88d9a2011871904").click(function () {
 $("#Tech_Specifications").hideColumn(1);
 $("#Req_Grid").hideColumn(11);
 $("#Req_Grid").hideColumn(12);
+$("#Req_Grid").hideColumn(7);
 
 $("#Reference_Process").hide();
 $("#Reference_Process").disableValidation();
@@ -405,6 +406,14 @@ $("#Save_Record1").click(function () {
   let GoodsCurrentBalance_currency = $("#GoodsCurrentBalance_currency").getValue();
   let GoodsConsumption_currency = $("#GoodsConsumption_currency").getValue();
   let code1 = $("#CodeItem1").getValue();
+  var rowCount5 = $("#Tech_Specifications").getNumberRows();
+      var valid='';
+      for (var i = 1; i <= rowCount5; i++) {
+          if($("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_value]']").val().length === 0){
+              valid =true;
+          } 
+
+      }
 /*
   var rowCount = $("#Tech_Specifications").getNumberRows();
 
@@ -441,8 +450,11 @@ $("#Save_Record1").click(function () {
     alert("تعداد درخواستی نمیتواند صفر باشد");
   } 
   else if ( val_First_Goods != txt_First_Goods && GoodsNumber != 0  ) {
-    $("#Req_Grid").hideColumn(11);
-    $("#Req_Grid").hideColumn(12);
+    if(valid==true){
+      alert('لطفا مقادیر مشخصات فنی را وارد نمایید');
+      $("#Tech_Specifications").enableValidation(3);
+      return false;
+  }else{
     
     // give data property and generate json
 
@@ -543,6 +555,7 @@ $("#Save_Record1").click(function () {
                   emptycheck=true;
               }
          }
+    }
   }
 
 
@@ -697,5 +710,6 @@ else if($('#CompanyId').getValue() =="52")
 
 
 
+ 
 $("#Req_Grid").hideColumn(11);
 $("#Req_Grid").hideColumn(12);
