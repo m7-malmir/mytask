@@ -243,9 +243,31 @@ $("#CompanyId").getControl().select2({
             for (let rm = 0; rm <= len; rm++) {
                 $("#Tech_Specifications").deleteRow();
             }
-            $("#submit0000000001").find("button").attr("disabled", false);
+            var rowCount2 = $("#Req_Grid").getNumberRows();
+            var emptycheck='';
+            for (var i = 1; i <= rowCount2; i++) { 
+                if (
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Goods_Code]']").val().length === 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Required_Items]']").val().length === 0  && 
+                    $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Technical_Specifications]']").val().length=== 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Number]']").val().length=== 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Unit]']").val().length=== 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Date_Required]']").val().length=== 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Confirmed_Number_currency]']").val().length=== 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Current_Balance]']").val().length=== 0 &&
+                    $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Consumption]']").val().length=== 0 &&
+                    $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Goods_Desc]']").val().length=== 0 
+                    ) {
+                        emptycheck=true;
+                    }
+               }
+           // $("#submit0000000001").find("button").attr("disabled", false);
         }
        
+    }
+    if (emptycheck==1) {
+        $("#Req_Grid-body .pmdynaform-static").find("div").parent().css('display','');
+        $("#Req_Grid-body .pmdynaform-static").find("div:last").parent().css('display','none');
     }
   });
   
