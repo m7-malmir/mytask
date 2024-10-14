@@ -132,12 +132,12 @@ if (COUNT($QueryResult) > 0) {
 	echo '<pre>';
 	var_export($rslt[2]);
 	echo '<pre>';
-/*
-	echo '<pre>';
-	var_export($rslt[1][0]);
-	echo '<pre>';
-    die();
-	
-	*/
-	
+
+  /*
+	  echo '<pre>';
+	  var_export($rslt[1][0]);
+	  echo '<pre>';
+    die();	
+  */
+
 }

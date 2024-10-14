@@ -1,5 +1,5 @@
 
-
+$("#Tech_Specifications").disableValidation(3);
 //#region set attr select2
 
 $("#CompanyId").getControl().select2({
@@ -15,6 +15,10 @@ $("#Warehouse_Name").getControl().select2({
 });
 
 $("#GoodsUnit").getControl().select2({
+  placeholder: '----'
+});
+
+$("#First_Goods").getControl().select2({
   placeholder: '----'
 });
 
@@ -574,7 +578,6 @@ else if ($("#Req_Type").getValue() == 2) {
 
 //#endregion
 
-
 //#region set approval 
 
 $("#CompanyId").setOnchange( function(newVal, oldVal) {
@@ -683,14 +686,5 @@ else if($('#CompanyId').getValue() =="52")
     $("#Req_Location").disableValidation();
  
 }});
-//////////
+
 //#endregion
-
-
-
-
-
-
-
-
-
