@@ -1,6 +1,6 @@
 
 
-
+$("#Tech_Specifications").disableValidation(3);
 //#region set attr select2
 
 $("#CompanyId").getControl().select2({
@@ -164,6 +164,7 @@ $("#CompanyId").getControl().select2({
             $("#Tech_Specifications").enableValidation(3);
             return false;
         }else{
+            $("#Tech_Specifications").disableValidation(3);
             $("#" + formId).saveForm();
   
             // give data property and generate json

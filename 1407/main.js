@@ -1,12 +1,10 @@
  
-    
+    $("#Tech_Specifications").disableValidation(3);
     //#region set attr select2a
     
     $("#CompanyId").getControl().select2({
       placeholder: '----'
     });
-    
-    
     $("#GoodsUnit").getControl().select2({
       placeholder: '----'
     });
@@ -149,6 +147,7 @@
               $("#Tech_Specifications").enableValidation(3);
               return false;
           }else{
+            $("#Tech_Specifications").disableValidation(3);
               $("#66339111366fa7d57c59153033755964").saveForm();
         
         // give data property and generate json

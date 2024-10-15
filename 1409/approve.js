@@ -1,4 +1,23 @@
 $("#Tech_Specifications").disableValidation(3);
+// for Confirmed_Number_currency is not empty
+$("#submit0000000001").click(function (event) { 
+    var rowCount3 = $("#Req_Grid").getNumberRows(); 
+       if(rowCount3 >= 1 ){
+                var errors='';    
+                for (var i = 1; i <= rowCount3-1; i++) {
+                    if (
+                        $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Confirmed_Number_currency]']").val().length=== 0) { errors=1;}
+            
+                        }
+                        if(errors==1){
+                            alert("لطفا تعداد تایید شده را وارد نمایید");
+                            event.preventDefault();
+                        }
+            
+            }
+                
+        });
+
 //#region set attr select2
 
 $("#CompanyId").getControl().select2({
@@ -126,7 +145,14 @@ $("#Save_Record1").click(function () {
     let GoodsConsumption = $("#GoodsConsumption_currency").getValue();
     let Consumption_Daily_Average_currency = $("#Consumption_Daily_Average_currency").getValue();
     let code1 = $("#CodeItem1").getValue();
+    var rowCount5 = $("#Tech_Specifications").getNumberRows();
+    var valid='';
+    for (var i = 1; i <= rowCount5; i++) {
+        if($("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_value]']").val().length === 0){
+            valid =true;
+        } 
 
+    }
     // check conditions and set Value
 
     if (val_First_Goods == "" || GoodsNumber_currency == "" || GoodsUnit == "" || GoodsDateRequired == "" || GoodsCurrentBalance_currency == "" || GoodsConsumption_currency == "" || GoodsConsumption == "" || lead_Time == "" || Unfilled_Orders_currency == "" || Consumption_Daily_Average_currency == "" || Goods_Description == "" || GoodsNumber == "") {
@@ -150,86 +176,93 @@ $("#Save_Record1").click(function () {
         alert("تعداد درخواستی نمیتواند صفر باشد");
     }
     else if (val_First_Goods != txt_First_Goods && GoodsNumber != 0) {
+        if(valid==true){
+            alert('لطفا مقادیر مشخصات فنی را وارد نمایید');
+            $("#Tech_Specifications").enableValidation(3);
+            return false;
+        }else{
+            $("#Tech_Specifications").disableValidation(3);
+            $("#" + formId).saveForm();
 
-        $("#" + formId).saveForm();
-
-        // give data property and generate json
-
-        var rowCount = $("#Tech_Specifications").getNumberRows();
-        var arr = [];
-        var property = "";
-        for (var i = 1; i <= rowCount; i++) {
-
-            var prop_id = $("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_id]']").val();
-            var prop_Val = $("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_value]']").val();
-            var propery_Name = $("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_name]']").val();
-            if (prop_Val.length > 0) {
-                property += propery_Name + " : " + prop_Val + "\n";
+            // give data property and generate json
+    
+            var rowCount = $("#Tech_Specifications").getNumberRows();
+            var arr = [];
+            var property = "";
+            for (var i = 1; i <= rowCount; i++) {
+    
+                var prop_id = $("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_id]']").val();
+                var prop_Val = $("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_value]']").val();
+                var propery_Name = $("#Tech_Specifications-body input[id='form[Tech_Specifications][" + i + "][property_name]']").val();
+                if (prop_Val.length > 0) {
+                    property += propery_Name + " : " + prop_Val + "\n";
+                }
+                arr.push({
+                    id: prop_id,
+                    value: prop_Val
+                });
             }
-            arr.push({
-                id: prop_id,
-                value: prop_Val
+    
+            var myJsonString = JSON.stringify(arr);
+    
+            // set all data in req_grid
+    
+            var rowCount = $("#Req_Grid").getNumberRows();
+    
+            for (var i = 1; i <= rowCount; i++) {
+    
+                if ($("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Technical_Specs_Json]']").val().length === 0 &&
+                    $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Technical_Specifications]']").val().length === 0) {
+    
+                    $("#Req_Grid").setText(property, i, 3);
+                    $("#Req_Grid").setText(myJsonString, i, 15);
+                    $("#Req_Grid").setText(code1, i, 1);
+                    $("#Req_Grid").setText(txt_First_Goods, i, 2);
+                    $("#Req_Grid").setText(Goods_Description, i, 13);
+                    $("#Req_Grid").setText(GoodsNumber_currency, i, 4);
+                    $("#Req_Grid").setText(GoodsUnit, i, 5);
+                    $("#Req_Grid").setText(GoodsUnit_Id, i, 14);
+                    $("#Req_Grid").setText(lead_Time, i, 6);
+                    $("#Req_Grid").setText(GoodsDateRequired, i, 7);
+                    $("#Req_Grid").setText(GoodsCurrentBalance_currency, i, 9);
+                    $("#Req_Grid").setText(Unfilled_Orders, i, 10);
+                    $("#Req_Grid").setText(GoodsConsumption_currency, i, 11);
+                    $("#Req_Grid").setText(Consumption_Daily_Average_currency, i, 12);
+                }
+    
+            }
+    
+            $("#Req_Grid").addRow();
+            $("#First_Goods").setValue("");
+            $("#First_Goods").setText("");
+            $("#Goods_Description").setText("");
+            $("#Goods_Description").setValue("");
+            $("#GoodsNumber_currency").setValue("");
+            $("#GoodsUnit").setValue("");
+            $("#GoodsUnit").setText("");
+            $("#GoodsUnit").getControl().select2({ placeholder: '----' });
+            $("#GoodsDateRequired").setValue("");
+            $("#GoodsCurrentBalance_currency").setValue("");
+            $("#GoodsConsumption_currency").setValue("");
+            $("#Unfilled_Orders").setValue("");
+            $("#lead_Time").setValue("");
+            $("#Consumption_Daily_Average_currency").setValue("");
+    
+            ///// پاک کردن گرید اول
+    
+            let assignedRoleId = new Array();
+    
+            $("#First_Goods_Property option").each(function () {
+                assignedRoleId.push(this.text);
             });
-        }
-
-        var myJsonString = JSON.stringify(arr);
-
-        // set all data in req_grid
-
-        var rowCount = $("#Req_Grid").getNumberRows();
-
-        for (var i = 1; i <= rowCount; i++) {
-
-            if ($("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Technical_Specs_Json]']").val().length === 0 &&
-                $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Technical_Specifications]']").val().length === 0) {
-
-                $("#Req_Grid").setText(property, i, 3);
-                $("#Req_Grid").setText(myJsonString, i, 15);
-                $("#Req_Grid").setText(code1, i, 1);
-                $("#Req_Grid").setText(txt_First_Goods, i, 2);
-                $("#Req_Grid").setText(Goods_Description, i, 13);
-                $("#Req_Grid").setText(GoodsNumber_currency, i, 4);
-                $("#Req_Grid").setText(GoodsUnit, i, 5);
-                $("#Req_Grid").setText(GoodsUnit_Id, i, 14);
-                $("#Req_Grid").setText(lead_Time, i, 6);
-                $("#Req_Grid").setText(GoodsDateRequired, i, 7);
-                $("#Req_Grid").setText(GoodsCurrentBalance_currency, i, 9);
-                $("#Req_Grid").setText(Unfilled_Orders, i, 10);
-                $("#Req_Grid").setText(GoodsConsumption_currency, i, 11);
-                $("#Req_Grid").setText(Consumption_Daily_Average_currency, i, 12);
+    
+            let len = assignedRoleId.length;
+    
+            for (let rm = 0; rm <= len; rm++) {
+                $("#Tech_Specifications").deleteRow();
             }
-
         }
-
-        $("#Req_Grid").addRow();
-        $("#First_Goods").setValue("");
-        $("#First_Goods").setText("");
-        $("#Goods_Description").setText("");
-        $("#Goods_Description").setValue("");
-        $("#GoodsNumber_currency").setValue("");
-        $("#GoodsUnit").setValue("");
-        $("#GoodsUnit").setText("");
-        $("#GoodsUnit").getControl().select2({ placeholder: '----' });
-        $("#GoodsDateRequired").setValue("");
-        $("#GoodsCurrentBalance_currency").setValue("");
-        $("#GoodsConsumption_currency").setValue("");
-        $("#Unfilled_Orders").setValue("");
-        $("#lead_Time").setValue("");
-        $("#Consumption_Daily_Average_currency").setValue("");
-
-        ///// پاک کردن گرید اول
-
-        let assignedRoleId = new Array();
-
-        $("#First_Goods_Property option").each(function () {
-            assignedRoleId.push(this.text);
-        });
-
-        let len = assignedRoleId.length;
-
-        for (let rm = 0; rm <= len; rm++) {
-            $("#Tech_Specifications").deleteRow();
-        }
+      
     }
 });
 
@@ -253,7 +286,7 @@ $("#CompanyId").setOnchange( function(newVal, oldVal) {
 
 });
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
- $("#65222167966fbfb57d70fb5052165760").click(function()
+ $("#187835693670620576e3810088911729").click(function()
 {  
   if($('#CompanyId').getValue() =="36"){
 
