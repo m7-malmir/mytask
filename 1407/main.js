@@ -19,6 +19,8 @@
     $('#NameItem1').hide();
     $('#CodeItem1').hide();
     $('#First_Goods_Property').hide();
+    $("#TechSpec").hide();
+    $('#Technical_Specs_Json').hide();
     //$('#Technical_Specs_Json').show();
     //#endregion
     
