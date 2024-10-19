@@ -331,7 +331,7 @@ $("#g1_confirmed_total").hide();
 
 //$("#person_cost_grid option[value='15']").remove();
 
-/////// show /hide person cost :
+//show /hide person cost :
 
 function ShowPersonCost() {
   $("#person_cost_grid").show();
@@ -1014,7 +1014,6 @@ $(function () {
       
     } else {
       $("#person_cost_grid").enableValidation(4);
-
       // $("#person_cost_grid-body select").attr("disabled", false);
        //$("#person_cost_grid-body select option:contains('15 - هزینه مکالمه (تلفن همراه)')").attr("selected", false);
     }

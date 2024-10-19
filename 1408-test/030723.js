@@ -15,19 +15,18 @@
             $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Current_Balance]']").val().length=== 0 &&
             $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Consumption]']").val().length=== 0 &&
             $("#Req_Grid-body textarea[id='form[Req_Grid][" + i + "][Goods_Desc]']").val().length=== 0 
-            
             ) {
                 emptycheck=true;
                 //$("#Req_Grid-body .pmdynaform-static ").find("div:last").parent().remove();
             }
     }
-    var rowCount3 = $("#Req_Grid").getNumberRows(); 
+    var rowCount3 = $("#Req_Grid").getNumberRows();
     if(rowCount3 == 1 &&  emptycheck==true){
         alert("لطفا تعداد تایید شده را وارد نمایید");
         event.preventDefault();
     }
    else if(rowCount3 >= 1 ){
-            var errors='';    
+            var errors='';
             for (var i = 1; i <= rowCount3-1; i++) {
                 if (
                     $("#Req_Grid-body input[id='form[Req_Grid][" + i + "][Goods_Code]']").val().length === 0 ||
