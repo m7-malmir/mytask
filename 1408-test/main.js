@@ -126,8 +126,8 @@ $("#CompanyId").getControl().select2({
   $("#Save_Record1").disableValidation();
   $("#Req_Grid").hide();
   $("#Req_Grid").disableValidation();
-  $("#CodeItem1").hide();
-  $("#NameItem1").hide();
+  //$("#CodeItem1").hide();
+  //$("#NameItem1").hide();
   $("#First_Goods_Property").hide();
   $("#Req_Desc").hide();
   $("#Req_Desc").disableValidation();
@@ -351,10 +351,8 @@ $("#CompanyId").getControl().select2({
   //#region setOnchange for first goods
   
   $("#First_Goods").setOnchange(function (newValue, oldValue) {
-  
     // delete row before add Items
     var rowCt = $("#Tech_Specifications").getNumberRows();
-  
     for (var w = 0; w <= rowCt; w++) {
       $("#Tech_Specifications").deleteRow();
     }
@@ -364,11 +362,11 @@ $("#CompanyId").getControl().select2({
     $("#First_Goods_Property option").each(function () {
       assignedRoleId.push(this.text);
     });
-  
+
     var texts = $("#First_Goods_Property option").map(function () {
         return $(this).val();
       }).get();
-  
+        
     //console.log(texts);
     //console.log(assignedRoleId);
   
