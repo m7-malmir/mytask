@@ -1,4 +1,5 @@
 var $form;
+alert('test');
 $(function(){
 	$form = (function()
 	{
@@ -73,11 +74,9 @@ $(function(){
 				}
 			);
 		}
-
 		function bindEvents()
 		{
 		}
-
 		function readData()
 		{
 			showLoading();
