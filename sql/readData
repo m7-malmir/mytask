@@ -1,0 +1,31 @@
+USE [Bpms_Product]
+GO
+/****** Object:  StoredProcedure [dbo].[test2]    Script Date: 11/11/2024 4:45:45 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Mohammad
+-- Create date: 1403-08-20
+-- Description:	for test
+-- =============================================
+ALTER PROCEDURE [dbo].[test2] 
+	-- Add the parameters for the stored procedure here
+	@rid int=1
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	SELECT [Id]
+	, [First_Name]
+	, [Last_Name]
+	, [Role_Name]
+	, [Date]
+	, [Status]
+	, [CreatedDate]
+  FROM [Bpms_Product].[ZJM].[test_test] where Id =@rid;
+END
