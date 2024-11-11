@@ -1,0 +1,45 @@
+USE [Bpms_Product]
+GO
+/****** Object:  StoredProcedure [dbo].[test2]    Script Date: 11/11/2024 4:17:58 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Mohammad
+-- Create date: 1403-08-20
+-- Description:	for test
+-- =============================================
+Alter PROCEDURE [dbo].[test3] 
+	 @Sub nvarchar(max),
+	 @LEmail nvarchar(200)
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+	DECLARE @HtmlBody NVARCHAR(MAX) = '
+		<!DOCTYPE html>
+		<html dir="rtl" style="direction: rtl; text-align: right;">
+		<head>
+			<meta charset="UTF-8"> <!-- Set the character encoding to UTF-8 -->
+			<style>
+				body {
+					direction: rtl; /* Set the text direction to right-to-left */
+					text-align: right; /* Align text to the right */
+				}
+			</style>
+		</head>
+		<body dir="rtl" style="direction: rtl; text-align: right;">
+			<p>' +  'aaaa'  + '،</p>
+		</body>
+		</html>';
+
+
+    -- Insert statements for procedure here
+	EXEC msdb.dbo.sp_send_dbmail
+	@recipients = @LEmail,
+	@subject = @Sub,
+	@body = @HtmlBody,
+	@body_format = 'HTML';
+END
