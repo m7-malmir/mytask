@@ -1,3 +1,4 @@
+
 USE [Bpms_Product]
 GO
 /****** Object:  StoredProcedure [dbo].[test2]    Script Date: 11/11/2024 4:17:58 PM ******/

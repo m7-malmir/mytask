@@ -29,3 +29,6 @@ BEGIN
 	, [CreatedDate]
   FROM [Bpms_Product].[ZJM].[test_test] where Id =@rid;
 END
+
+
+
