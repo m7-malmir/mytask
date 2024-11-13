@@ -21,78 +21,75 @@
         direction: rtl;
         font-family: 'Yekan';
     }
-#main{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
+
+#table{
+  width: 90%;
+  margin: 0 auto;
 }
-#main .pkg1 {
-    min-height: 15rem;
-    background-color: #cbf4f4;
-    width: 15rem;
-    border-radius: 5px;
+table {
+
+  border-collapse: collapse;
+  width: 100%;
 }
-#main .pkg1 ul{
-    list-style: none;
+table thead tr{
+  background-color: #bb95f8!important;
+  color: #FFF;
+}
+td, th {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 0px;
+}
+tr:nth-child(odd) {
+  background-color: #aaf693;
+}
+tr:nth-child(even) {
+  background-color: #dddddd;
 }
 </style>
 <body>
    
     
-    <h3>فریم وورک  مورد استفاده</h3>
-        <div id="main">
-            <div class="pkg1">
-                
-                <ul>
-                    <li>  <span</span></li>
-                    <li><b>سامانه نوبت دهی</b>  <span></span></li>
-                    <li>  <span></span></li>
-                    <li><b></b>  <span></span></li>
-                    <li><b></b>  <span></span></li>
-                </ul>
-            </div>
-            <div class="pkg2">
-               
-                <li><b></b>  <span></span></li>
-                <li><b></b>  <span></span></li>
-            </div>
-            <div class="pkg3">
-              
-            </div>
-        </div>
-
-        <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col"> <h2>پکیج طراحی سایت معمولی</h2></th>
-                <th scope="col"><h2>پکیج طراحی سایت حرفه ای</h2></th>
-                <th scope="col"><h2>VIP پکیج طراحی سایت </h2></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row"><h3>امکانات و مزایا</h3></th>
-                <td><b>پرداخت آنلاین</b></td>
-                <td><b>پرداخت آنلاین</b></td>
-                <td>@<b>پرداخت آنلاین</b></td>
-              </tr>
-              <tr>
-                <th scope="row"><h3>سرعت بارگذاری سایت</h3></th>
-                <td>sdfvs</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-              </tr>
-              <tr>
-                <th scope="row"> <h3>کانفیگ سرور</h3></th>
-                <td>Larry</td>
-                <td>the Bird</td>
-                <td>@twitter</td>
-              </tr>
-            </tbody>
-          </table>
+    
+<section id="table">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col"> <h4>پکیج طراحی سایت معمولی</h4></th>
+        <th scope="col"><h4>پکیج طراحی سایت حرفه ای</h4></th>
+        <th scope="col"><h4>VIP پکیج طراحی سایت </h4></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row"><h4>امکانات و مزایا</h4></th>
+        <td>پرداخت آنلاین<br>پنل مدیریت</td>
+        <td>پرداخت آنلاین<br>پنل مدیریت<br>Authentication</td>
+        <td>پرداخت آنلاین<br>پنل مدیریت<br>ویرایش محتوا<br>Authentication</td>
+      </tr>
+      <tr>
+        <th scope="row"><h4>سرعت بارگذاری سایت</h4></th>
+        <td> 1 - 3  ثانیه </td>
+        <td> 0 - 2  ثانیه </td>
+        <td> 0 - 1  ثانیه </td>
+      </tr>
+      <tr>
+        <th scope="row"> <h4>کانفیگ سرور</h4></th>
+        <td><img style="width: 100%;" src="./apache.jpg" alt=""></td>
+        <td><img style="width: 30%;" src="./nginx.jpg" alt=""></td>
+        <td><img style="width: 50%;" src="./LiteSpeed-Web-Server.png" alt=""></td>
+      </tr>
+      <tr>
+        <th scope="row"><h4>تکنولوژی مورد استفاده</h4></th>
+        <td>Larry</td>
+        <td>the Bird</td>
+        <td>@twitter</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+        
 
 
     
