@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جزئیات ردیف</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            direction: rtl;
+            margin: 40px;
+        }
+        .detail-container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .detail-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .detail-container table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        td {
+            background-color: #ffffff;
+            color: #555;
+        }
+        .buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .buttons a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .buttons a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="detail-container">
+        <h1>جزئیات ردیف {{ row['id'] }}</h1>
+        <table>
+            <tr>
+                <th>نام پوزیشن</th>
+                <td>{{ row['position'] }}</td>
+            </tr>
+            <tr>
+                <th>نام</th>
+                <td>{{ row['name'] }}</td>
+            </tr>
+            <tr>
+                <th>نام خانوادگی</th>
+                <td>{{ row['lastName'] }}</td>
+            </tr>
+            <tr>
+                <th>جنسیت</th>
+                <td>{{ row['gender'] }}</td>
+            </tr>
+            <tr>
+                <th>نام پدر</th>
+                <td>{{ row['fatherName'] }}</td>
+            </tr>
+            <tr>
+                <th>کد ملی</th>
+                <td>{{ row['nationalCode'] }}</td>
+            </tr>
+            <tr>
+                <th>تاریخ تولد</th>
+                <td>{{ row['birthdate'] }}</td>
+            </tr>
+            <tr>
+                <th>استان محل تولد</th>
+                <td>{{ row['birthProvince'] }}</td>
+            </tr>
+            <tr>
+                <th>شهر محل تولد</th>
+                <td>{{ row['birthCity'] }}</td>
+            </tr>
+        </table>
+
+        <div class="buttons">
+            <a href="{{ url_for('home') }}" class="back-btn">بازگشت به صفحه اصلی</a>
+            <a href="{{ url_for('print_page', row_id=row['id']) }}" class="print-btn">پرینت جزئیات</a>
+        </div>
+    </div>
+
+</body>
+</html>
