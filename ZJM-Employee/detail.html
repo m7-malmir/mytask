@@ -3,103 +3,524 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <title>جزئیات ردیف</title>
-    <style>
-        body {
-            font-family: Tahoma, sans-serif;
-            direction: rtl;
-            margin: 40px;
-        }
-        .detail-container {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-        }
-        .detail-container table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .detail-container table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 12px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-        td {
-            background-color: #ffffff;
-            color: #555;
-        }
-        .buttons {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .buttons a {
-            display: inline-block;
-            margin: 0 10px;
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: white;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .buttons a:hover {
-            background-color: #0056b3;
-        }
-    </style>
+<style>
+    @font-face {
+	font-family: 'Yekan';
+	src: url( './Yekan.eot' );
+	src: url( './Yekan.eot?#iefix' ) format( 'embedded-opentype' ),
+		url( './Yekan.woff2' ) format( 'woff2' ),
+		url( './Yekan.woff' ) format( 'woff' ),
+		url( './Yekan.ttf' ) format( 'truetype' ),
+		url( './Yekan.svg#Yekan' ) format( 'svg' );
+	font-weight: normal;
+	font-style: normal;
+}
+    body {
+        margin: 0!important;
+        padding: 0!important;
+        font-family: Yekan!important;
+        font-size: 12px;
+        font-family: Tahoma, sans-serif;
+        direction: rtl;
+        margin: 40px;
+        background-color: #f7f7f7;
+    }
+    .detail-container {
+        background-color: #ffffff;
+        padding: 6px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    section h2 {
+        font-size: 22px;
+        color: #0056b3;
+        border-bottom: 3px solid #0056b3;
+        display: inline-block;
+        margin-bottom: 12px;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        letter-spacing: 1px;
+        padding-bottom: 5px;
+        transition: all 0.3s ease;
+    }
+
+    section h2:hover {
+        color: #003366;
+        border-color: #003366;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    section {
+       margin-top: 5px;
+    }
+    section h2 {
+        font-size: 18px;
+        color: #007BFF;
+        border-bottom: 2px solid #007BFF;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: auto;
+    }
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+    th, td {
+        padding: 2px;
+        text-align: center;
+    }
+    th {
+        background-color: #f2f2f2;
+        color: #333;
+    }
+    td {
+        background-color: #ffffff;
+        color: #555;
+    }
+    .buttons {
+        margin-top: 0px;
+        text-align: center;
+    }
+    .buttons a {
+        display: inline-block;
+        margin: 0 10px;
+        padding: 10px 20px;
+        background-color: #007BFF;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    .buttons a:hover {
+        background-color: #0056b3;
+    }
+    #header div{
+        background: #007BFF;
+        max-height: 75px;
+    }
+</style>
 </head>
 <body>
-
+<section id="header">
+    <div class="d-flex justify-content-center"><img class="img-fluid" src="./LOGO.png" alt=""></div>
+</section>
     <div class="detail-container">
-        <h1>جزئیات ردیف {{ row['id'] }}</h1>
+        <div class="row">
+            <div class="col-6">
+                <section>
+                    <h2>اطلاعات هویتی</h2>
+                    <table>
+                        <tr>
+                            <th>نام</th>
+                            <td>{{ row['name'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نام خانوادگی</th>
+                            <td>{{ row['lastName'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>جنسیت</th>
+                            <td>{{ row['gender'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نام پدر</th>
+                            <td>{{ row['fatherName'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>کد ملی</th>
+                            <td>{{ row['nationalCode'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شماره شناسنامه</th>
+                            <td>{{ row['birthCertificate'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاریخ تولد</th>
+                            <td>{{ row['birthdate'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>استان محل تولد</th>
+                            <td>{{ row['birthProvince'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شهر محل تولد</th>
+                            <td>{{ row['birthCity'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>استان محل صدور</th>
+                            <td>{{ row['issueProvince'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شهر محل صدور</th>
+                            <td>{{ row['issueCity'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6 right-->
+            <div class="col-6">
+                <section>
+                    <h2>اطلاعات تماس</h2>
+                    <table>
+                        <tr>
+                            <th>استان محل سکونت</th>
+                            <td>{{ row['livingProvince'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شهر محل سکونت</th>
+                            <td>{{ row['livingCity'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>آدرس</th>
+                            <td>{{ row['address'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>کدپستی</th>
+                            <td>{{ row['postalCode'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شماره ثابت</th>
+                            <td>{{ row['tel'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شماره همراه</th>
+                            <td>{{ row['mobile'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>ایمیل</th>
+                            <td>{{ row['email'] }}</td>
+                        </tr>
+                    </table>
+                </section><!--اطلاعات هویتی-->
+
+            </div><!--col6 left-->
+            <div class="col-6">
+                <section>
+                    <h2>وضعیت تأهل</h2>
+                    <table>
+                        <tr>
+                            <th>وضعیت تأهل</th>
+                            <td>{{ row['marrigeStatus'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نام همسر</th>
+                            <td>{{ row['partnerName'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نام خانوادگی همسر</th>
+                            <td>{{ row['partnerLastName'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>تحصیلات همسر</th>
+                            <td>{{ row['partnerEducation'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>شغل همسر</th>
+                            <td>{{ row['partnerJob'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>محل کار همسر</th>
+                            <td>{{ row['partnerWorkplace'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>تعداد فرزندان پسر</th>
+                            <td>{{ row['boysCount'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>تعداد فرزندان دختر</th>
+                            <td>{{ row['daughterCount'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6-->
+            <section>
+                <h2>مهارت‌ها</h2>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="width: 48%;">
+                        <table>
+                            <tr>
+                                <th>نام نرم‌افزار</th>
+                            </tr>
+                            <tr>
+                                <td>{{ row['software1'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ row['software2'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ row['software3'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ row['software4'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ row['software5'] }}</td>
+                            </tr>
+                        </table>
+                    </div>
+            
+                    <div style="width: 48%;">
+                        <table>
+                            <tr>
+                                <th>نام زبان</th>
+                                <th>سطح مهارت</th>
+                            </tr>
+                            <tr>
+                                <td>{{ row['language1'] }}</td>
+                                <td>{{ row['languageLevel1'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ row['language2'] }}</td>
+                                <td>{{ row['languageLevel2'] }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <div class="col-6">
+                <section>
+                    <h2>سوابق تحصیلی</h2>
+                    <table>
+                        <tr>
+                            <th>مقطع تحصیلی</th>
+                            <th>رشته و گرایش</th>
+                            <th>نام دانشگاه</th>
+                            <th>محل تحصیل</th>
+                            <th>تاریخ شروع تحصیل</th>
+                            <th>تاریخ پایان تحصیل</th>
+                            <th>معدل</th>
+                        </tr>
+                        <tr>
+                            <td>{{ row['academicLevel1'] }}</td>
+                            <td>{{ row['field1'] }}</td>
+                            <td>{{ row['university1'] }}</td>
+                            <td>{{ row['universityPlace1'] }}</td>
+                            <td>{{ row['educationStartDate1'] }}</td>
+                            <td>{{ row['educationEndDate1'] }}</td>
+                            <td>{{ row['GPA1'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ row['academicLevel2'] }}</td>
+                            <td>{{ row['field2'] }}</td>
+                            <td>{{ row['university2'] }}</td>
+                            <td>{{ row['universityPlace2'] }}</td>
+                            <td>{{ row['educationStartDate2'] }}</td>
+                            <td>{{ row['educationEndDate2'] }}</td>
+                            <td>{{ row['GPA2'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6-->
+
+            <div class="col-6">
+                <section>
+                    <h2>دوره‌های آموزشی</h2>
+                    <table>
+                        <tr>
+                            <th>عنوان دوره</th>
+                            <th>نام موسسه</th>
+                            <th>مدت زمان</th>
+                            <th>تاریخ برگزاری</th>
+                            <th>گواهی پایان دوره</th>
+                        </tr>
+                        <tr>
+                            <td>{{ row['educationTitle1'] }}</td>
+                            <td>{{ row['educationCenter1'] }}</td>
+                            <td>{{ row['educationDuration1'] }}</td>
+                            <td>{{ row['educationDate1'] }}</td>
+                            <td>{{ row['educationCertificate1'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ row['educationTitle2'] }}</td>
+                            <td>{{ row['educationCenter2'] }}</td>
+                            <td>{{ row['educationDuration2'] }}</td>
+                            <td>{{ row['educationDate2'] }}</td>
+                            <td>{{ row['educationCertificate2'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6-->
+            <div class="col-6">
+
+            </div><!--col6-->
+            <div class="col-6">
+                <section>
+                    <h2>سایر موارد</h2>
+                    <table>
+                        <tr>
+                            <th>تاریخ آمادگی شروع به همکاری</th>
+                            <td>{{ row['readyDate'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>آیا بیماری خاصی دارید؟</th>
+                            <td>{{ row['sympthom'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نوع بیماری</th>
+                            <td>{{ row['sympthomType'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>پوزیشن مورد نظر</th>
+                            <td>{{ row['goalPosition'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>آیا از بستگان شما کسی در مارینا مشغول به کار است؟</th>
+                            <td>{{ row['familyEmployee'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نام بستگان</th>
+                            <td>{{ row['familyEmployeeName'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نام خانوادگی بستگان</th>
+                            <td>{{ row['familyEmployeeLastName'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>نحوه یافتن موقعیت شغلی</th>
+                            <td>{{ row['source'] }}</td>
+                        </tr>
+                        <tr>
+                            <th>حقوق درخواستی</th>
+                            <td>{{ row['wantedSalary'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6-->
+            <div class="col-6">
+                <section>
+                    <h2>معرفین</h2>
+                    <table>
+                        <tr>
+                            <th>نام</th>
+                            <th>نام خانوادگی</th>
+                            <th>نسبت</th>
+                            <th>شغل</th>
+                            <th>تلفن همراه</th>
+                            <th>آدرس</th>
+                        </tr>
+                        <tr>
+                            <td>{{ row['refrenceName1'] }}</td>
+                            <td>{{ row['refrenceLastName1'] }}</td>
+                            <td>{{ row['relation1'] }}</td>
+                            <td>{{ row['refrenceJob1'] }}</td>
+                            <td>{{ row['refrenceMobile1'] }}</td>
+                            <td>{{ row['refrenceAddress1'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ row['refrenceName2'] }}</td>
+                            <td>{{ row['refrenceLastName2'] }}</td>
+                            <td>{{ row['relation2'] }}</td>
+                            <td>{{ row['refrenceJob2'] }}</td>
+                            <td>{{ row['refrenceMobile2'] }}</td>
+                            <td>{{ row['refrenceAddress2'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6-->
+            <div class="col-12">
+                <section>
+                    <h2>سوابق شغلی</h2>
+                    <table>
+                        <tr>
+                            <th>نام سازمان</th>
+                            <th>سمت</th>
+                            <th>تاریخ شروع همکاری</th>
+                            <th>تاریخ پایان همکاری</th>
+                            <th>نام مدیر مستقیم</th>
+                            <th>شماره تماس مدیر مستقیم</th>
+                            <th>آخرین حقوق دریافتی</th>
+                            <th>علت ترک کار</th>
+                        </tr>
+                        <tr>
+                            <td>{{ row['lastCompany1'] }}</td>
+                            <td>{{ row['lastPosition1'] }}</td>
+                            <td>{{ row['lastCooperationStartDate1'] }}</td>
+                            <td>{{ row['lastCooperationEndDate1'] }}</td>
+                            <td>{{ row['lastDirectManager1'] }}</td>
+                            <td>{{ row['lastDirectManagerMobile1'] }}</td>
+                            <td>{{ row['lastSalary1'] }}</td>
+                            <td>{{ row['leavingReason1'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ row['lastCompany2'] }}</td>
+                            <td>{{ row['lastPosition2'] }}</td>
+                            <td>{{ row['lastCooperationStartDate2'] }}</td>
+                            <td>{{ row['lastCooperationEndDate2'] }}</td>
+                            <td>{{ row['lastDirectManager2'] }}</td>
+                            <td>{{ row['lastDirectManagerMobile2'] }}</td>
+                            <td>{{ row['lastSalary2'] }}</td>
+                            <td>{{ row['leavingReason2'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ row['lastCompany3'] }}</td>
+                            <td>{{ row['lastPosition3'] }}</td>
+                            <td>{{ row['lastCooperationStartDate3'] }}</td>
+                            <td>{{ row['lastCooperationEndDate3'] }}</td>
+                            <td>{{ row['lastDirectManager3'] }}</td>
+                            <td>{{ row['lastDirectManagerMobile3'] }}</td>
+                            <td>{{ row['lastSalary3'] }}</td>
+                            <td>{{ row['leavingReason3'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+                <section>
+                    <h2>سوابق تحصیلی</h2>
+                    <table>
+                        <tr>
+                            <th>مقطع تحصیلی</th>
+                            <th>رشته و گرایش</th>
+                            <th>نام دانشگاه</th>
+                            <th>محل تحصیل</th>
+                            <th>تاریخ شروع تحصیل</th>
+                            <th>تاریخ پایان تحصیل</th>
+                            <th>معدل</th>
+                        </tr>
+                        <tr>
+                            <td>{{ row['academicLevel1'] }}</td>
+                            <td>{{ row['field1'] }}</td>
+                            <td>{{ row['university1'] }}</td>
+                            <td>{{ row['universityPlace1'] }}</td>
+                            <td>{{ row['educationStartDate1'] }}</td>
+                            <td>{{ row['educationEndDate1'] }}</td>
+                            <td>{{ row['GPA1'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ row['academicLevel2'] }}</td>
+                            <td>{{ row['field2'] }}</td>
+                            <td>{{ row['university2'] }}</td>
+                            <td>{{ row['universityPlace2'] }}</td>
+                            <td>{{ row['educationStartDate2'] }}</td>
+                            <td>{{ row['educationEndDate2'] }}</td>
+                            <td>{{ row['GPA2'] }}</td>
+                        </tr>
+                    </table>
+                </section>
+            </div><!--col6-->
+            <div class="col-6"></div><!--col6-->
+        </div><!--row-->
+        <!-- <h1>اطلاعات {{ row['name']+" "+ row['lastName']}}</h1>
         <table>
             <tr>
                 <th>نام پوزیشن</th>
                 <td>{{ row['position'] }}</td>
             </tr>
             <tr>
-                <th>نام</th>
-                <td>{{ row['name'] }}</td>
+                <th>تاریخ شروع پاسخگویی</th>
+                <td>{{ row['createdDate'] }}</td>
             </tr>
             <tr>
-                <th>نام خانوادگی</th>
-                <td>{{ row['lastName'] }}</td>
+                <th>زمان شروع پاسخگویی</th>
+                <td>{{ row['createdTime'] }}</td>
             </tr>
-            <tr>
-                <th>جنسیت</th>
-                <td>{{ row['gender'] }}</td>
-            </tr>
-            <tr>
-                <th>نام پدر</th>
-                <td>{{ row['fatherName'] }}</td>
-            </tr>
-            <tr>
-                <th>کد ملی</th>
-                <td>{{ row['nationalCode'] }}</td>
-            </tr>
-            <tr>
-                <th>تاریخ تولد</th>
-                <td>{{ row['birthdate'] }}</td>
-            </tr>
-            <tr>
-                <th>استان محل تولد</th>
-                <td>{{ row['birthProvince'] }}</td>
-            </tr>
-            <tr>
-                <th>شهر محل تولد</th>
-                <td>{{ row['birthCity'] }}</td>
-            </tr>
-        </table>
-
+        </table> -->
         <div class="buttons">
             <a href="{{ url_for('home') }}" class="back-btn">بازگشت به صفحه اصلی</a>
             <a href="{{ url_for('print_page', row_id=row['id']) }}" class="print-btn">پرینت جزئیات</a>
@@ -108,3 +529,4 @@
 
 </body>
 </html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
