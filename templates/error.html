@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطا</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            direction: rtl;
+            margin: 40px;
+            background-color: #f7f7f7;
+        }
+        .error-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #d9534f; /* رنگ قرمز برای عنوان خطا */
+        }
+        p {
+            color: #555;
+            font-size: 18px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <h1>خطا در پردازش فایل CSV</h1>
+        <p>متاسفانه خطایی در پردازش فایل CSV پیش آمده است. لطفاً فایل را بررسی کرده یا مجدداً تلاش کنید.</p>
+
+        <!-- دکمه بازگشت به صفحه اصلی -->
+        <a href="{{ url_for('home') }}" class="back-btn">بازگشت به صفحه اصلی</a>
+    </div>
+
+</body>
+</html>
