@@ -1,0 +1,74 @@
+Package Report
+
+-----------------------------------------------------------------------------
+Document:
+Name: Birthday -F .ai
+Color Mode: RGB color
+Color Profile: none
+Ruler Units: centimeters
+Artboard Dimensions: 14.5304 cm x 14.5 cm
+Show Images in Outline Mode: OFF
+Highlight Substituted Fonts: OFF
+Highlight Substituted Glyphs: OFF
+Preserve Text Editability
+Simulate Colored Paper: OFF
+
+-----------------------------------------------------------------------------
+Spot Color Objects:
+PANTONE 108 C (Lab)
+PANTONE 114 C (Lab)
+PANTONE 1375 C (Lab)
+PANTONE 1505 C (Lab)
+PANTONE 185 C (Lab)
+PANTONE 1945 C (Lab)
+PANTONE 239 C (Lab)
+PANTONE 244 C (Lab)
+PANTONE 247 C (Lab)
+PANTONE 252 C (Lab)
+PANTONE 286 C (Lab)
+PANTONE 3258 C (Lab)
+PANTONE 352 C (Lab)
+PANTONE 357 C (Lab)
+PANTONE 382 C (Lab)
+PANTONE 634 C (Lab)
+PANTONE 639 C (Lab)
+PANTONE 7416 C (Lab)
+PANTONE 7479 C (Lab)
+PANTONE 7679 C (Lab)
+PANTONE 803 C (Lab)
+PANTONE Warm Red C (Lab)
+
+-----------------------------------------------------------------------------
+Missing Fonts:NONE
+
+-----------------------------------------------------------------------------
+Protected Fonts that were not packaged:NONE
+
+-----------------------------------------------------------------------------
+Fonts:
+Montserrat Regular (TrueType)
+Montserrat Medium (TrueType)
+Montserrat Bold (TrueType)
+Montserrat SemiBold (TrueType)
+Dana Regular (TrueType)
+Dana Medium (TrueType)
+Dana DemiBold (TrueType)
+Dana Bold (TrueType)
+Dana Black (TrueType)
+
+-----------------------------------------------------------------------------
+Embedded Fonts:
+NONE
+
+-----------------------------------------------------------------------------
+Missing Links:
+
+/Volumes/Data Store/Works/Marina/Ocassion Cards 1403/Occasion Cards 1403 - V9_Folder/Links/DSC_1701 copy.jpg
+Type: Other
+
+/Volumes/Data Store/Works/Marina/Ocassion Cards 1403/Occasion Cards 1403 - V9_Folder/Links/DSC_1701 copy.jpg
+Type: Other
+
+-----------------------------------------------------------------------------
+Linked Images:
+NONE
