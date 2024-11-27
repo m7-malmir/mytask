@@ -103,6 +103,70 @@ $(function(){
 						$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
 					}
 				);
+			}else{
+				$("#ButtonControl4").hide();
+				$("#ButtonControl1").show();
+				$("#ButtonControl2").show();
+				FormManager.readDescs({Where: "Process_ID = " + pk + " AND Process = 'CDS'"},
+					function(list)
+					{
+						$("#ButtonControl13").val("نظرات و توضیحات (" + list.length + ")");
+					},
+					function(err)
+					{
+						hideLoading();
+						alert(err);
+					}
+				);
+				$("#ButtonControl1").show();
+				readFromData({Where: primaryKeyName + " = " + pk},
+					function(dataXml)
+					{
+						PersonnelNO = dataXml.find("row:first").find(">col[name='PersonnelNO']").text();
+						ProcessStatus = dataXml.find("row:first").find(">col[name='ProcessStatus']").text();
+						
+					
+						//alert(JSON.stringify(ProcessStatus));
+						p_status = ""
+						if(ProcessStatus == 2){
+							p_status = "بررسی درخواست حسن انجام کار توسط مدیر مستقیم";
+						}else if(ProcessStatus == 3){
+							p_status = "بررسی درخواست حسن انجام کار توسط معاون منابع انسانی";
+						}else if(ProcessStatus == 4){
+							p_status = "بررسی درخواست حسن انجام کار توسط جبران خدمات و صدور گواهی در صورت تایید";
+						}
+						$("#LabelControl13").text(p_status);
+						var params = {Where: "UserName = '" + PersonnelNO.toString() + "' AND EnabledRole = 1"};
+						BS_GetUserInfo.Read(params
+							, function(data)
+							{
+								var dataXml = null;
+								if($.trim(data) != "")
+								{
+									dataXml = $.xmlDOM(data);
+									fullName = dataXml.find("row:first").find(">col[name='fullName']").text();
+									RoleName = dataXml.find("row:first").find(">col[name='RoleName']").text();
+									ServiceLocation = dataXml.find("row:first").find(">col[name='ServiceLocation']").text();
+									UnitsName = dataXml.find("row:first").find(">col[name='UnitsName']").text();
+									UserName = dataXml.find("row:first").find(">col[name='UserName']").text();
+									RoleId = dataXml.find("row:first").find(">col[name='RoleId']").text();
+									Mobile = dataXml.find("row:first").find(">col[name='Mobile']").text();
+									ServiceLocationId = dataXml.find("row:first").find(">col[name='ServiceLocation_ID']").text();
+									
+									$("#txtFullName").val(fullName);
+									$("#txtGuranteed").val(fullName);
+									$("#txtServiceLoc").val(ServiceLocation);
+									$("#txtPersonnel").val(UserName);
+									$("#txtUnits").val(UnitsName);
+									$("#txtPosition").val(RoleName);
+									$("#txtMobile").val(Mobile);
+								}
+							}, function(err){
+								alert(JSON.stringify("خطا در دریافت اطلاعات درخواست! لطفا با پشتیبان سامانه تماس بگیرید."));
+							}
+						);
+					}
+				);
 			}
 		}
 
