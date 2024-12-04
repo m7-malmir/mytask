@@ -6,26 +6,49 @@
     <title>Document</title>
 </head>
 <style>
+
 #main{
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     }
  #header{
     background-color:#EE76AB;
-    min-height: 150px;
-    width: 100%;
-    display: block;
-    
+    min-height: 500px;
+    width: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 40%;
+    z-index: 999999;
+    position: relative;
+
  }   
+ #sun{
+    position: absolute;
+    right: 0;
+    
+ }
+ #cake{
+    position: absolute;
+    right: 0;
+ }
  #content{
     background-color: #0091C7;
-    min-height: 150px;
+    min-height: 390px;
+    width: 50%;
+    margin-top: -240px;
  }
 </style>
 <body>
     <section id="main">
-        <div class="header"></div><!--header-->
-        <div class="content"></div><!--content-->
+        <div id="header">
+            <div id=""><img style="width: 80%;" src="./PNG&PDF/sun.png" alt="" id="sun"></div>
+            <div id=""><img style="width: 80%;" src="./PNG&PDF/cake.png" alt="" id="cake"></div>
+            <div id=""><img src="" alt="" id="Balloon-y"></div>
+            <div id=""><img src="" alt="" id="Balloon-w"></div>
+            <div id=""><img src="" alt="" id="star"></div>
+        </div><!--header-->
+        <div id="content"></div><!--content-->
     </section>
 </body>
 </html>
