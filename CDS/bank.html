@@ -27,16 +27,17 @@
 
     body {
         font-family: 'BNAZANIN';
+        font-size: 21px;
     }
 
     #header {
-        min-height: 200px;
+        min-height: 100px;
     }
 
     #header {
         display: flex;
         justify-content: space-between;
-        width: 1100px;
+        width: 600px;
         margin: 0 auto;
     }
 
@@ -46,6 +47,9 @@
         width: 12%;
         text-align: right;
         justify-content: center;
+		margin-left: 5rem;
+        text-wrap-mode: nowrap;
+        direction: rtl;
     }
 
     #header div:nth-child(2) {
@@ -57,33 +61,34 @@
     }
 
     #content {
-        width: 1100px;
+        width: 600px;
         margin: 0 auto;
     }
 
     #content div:nth-child(1) {
-        margin-top: 20px;
+        margin-top: 3rem;
         display: flex;
         justify-content: center;
     }
 
     #content div:nth-child(2) {
         text-align: right;
-        margin-top: 7rem;
+        margin-top: 5rem;
     }
-
     #content div:nth-child(2) p {
         text-align: justify;
         direction: rtl;
-        line-height: 3rem;
+        line-height: 2.5rem;
     }
-
     #content div:nth-child(3) {
         display: flex;
         justify-content: normal;
         margin-left: 60px;
         text-align: center;
+        margin-top: 2rem;
+        font-size: 24px!important;
     }
+    @page { size: A5 } 
 </style>
 
 <body>
