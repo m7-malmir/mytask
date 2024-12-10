@@ -15,7 +15,7 @@ body {
   font-family: 'Dana', Montserrat ;
 }
 #content{
-    background-image: url('./PNG&PDF/sample.png');
+    background-image: url('./sample.png');
     background-size: contain;
     background-repeat: no-repeat;
     width: 100%;
@@ -31,15 +31,23 @@ body {
     z-index: 9999;
     left: 10rem;
 }
+.flex-column{
+    display: flex;
+    flex-direction: column;
+}
 </style>
 <body>
-    <div id="content">
-        <div id="font">
-            <div>HAPPY BIRTHDAY!</div></br>
-            <div>Dear MOHAMMAD</div></br>
-            <div>we wish you a very wonderful birthday</div>
+    <section id="content">
+        <div class="flex-column">
+            <div></div>
+            <div></div>
+            <div id="font">
+                <div>HAPPY BIRTHDAY!</div></br>
+                <div>Dear MOHAMMAD</div></br>
+                <div>we wish you a very wonderful birthday</div>
         </div><!--font-->
-    </div>
+        </div><!--flex column-->
+    </section>
 
 </body>
 </html>
