@@ -121,8 +121,12 @@
 
 // console.log(todoFilter); //return regular array
 
+/* conditions  */
 
-
+const='10';
+if (x==10) {
+    console
+}
 
 
 
