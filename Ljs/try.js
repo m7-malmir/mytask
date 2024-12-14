@@ -64,23 +64,23 @@
 //person.email='m.malmir@gmail.com';
 // console.log(city);
 
-const todos=[
-    {
-        id:1,
-        text:'Take out trash',
-        isCompleted:true
-    },
-    {
-        id:2,
-        text:'get ticket ',
-        isCompleted:false
-    },
-    {
-        id:3,
-        text:'do the lundry',
-        isCompleted:false
-    }
-];
+// const todos=[
+//     {
+//         id:1,
+//         text:'Take out trash',
+//         isCompleted:true
+//     },
+//     {
+//         id:2,
+//         text:'get ticket ',
+//         isCompleted:false
+//     },
+//     {
+//         id:3,
+//         text:'do the lundry',
+//         isCompleted:false
+//     }
+// ];
 // console.log(todos[1].text);
 
 // const todoJSON=JSON.stringify(todos);
@@ -97,7 +97,35 @@ const todos=[
 //     i++;
 // }
 
-for (let i = 0; i < todos.length; i++) {
-   console.log(todos[i]);
-    
-}
+// for (let i = 0; i < todos.length; i++) {
+//    console.log(todos[i].text);
+// }
+// for(let todo of todos){
+//     console.log(todo.text);
+// }
+
+//foreach , map, filter
+//todos.forEach(function(todo){
+    //console.log(todo.text);
+//});
+// const todoText = todos.map(function(todo){
+//     return todo.text;
+// });
+
+// console.log(todoText); //return regular array
+// const todoFilter = todos.filter(function(todo){
+//     return todo.isCompleted===false;
+// }).map(function(todo){
+//     return todo.text;
+// });//Manipulate array
+
+// console.log(todoFilter); //return regular array
+
+
+
+
+
+
+
+
+
