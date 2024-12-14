@@ -123,10 +123,33 @@
 
 /* conditions  */
 
-const='10';
-if (x==10) {
-    console
+const x='10';
+//x>10 ? console.log('g t 10') :  console.log('l t 10');
+// if (x>10) {
+//     console.log('x great than 10');
+// }else{
+//     console.log('x less than 10');
+// }
+
+// function sum(num1,num2){
+//     return  num1+num2;
+// }
+// const sum = (num1,num2)=>{return num1+num2}
+// console.log(sum(2,3));
+
+
+// constructor function
+function Person(firstName,lastName,dob){
+    this.firstName=firstName;
+    this.lastName=lastName;
+    this.dob=dob;
 }
+//Imstamtiate object
+const person1=new Person();
+person1.firstName='ali';
+person1.lastName='malmir';
+person1.dob='18-04-1991';
+console.log(person1.dob.getFullYear());
 
 
 
