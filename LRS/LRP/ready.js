@@ -2,7 +2,7 @@ var $form;
 var currentActorId;
 var html_;
 var ProcessStatus;
-$("#PanelControl2").css("display","none");
+
 $(function(){
 	$form = (function()
 	{
@@ -53,14 +53,14 @@ $(function(){
 			var now = new Date();
 			//resDate2 = "2024-09-22 07:04:00"; //resDate[0] + '-' + resDate[1] + '-' + resDate[2] + " 23:59:00";
 			if(!inEditMode){
-				
+				$("#PanelControl2").css("display","none");
 				p_status = "فرم ثبت درخواست";
 				$("#LabelControl13").text(p_status);
 				UserService.GetCurrentActor(true,
 					function(data){
 						hideLoading();
 						var xmlActor = $.xmlDOM(data);
-						currentActorId = xmlActor.finhttp://www.ilenc.ir d('actor').attr('pk');
+						currentActorId = xmlActor.find('actor').attr('pk');
 						var params = {Where: "ActorId = " + currentActorId};
 						BS_GetUserInfo.Read(params
 							, function(data)
@@ -279,17 +279,15 @@ $(function(){
 			showLoading();
 			var params = $.getFormDataValues(bindingSourceName);
 			params.CreatorActor_ID = currentActorId;
-			params.LoanAmount = rcommafy($("#txtLoanAmount").val());
-			params.LoanInstallments = rcommafy($("#txtLoanInstallments").val());
+			params.LoanNeededAmount = rcommafy($("#txtLoanAmount").val());
 			params.PersonnelNO = $("#txtPersonnel").val();
-			params.MonthlyTotalCommitmentRatio = null;
 			insertFromData(params,
 				function(dataXml)
 				{
 					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
 					inEditMode = true;
-					WorkflowService.RunWorkflow("ZJM.SDS.CDS.CertificateOfDeductionFromSalary",
-					    '<Content><Id>'+pk+'</Id><OOF>'+ServiceLocationId+'</OOF></Content>',
+					WorkflowService.RunWorkflow("ZJM.LRP.LoanRequestProcess",
+					    '<Content><Id>'+pk+'</Id></Content>',
 					    true,
 					    function(data)
 					    {
@@ -347,6 +345,7 @@ $(function(){
 		{
 			showLoading();
 		}
+
 		function validateForm(onSuccess, onError)
 		{
 			try
@@ -365,6 +364,7 @@ $(function(){
 				}
 			}
 		}
+		
 		return {
 			init: init,
 			getPK: getPK,

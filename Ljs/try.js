@@ -144,12 +144,14 @@ function Person(firstName,lastName,dob){
     this.lastName=lastName;
     this.dob=dob;
 }
+Person.prototype.getBirthYear=function () {
+    return `${this.firstName} ${this.lastName}`;
+}
 //Imstamtiate object
-const person1=new Person();
-person1.firstName='ali';
-person1.lastName='malmir';
-person1.dob='18-04-1991';
-console.log(person1.dob.getFullYear());
+const person1=new Person('ali','malmir','18-06-1991');
+const person2=new Person('mohammad','azizi','28-04-2008');
+console.log(person2.getBirthYear());
+console.log(person1);
 
 
 
