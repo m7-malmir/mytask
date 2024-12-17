@@ -139,19 +139,36 @@ const x='10';
 
 
 // constructor function
-function Person(firstName,lastName,dob){
-    this.firstName=firstName;
-    this.lastName=lastName;
-    this.dob=dob;
-}
-Person.prototype.getBirthYear=function () {
-    return `${this.firstName} ${this.lastName}`;
-}
-//Imstamtiate object
-const person1=new Person('ali','malmir','18-06-1991');
-const person2=new Person('mohammad','azizi','28-04-2008');
-console.log(person2.getBirthYear());
-console.log(person1);
+// function Person(firstName,lastName,dob){
+//     this.firstName=firstName;
+//     this.lastName=lastName;
+//     this.dob=dob;
+// }
+// Person.prototype.getBirthYear=function () {
+//     return `${this.firstName} ${this.lastName}`;
+// }
+//class ES6
+// class Person{
+//     constructor(firstName,lastName,dob){
+//         this.firstName=firstName;
+//         this.lastName=lastName;
+//         this.dob=dob;  
+//     }
+//     getBirthYear(){
+//         return `${this.dob}`;
+//     }
+// }
+
+// //Instantiate object
+// const person1=new Person('ali','malmir','18-06-1991');
+// const person2=new Person('mohammad','azizi','28-04-2008');
+// console.log(person1.getBirthYear());
+// console.log(person1);
+
+
+//DOM
+
+
 
 
 
