@@ -168,8 +168,44 @@ const x='10';
 
 //DOM
 
+// single elements
+// const form=document.getElementById('my-form');
+// const form2=document.querySelector('.container');
+// console.log(form2);
 
 
+// multiple element
+// console.log(document.querySelectorAll('.item'));
+// console.log(document.getElementsByClassName('item'));
+//console.log(document.getElementsByTagName('li'));
+
+
+const myForm=document.querySelector('#my-form');
+const nameInput=document.querySelector('#name');
+const emailInput=document.querySelector('#email');
+const msg=document.querySelector('.msg');
+const userList=document.querySelector('#users');
+
+myForm.addEventListener('submit',onsubmit);
+
+function onsubmit(e) {
+    e.preventDefault();
+    if (nameInput.value==='' || emailInput.value==='') {
+        msg.classList.add('error');
+        msg.innerHTML='please enter all fields';
+        setTimeout(()=>msg.remove(),3000);
+
+    }else{
+       const li=document.createElement('li');
+       li.appendChild(document.createTextNode(`${nameInput.value} : ${emailInput.value}`));
+
+       userList.appendChild(li);
+
+       //clear filed
+       nameInput='';
+       emailInput='';
+    }
+}
 
 
 
