@@ -198,14 +198,13 @@ function onsubmit(e) {
     }else{
        const li=document.createElement('li');
        li.appendChild(document.createTextNode(`${nameInput.value} : ${emailInput.value}`));
-
        userList.appendChild(li);
-
        //clear filed
        nameInput='';
        emailInput='';
     }
 }
+//console.log(typeof null);
 
 
 
