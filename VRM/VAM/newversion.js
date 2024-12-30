@@ -110,14 +110,11 @@ $(function(){
 				);
 			} else {
 				// کد مربوط به حالت ویرایش
-				readData();
 			}
 		}
 
 		function bindEvents() {
-			$("#saveButton").click(function() { // فرض بر این است که دکمه ذخیره با id "saveButton" مشخص شده است
-				saveData();
-			});
+			// کد مربوط به رویدادها
 		}
 
 		function readData() {
@@ -132,29 +129,8 @@ $(function(){
 			return inEditMode;
 		}
 
-		function saveData() {
-			var params = {
-				CarName: $("#CarName").val(),
-				ModelYear: $("#CarModel").val(),
-				Color: $("#CarColor").val(),
-				SS: $("#CarSS").val(),
-				CarNO: $("#CarNo").val(),
-				Status: $("#txtPosition").val(),
-				CreatorActor_ID: currentActorId,
-				PersonnelNO: PersonnelNO,
-				ServiceLocationId: ServiceLocationId,
-				RequestType: RequestType,
-				WithRole: WithRole
-			};
-
-			insertFromData(params, function(dataXml) {
-				// پردازش موفقیت‌آمیز
-				alert("اطلاعات با موفقیت ذخیره شد.");
-				closeWindow({OK: true, Result: null}); // بستن پنجره
-			}, function(err) {
-				// پردازش خطا
-				alert("خطا در ذخیره اطلاعات: " + err);
-			});
+		function saveData(callback) {
+			// کد مربوط به ذخیره داده‌ها
 		}
 
 		function insertData(callback) {
