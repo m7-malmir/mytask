@@ -1,0 +1,35 @@
+	readEntity: function(jsonParams, onSuccess, onError)
+	{
+		BS_InsertCar.Read(jsonParams
+			, function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					var list = [];
+					dataXml = $.xmlDOM(data);
+				dataXml.find("row").each(
+					function()
+					{
+						list.push
+						({
+							CarName: $(this).find("col[name='CarName']").text();
+							alert(JSON.stringify(CarName));
+						});
+						
+					}
+				);
+				if($.isFunction(CarOrgType))
+				{
+					onSuccess(list);
+					
+				}
+					
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, onError
+		);
+	},

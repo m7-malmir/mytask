@@ -8,7 +8,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 <script>
 $("#sub").click(function(){
-var str =$("#demo").val();
+var str =$("#ComboBoxControl2").val();
 var res = str.substring(2,4);
 switch (res) {
   case '01':
@@ -114,9 +114,9 @@ switch (res) {
     day = "";
 }
 
-    var res0 = str.substring(0,2);
-    var res3 = str.substring(4,7);
-    var res2 = str.substring(7,9);
+    var res0 = $("#TextBoxControl3").val();
+    var res3 = $("#TextBoxControl1").val();
+    var res2 = $("#TextBoxControl2").val();
     var result=res0+day+res3+res2;
     //alert(result);
 });
