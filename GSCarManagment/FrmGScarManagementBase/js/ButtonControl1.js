@@ -1,5 +1,3 @@
-
-
 var NewOwnerNO = '';
 
 $("#ButtonControl1").click(function() {
@@ -11,7 +9,6 @@ $("#ButtonControl1").click(function() {
 		if($("#dtStart").val() === '' || $("#dtStart2").val() === ''){
 		alert(JSON.stringify('لطفا تاریخ تحویل دهنده و تحویل گیرنده را مشخص کنید!!!'));	
 	}
-
     // تنظیم پارامترهای ارسال
 	var gdate = $("#dtStart").attr('gdate').split("/");
 	var gdate1 = gdate[2]+'-'+gdate[0]+'-'+gdate[1];
@@ -53,4 +50,3 @@ $("#ButtonControl1").click(function() {
         }
     );
 });
-
