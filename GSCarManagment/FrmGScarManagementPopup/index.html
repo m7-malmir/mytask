@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فرم ثبت خودرو</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: #e9f3f3;
+            border-radius: 8px;
+            padding: 20px;
+            width: 60%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container div {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .row div {
+            flex: 1;
+        }
+
+        .plate-number {
+            display: flex;
+            gap: 5px;
+        }
+
+        .plate-number input {
+            text-align: center;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #47a5c6;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #3688a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form>
+            <div class="row">
+                <div>
+                    <label for="car-name">نام خودرو</label>
+                    <input type="text" id="CarName" name="car-name">
+                </div>
+                <div>
+                    <label for="car-year">مدل (سال تولید)</label>
+                    <input type="text" id="CarModel" name="car-year">
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    <label for="car-color">رنگ</label>
+                    <input type="text" id="CarColor" name="car-color">
+                </div>
+                <div>
+                    <label for="car-vin">شماره شاسی</label>
+                    <input type="text" id="CarSS" name="car-vin">
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    <label for="car-type">نوع خودرو سازمانی</label>
+                    <select id="CarOrgType" name="car-type">
+                        <option value="benefit">Benefit</option>
+                        <option value="benefit">job</option>
+                        <option value="benefit">temporary</option>
+                        <!-- Add other options here -->
+                    </select>
+                </div>
+                <div>
+                    <label for="car-status">فعال / غیرفعال</label>
+                    <select id="Status" name="car-status">
+                        <option value="active">فعال</option>
+                        <option value="inactive">غیرفعال</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label>شماره پلاک</label>
+                <div class="plate-number">
+                    <input id="TextBoxControl2" type="text" maxlength="2" placeholder="۹۹">
+                    <input id="TextBoxControl1" type="text" maxlength="3" placeholder="۹۹۹">
+                    <select id="ComboBoxControl2">
+                        <option value="الف">الف</option>
+                        <!-- Add other options here -->
+                    </select>
+                    <input id="TextBoxControl3" type="text" maxlength="2" placeholder="۹۹">
+                </div>
+            </div>
+            <button id="RegisterCar" type="submit">ثبت خودرو</button>
+        </form>
+    </div>
+</body>
+</html>
