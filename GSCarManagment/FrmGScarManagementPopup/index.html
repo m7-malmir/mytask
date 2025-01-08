@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.js" integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
     <title>فرم ثبت خودرو</title>
     <style>
         body {
@@ -124,7 +125,10 @@
                     <input id="TextBoxControl2" type="text" maxlength="2" placeholder="۹۹">
                     <input id="TextBoxControl1" type="text" maxlength="3" placeholder="۹۹۹">
                     <select id="ComboBoxControl2">
-                        <option value="الف">الف</option>
+                        <option value="01">الف</option>
+                        <option value="02">ب</option>
+                        <option value="03">پ</option>
+                        <option value="04">ت</option>
                         <!-- Add other options here -->
                     </select>
                     <input id="TextBoxControl3" type="text" maxlength="2" placeholder="۹۹">
@@ -135,3 +139,20 @@
     </div>
 </body>
 </html>
+<script>
+$(document).ready(function() {
+      // مقدار متغیر
+      let userValue = "01"; // مقدار مورد نظر
+
+      // یافتن گزینه و تنظیم مقدار
+      $('#ComboBoxControl2 option').each(function() {
+        if ($(this).attr('value') === userValue) {
+          $(this).attr('selected', true); // انتخاب گزینه
+        }
+      });
+
+      // برای اطمینان مقدار انتخاب‌شده را در کنسول نمایش می‌دهیم
+      console.log('Selected value:', $('#ComboBoxControl2').find(':selected').val());
+    });
+
+</script>
