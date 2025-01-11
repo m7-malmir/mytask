@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Animation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+    /* تنظیمات کلی صفحه */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background-color: black; /* پس‌زمینه سیاه */
+  overflow: hidden; /* جلوگیری از اسکرول */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+}
+
+.background {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.note {
+  font-size: 50px;
+  position: absolute;
+  animation: move 5s infinite ease-in-out;
+  color: white;
+  opacity: 0;
+}
+
+@keyframes move {
+  0% {
+    transform: translateX(-100px) rotate(0deg); /* شروع از سمت چپ */
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(50vw) rotate(360deg); /* چرخش و حرکت به مرکز */
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw) rotate(720deg); /* حرکت به سمت راست */
+    opacity: 0; /* محو شدن */
+  }
+}
+
+/* تنظیمات زمان‌بندی انیمیشن برای نوت‌ها */
+.note:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.note:nth-child(2) {
+  animation-delay: 1s;
+}
+
+.note:nth-child(3) {
+  animation-delay: 2s;
+}
+
+.note:nth-child(4) {
+  animation-delay: 3s;
+}
+
+</style>
+<body>
+  <div class="background">
+    <div class="note">&#9835;</div>
+    <div class="note">&#9833;</div>
+    <div class="note">&#9834;</div>
+    <div class="note">&#9839;</div>
+    <!-- می‌توانی نوت‌های بیشتری اضافه کنی -->
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+<script>
+  const notes = document.querySelectorAll('.note');
+
+notes.forEach((note, index) => {
+  const randomDelay = Math.random() * 3; // زمان تأخیر تصادفی
+  const randomTop = Math.random() * 100; // مکان تصادفی در محور عمودی
+  const randomSize = 30 + Math.random() * 20; // اندازه تصادفی
+
+  note.style.top = `${randomTop}vh`;
+  note.style.fontSize = `${randomSize}px`;
+  note.style.animationDelay = `${randomDelay}s`;
+});
+  
+</script>
