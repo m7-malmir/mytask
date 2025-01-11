@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Animation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+  /* تنظیمات کلی صفحه */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background-color: black; /* پس‌زمینه سیاه */
+  overflow: hidden; /* جلوگیری از اسکرول */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+}
+
+.background {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.note {
+  font-size: 50px;
+  position: absolute;
+  color: white;
+  opacity: 0;
+  animation: move 10s infinite ease-in-out;
+  pointer-events: none; /* جلوگیری از تداخل نوت‌ها با کلیک */
+}
+
+@keyframes move {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px) translateY(100px) rotate(0deg); /* شروع از سمت چپ پایین */
+  }
+  25% {
+    opacity: 1;
+    transform: translateX(50vw) translateY(-20vh) rotate(180deg); /* حرکت به مرکز و چرخش */
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(0vw) translateY(50vh) rotate(360deg); /* حرکت به پایین */
+  }
+  75% {
+    opacity: 1;
+    transform: translateX(-50vw) translateY(30vh) rotate(540deg); /* حرکت به سمت چپ */
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100vw) translateY(-100vh) rotate(720deg); /* حرکت به سمت راست و بالا */
+  }
+}
+
+/* تنظیمات زمان‌بندی انیمیشن برای نوت‌ها */
+.note:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.note:nth-child(2) {
+  animation-delay: 1s;
+}
+
+.note:nth-child(3) {
+  animation-delay: 2s;
+}
+
+.note:nth-child(4) {
+  animation-delay: 3s;
+}
+  
+</style>
+<body>
+  <div class="background">
+    <div class="note">&#9835;</div>
+    <div class="note">&#9833;</div>
+    <div class="note">&#9834;</div>
+    <div class="note">&#9839;</div>
+    <!-- می‌توانی نوت‌های بیشتری اضافه کنی -->
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+
+<script>
+    const notes = document.querySelectorAll('.note');
+
+notes.forEach((note) => {
+  // موقعیت تصادفی افقی و عمودی برای شروع
+  const randomStartX = Math.random() * 100;  // موقعیت تصادفی در محور افقی
+  const randomStartY = Math.random() * 100;  // موقعیت تصادفی در محور عمودی
+  const randomDelay = Math.random() * 3; // زمان تأخیر تصادفی برای هر نوت
+  const randomDuration = 8 + Math.random() * 7;  // مدت زمان انیمیشن تصادفی
+
+  // اعمال موقعیت و زمان‌بندی تصادفی
+  note.style.left = `${randomStartX}vw`;
+  note.style.top = `${randomStartY}vh`;
+  note.style.animationDuration = `${randomDuration}s`;
+  note.style.animationDelay = `${randomDelay}s`;
+
+  // تغییر اندازه تصادفی
+  const randomSize = 30 + Math.random() * 20;  // اندازه تصادفی
+  note.style.fontSize = `${randomSize}px`;
+});
+
+</script>
