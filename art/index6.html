@@ -74,14 +74,29 @@ const notes = document.querySelectorAll('.note');
 const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A6', '#FFD700', '#8A2BE2'];
 
 notes.forEach((note) => {
-  // موقعیت تصادفی افقی و عمودی برای شروع
-  const randomStartY = Math.random() * 80;  // موقعیت تصادفی در محور عمودی (بین 0% تا 80%)
+  // موقعیت تصادفی عمودی برای شروع از بین 3 موقعیت بالا، وسط یا پایین
+  const randomStartY = Math.random();  // تولید یک عدد تصادفی بین 0 و 1
+  let randomPosition;
+
+  // اگر مقدار تصادفی کمتر از 0.33 باشد از بالا وارد شود
+  if (randomStartY < 0.33) {
+    randomPosition = '-10vh'; // 10% بالاتر از صفحه
+  }
+  // اگر کمتر از 0.66 باشد از وسط وارد شود
+  else if (randomStartY < 0.66) {
+    randomPosition = '50vh';  // وسط صفحه
+  }
+  // در غیر این صورت از پایین وارد شود
+  else {
+    randomPosition = '110vh';  // 10% پایین‌تر از صفحه
+  }
+
   const randomDelay = Math.random() * 2; // زمان تأخیر تصادفی برای هر نوت
   const randomDuration = 10 + Math.random() * 5;  // مدت زمان انیمیشن تصادفی
 
   // اعمال موقعیت و زمان‌بندی تصادفی
   note.style.left = `-100px`;  // شروع از چپ‌ترین قسمت
-  note.style.top = `${randomStartY}vh`;
+  note.style.top = randomPosition;  // موقعیت تصادفی عمودی
   note.style.animationDuration = `${randomDuration}s`;
   note.style.animationDelay = `${randomDelay}s`;
 

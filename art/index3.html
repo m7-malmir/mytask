@@ -86,23 +86,5 @@ body, html {
 </body>
 </html>
 <script>
-  const notes = document.querySelectorAll('.note');
-
-notes.forEach((note) => {
-  // موقعیت تصادفی افقی و عمودی برای شروع
-  const randomStartY = Math.random() * 100;  // موقعیت تصادفی در محور عمودی
-  const randomDelay = Math.random() * 3; // زمان تأخیر تصادفی برای هر نوت
-  const randomDuration = 10 + Math.random() * 5;  // مدت زمان انیمیشن تصادفی
-
-  // اعمال موقعیت و زمان‌بندی تصادفی
-  note.style.left = `-100px`;  // شروع از چپ‌ترین قسمت
-  note.style.top = `${randomStartY}vh`;
-  note.style.animationDuration = `${randomDuration}s`;
-  note.style.animationDelay = `${randomDelay}s`;
-
-  // تغییر اندازه تصادفی
-  const randomSize = 70 + Math.random() * 30;  // سایز تصادفی بزرگتر
-  note.style.fontSize = `${randomSize}px`;
-});
-  
+    
 </script>
