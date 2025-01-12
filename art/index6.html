@@ -13,7 +13,7 @@ body, html {
   padding: 0;
   height: 100%;
   width: 100%;
-  background-color: black; /* پس‌زمینه سیاه */
+  background-color: rgb(251, 248, 248); /* پس‌زمینه سیاه */
   overflow: hidden; /* جلوگیری از اسکرول */
   display: flex;
   justify-content: center;
@@ -34,10 +34,11 @@ body, html {
 
 .note {
   position: absolute;
-  color: white;
   opacity: 0;
   animation: move 12s linear infinite;
   pointer-events: none; /* جلوگیری از تداخل نوت‌ها با کلیک */
+  font-size: 40px; /* سایز پیش‌فرض */
+  color: rgb(117, 24, 24); /* رنگ پیش‌فرض نت‌ها */
 }
 
 @keyframes move {
@@ -74,29 +75,16 @@ const notes = document.querySelectorAll('.note');
 const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A6', '#FFD700', '#8A2BE2'];
 
 notes.forEach((note) => {
-  // موقعیت تصادفی عمودی برای شروع از بین 3 موقعیت بالا، وسط یا پایین
-  const randomStartY = Math.random();  // تولید یک عدد تصادفی بین 0 و 1
-  let randomPosition;
-
-  // اگر مقدار تصادفی کمتر از 0.33 باشد از بالا وارد شود
-  if (randomStartY < 0.33) {
-    randomPosition = '-10vh'; // 10% بالاتر از صفحه
-  }
-  // اگر کمتر از 0.66 باشد از وسط وارد شود
-  else if (randomStartY < 0.66) {
-    randomPosition = '50vh';  // وسط صفحه
-  }
-  // در غیر این صورت از پایین وارد شود
-  else {
-    randomPosition = '110vh';  // 10% پایین‌تر از صفحه
-  }
-
+  // موقعیت تصادفی افقی و عمودی برای شروع
+  const randomStartY = Math.random() * 80;  // موقعیت تصادفی در محور عمودی (بین 0% تا 80%)
+  const randomStartX = Math.random() * 30;  // موقعیت تصادفی افقی از سمت چپ (بین 0% تا 30%)
+  
   const randomDelay = Math.random() * 2; // زمان تأخیر تصادفی برای هر نوت
   const randomDuration = 10 + Math.random() * 5;  // مدت زمان انیمیشن تصادفی
 
   // اعمال موقعیت و زمان‌بندی تصادفی
-  note.style.left = `-100px`;  // شروع از چپ‌ترین قسمت
-  note.style.top = randomPosition;  // موقعیت تصادفی عمودی
+  note.style.left = `${-100 + randomStartX}vw`;  // شروع از موقعیت تصادفی در سمت چپ
+  note.style.top = `${randomStartY}vh`;  // موقعیت تصادفی عمودی
   note.style.animationDuration = `${randomDuration}s`;
   note.style.animationDelay = `${randomDelay}s`;
 
