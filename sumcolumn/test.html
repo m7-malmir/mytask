@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table id="tblFuelItems" border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+        <tbody><tr style="height:25px;background-color:#ADD8E6;font-family:Tahoma;font-size:8" class="row-header" align="center">
+          <td style="width:25px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:100px;display:none;border:solid 1px #778899" name="Id">Id</td>
+          <td style="width:150px;border:solid 1px #778899" name="Date">تاریخ</td>
+          <td style="width:150px;border:solid 1px #778899" name="Origin">مبدا</td>
+          <td style="width:150px;border:solid 1px #778899" name="Destination">مقصد</td>
+          <td style="width:100px;border:solid 1px #778899" name="StKM">کیلومتر شروع</td>
+          <td style="width:100px;border:solid 1px #778899" name="EndKM">کیلومتر پایان</td>
+          <td style="width:220px;border:solid 1px #778899" name="Desc">توضیحات</td>
+          <td style="width:100px;border:solid 1px #778899" name="Cost">هزینه سوخت \ کیلومتر</td>
+          <td style="width:150px;border:solid 1px #778899" name="ConfirmedCost">هزینه \ کیلومتر تایید شده توسط جنرال سرویس</td>
+          <td style="width:100px;border:solid 1px #778899" name="FinanceCost">هزینه \ کیلومتر تایید شده توسط مالی</td>
+          <td style="width:50px;border:solid 1px #778899" name="Attach">مدارک</td>
+          <td style="width:50px;border:solid 1px #778899" name="Edit">عملیات</td>
+        </tr>
+        <tr style="height: 20px; display: table-row;" class="row-data" state="saved">
+          <td style="width:25px;background-color:#ADD8E6;border:solid 1px #778899" align="center">1</td>
+          <td style="width:100px;display:none;border:solid 1px #778899">174</td>
+          <td style="width:150px;border:solid 1px #778899">1403/11/16</td>
+          <td style="width:150px;border:solid 1px #778899">tehran</td>
+          <td style="width:150px;border:solid 1px #778899">pakestan</td>
+          <td style="width:100px;border:solid 1px #778899">23</td>
+          <td style="width:100px;border:solid 1px #778899">2222</td>
+          <td style="width:220px;border:solid 1px #778899"></td>
+          <td style="width:100px;border:solid 1px #778899">2,345,234</td>
+          <td style="width:150px;border:solid 1px #778899">-----</td>
+          <td style="width:100px;border:solid 1px #778899">-----</td>
+          <td style="width:50px;border:solid 1px #778899">&nbsp;<img src="Images/eye.png" title="مدارك" class="attach" style="cursor: pointer;"></td>
+          <td style="width:50px;border:solid 1px #778899">&nbsp;<img src="Images/edit.png" title="ويرايش" class="edit" style="cursor: pointer;"></td>
+        </tr><tr style="height: 20px; display: table-row;" class="row-data" state="saved">
+          <td style="width:25px;background-color:#ADD8E6;border:solid 1px #778899" align="center">2</td>
+          <td style="width:100px;display:none;border:solid 1px #778899">175</td>
+          <td style="width:150px;border:solid 1px #778899">1403/11/9</td>
+          <td style="width:150px;border:solid 1px #778899">tehran</td>
+          <td style="width:150px;border:solid 1px #778899">pakestan</td>
+          <td style="width:100px;border:solid 1px #778899">555</td>
+          <td style="width:100px;border:solid 1px #778899">55555</td>
+          <td style="width:220px;border:solid 1px #778899"></td>
+          <td style="width:100px;border:solid 1px #778899">2,345,234</td>
+          <td style="width:150px;border:solid 1px #778899">-----</td>
+          <td style="width:100px;border:solid 1px #778899">-----</td>
+          <td style="width:50px;border:solid 1px #778899">&nbsp;<img src="Images/eye.png" title="مدارك" class="attach" style="cursor: pointer;"></td>
+          <td style="width:50px;border:solid 1px #778899">&nbsp;<img src="Images/edit.png" title="ويرايش" class="edit" style="cursor: pointer;"></td>
+        </tr><tr style="height:20px" class="row-template">
+          <td style="width:25px;background-color:#ADD8E6;border:solid 1px #778899" align="center"><img src="Images/add.png" title="افزودن" class="add" style="cursor: pointer;"></td>
+          <td style="width:100px;display:none;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:150px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:150px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:150px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:100px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:100px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:220px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:100px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:150px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:100px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:50px;border:solid 1px #778899">&nbsp;</td>
+          <td style="width:50px;border:solid 1px #778899">&nbsp;</td>
+        </tr>
+      </tbody></table>
+      <input type="text" id="totalCost" readonly style="margin-top: 10px;" placeholder="مجموع هزینه">
+
+</body>
+</html>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$(document).ready(function () {
+    function calculateTotalCost() {
+        let total = 0;
+
+        // پیمایش ستون هزینه سوخت \ کیلومتر
+        $('#tblFuelItems tr.row-data').each(function () {
+            let costText = $(this).find('td:nth-child(9)').text().replace(/,/g, '').trim(); // ستون 9 مربوط به هزینه است
+            let cost = parseFloat(costText) || 0; // تبدیل به عدد
+            total += cost;
+        });
+
+        // نمایش مجموع در اینپوت
+        $('#totalCost').val(total.toLocaleString()); // اضافه کردن جداکننده اعداد
+    }
+
+    // محاسبه در هنگام بارگذاری صفحه
+    calculateTotalCost();
+
+    // اگر مقادیر جدول تغییر کردند (اختیاری)
+    $('#tblFuelItems').on('change', 'td:nth-child(9)', function () {
+        calculateTotalCost();
+    });
+});
+
+</script>
