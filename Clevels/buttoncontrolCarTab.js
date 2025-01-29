@@ -12,7 +12,6 @@ $("#ButtonControl4").click(function(){
 				var dataXml = null;
 				if($.trim(data) != "")
 				{
-					
 					dataXml = $.xmlDOM(data);
 					RoleId = dataXml.find("row:first").find(">col[name='RoleId']").text();
 					
