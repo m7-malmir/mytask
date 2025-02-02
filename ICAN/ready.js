@@ -139,7 +139,6 @@ $(function(){
 					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
 					var result = "<data><" + primaryKeyName + ">" + pk + "</" + primaryKeyName + "></data>";
 					inEditMode = true;
-					//closeWindow({OK: true, Result: result});
 					hideLoading();
 					if($.isFunction(callback))
 					{
