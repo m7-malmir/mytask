@@ -35,6 +35,15 @@ $(function(){
 			
 			$("#btnConfirm").css('display','none');
 			$("#btnReject").css('display','none');
+			$("#txtLabelDesc2").css('display','none');
+			$("#txtDescConfirm").css('display','none');
+		    $('#tblLoanList .CHbox').change(function() {
+	            // اگر چک باکس فعلی تیک خورده باشد
+	           if ($(this).is(':checked')) {
+	                // تمام چک باکس‌های دیگر را تیک بردارید
+	                $('#tblLoanList .CHbox').not(this).prop('checked', false);
+	            }
+			 });
 			build();
 			createControls();
 			bindEvents();
@@ -85,6 +94,17 @@ $(function(){
 						$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
 					}
 				);
+			}else{
+			/*
+			btnConfirm show
+			btnReject show
+			btnRegister hide
+				*/
+				
+				
+				
+					
+				
 			}
 		}
 		
@@ -141,64 +161,60 @@ $(function(){
 		//******************************************************************************************************
 		function insertData(callback)
 		{
-			showLoading();
-			var params = {};
-			
-			//در مواردی که المان ها بایند شده باشند از این روش استفاده می کنیم
-			//var params = $.getFormDataValues(bindingSourceName);
-			// البته می توانیم هر یک از موارد دلخواه دیگر را که بانیسد نشده اند را هم بصورت دستی با این روش بایند کنیم
-			params.CreatorActor_ID = currentActorId;
+			 // جلوگیری از ارسال فرم در صورتی که ردیفی انتخاب نشده بود
+             var isChecked = $('#tblLoanList .CHbox:checked').length > 0;
+   
+             if (!isChecked) {
+                 alert("لطفاً حداقل یک ردیف را انتخاب کنید.");
+                 event.preventDefault(); // جلوگیری از ارسال فرم
+             }else{
+					// نمایش عناصر
+	             $("#txtLabelDesc1").css('display', 'block');
+	             $("#txtCancleRequestDescription").css('display', 'block');
+				  var row = $('#tblLoanList .CHbox:checked').closest('tr'); // ردیف مربوط به چک باکس
+                  var selectedId = row.find('td:eq(2)').text().trim();
+				  //alert(JSON.stringify(id));
+			}
+			if($("#txtCancleRequestDescription").val() == ''){
+				alert(JSON.stringify('لطفا توضیحات خود را برای انصراف از وام ثبت در بخش توضیحات ثبت کنید'));
+			}else{
+
+				showLoading();
+				//کد مورد نظر برای اپدیت ستون مورد نظر در دیتابیس
+				var params = {
+			        'CancleStatus': 1,
+			        'CancleRequestDescription': $("#txtCancleRequestDescription").val()
+		    	};
+				pk= selectedId;	
+				params = $.extend(params, {Where : "Id = "+selectedId});
+				
+				FormManager.updateEntityLoanRequest(params,
+		            function(dataXml) {
+						WorkflowService.RunWorkflow("ZJM.LCP.LoanCancelProcess",
+						    '<Content><Id>'+pk+'</Id></Content>',
+						    true,
+						    function(data)
+						    {
+						        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
+									hideLoading();
+						        	closeWindow({OK:true, Result:null});
+								});				
+						    }
+						    ,function(err)
+						    {
+						        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
+						        hideLoading();
+						    }
+						);
+		                closeWindow({OK:true, Result:true});
 						
-			insertFromData(params,
-				function(dataXml)
-				{
-					// pk در واقع همان Id رکورد ایجاد شده می باشد primaryKeyName = Id
-					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
-					var params = {};
-					params.LoanPayment_ID = pk;
-					params = $.extend(params, {Where :"LoanPayment_ID IS NULL AND CreatorActor_ID = "+currentActorId});
-					
-					FormManager.updateEntityBankLoanCredit(params,
-						function(data)
-						{
-							// فراخوانی شروع فرآیند الزامی می باشد
-							WorkflowService.RunWorkflow("ZJM.LPP.LoanAssigmentProcess",
-							    '<Content><Id>'+pk+'</Id></Content>',
-							    true,
-							    function(data)
-							    {
-							        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
-										hideLoading();
-							        	closeWindow({OK:true, Result:null});
-									});				
-							    }
-							    ,function(err)
-							    {
-							        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-							        hideLoading();
-							    }
-							);
-						},
-						function(err)
-						{
-							hideLoading();
-							alert(err);
-						}
-					);
-					inEditMode = true;
-					
-					myHideLoading();
-					if($.isFunction(callback))
-					{
-						callback();
-					}
-				},
-				function(err)
-				{
-					hideLoading();
-					alert(err);
-				}
-			);
+		            },
+		            function(err) {
+		                hideLoading();
+		                alert(err);
+		            }
+		        );   
+			} 
 		}
 		//******************************************************************************************************
 		function updateData(callback)
