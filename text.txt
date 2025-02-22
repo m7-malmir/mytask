@@ -1,5 +1,0 @@
-txtLabelDesc1
-txtDescUser
-
-txtLabelDesc2
-txtDescConfirm
