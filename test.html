@@ -3,122 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Table Example</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>کارت عروسی</title>
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background: linear-gradient(to right, #ffafbd, #ffc3a0);
+            text-align: center;
+            padding: 50px;
+        }
+
+        .invitation {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e7e7e7;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: auto;
+            transition: transform 0.3s;
+        }
+
+        .invitation:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            color: #d35400;
+            font-size: 36px;
+        }
+
+        p {
+            font-size: 20px;
+            color: #333333;
+        }
+
+        .details {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .gif-container {
+            margin: 20px 0;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 16px;
+            color: #777777;
+        }
+
+        .colorful-design {
+            height: 200px;
+            background: linear-gradient(to right, #f6d743, #f6d743, #f8a3a0, #f8a3a0);
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
-    <table id="tblLoanList" border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
-        <tbody>
-            <tr class="row-header">
-                <td>انتخاب</td>
-                <td>شناسه</td>
-                <td>دلیل</td>
-                <td>مبلغ</td>
-                <td>تاریخ</td>
-            </tr>
-            <tr class="row-data">
-                <td><input type="checkbox"></td>
-                <td>1</td>
-                <td>خرید مسکن</td>
-                <td>100,000,000</td>
-                <td>شنبه 4 اسفند 1403</td>
-            </tr>
-            <tr class="row-data">
-                <td><input type="checkbox"></td>
-                <td>18</td>
-                <td>خرید لوازم ضروری</td>
-                <td>0</td>
-                <td>شنبه 4 اسفند 1403</td>
-            </tr>
-        </tbody>
-    </table>
 
-    <button id="getReasonButton">دریافت دلیل</button>
+<div class="invitation">
+    <h1>دعوتنامه عروسی</h1>
+    <p>با کمال میل شما را به جشن عروسی ما دعوت می‌کنیم:</p>
 
-    <script>
-        $(document).ready(function() {
-            $('#getReasonButton').click(function() {
-                // استخراج مقدار ستون "دلیل" از اولین ردیف
-                var firstReason = $('#tblLoanList tbody tr.row-data:first td:eq(2)').text().trim();
-                alert(firstReason); // نمایش دلیل در یک پنجره هشدار
-            });
-        });
-    </script>
+    <div class="details">
+        <p>عروس: <strong>نام عروس</strong></p>
+        <p>داماد: <strong>نام داماد</strong></p>
+        <p>تاریخ: <strong>تاریخ عروسی</strong></p>
+        <p>زمان: <strong>زمان عروسی</strong></p>
+        <p>مکان: <strong>آدرس محل برگزاری</strong></p>
+    </div>
+
+    <p>منتظر حضور گرمتان هستیم!</p>
+
+    <div class="gif-container">
+        <img src="https://media.giphy.com/media/3o85xI3ZV0qXyH5O8g/giphy.gif" alt="رقص عروس و داماد" width="300">
+    </div>
+
+    <div class="colorful-design">
+        شادی و عشق در یک روز خاص!
+    </div>
+
+    <div class="footer">
+        <p>با احترام، خانواده‌های عروس و داماد</p>
+    </div>
+</div>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-$("#btnConfirm").click(function(){
-	var cancleApproveDescription='';
-	if($("#txtDescConfirm").val()==''){
-		cancleApproveDescription='انصراف مورد تایید می باشد';
-	}else{
-		cancleApproveDescription=$("#txtDescConfirm").val();
-	}
-
-				var params = {
-			        'CancleStatus': 2,
-			        'CancleRequestDescription': $("#txtCancleRequestDescription").val()
-		    	};
-				var selectedId = $('#tblLoanList tbody tr.row-data:first td:eq(2)').text().trim();
-				pk= selectedId;	
-
-				params = $.extend(params, { Where: "Id = '" + selectedId + "'" });
-				
-				FormManager.updateEntityLoanRequest(params,
-		            
-					    function(data)
-					    {
-							alert(JSON.stringify(params));
-							var params = {
-								'Context': 'تایید شد',
-								'DocumentId': DocumentId,
-								'CreatorActorId': currentActorId,
-								'InboxId': InboxId
-							};
-							FormManager.InsertHamesh(params,
-								function(data)
-								{
-							        Office.Inbox.setResponse(dialogArguments.WorkItem, 1, "", // تایید و ارسال به جهت رونوشت
-							            function () {
-											
-							               closeWindow({ OK: true, Result: null });
-							            }, function (err) { throw Error(err); }
-							        );
-							        alert(JSON.stringify('خطا در تشخیص پایکار جاری وام، لطفاً با پشتیبانی سیستم تماس حاصل نمایید'));
-									
-								}
-							);
-							
-					        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
-								hideLoading();
-					        	closeWindow({OK:true, Result:null});
-							});				
-					    }
-					    ,function(err)
-					    {
-					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-					        hideLoading();
-					    }
-					);
-					myHideLoading();
-					if($.isFunction(callback))
-					{
-						callback();
-					}
-		            },
-		            function(err) {
-		                hideLoading();
-		                alert(err);
-		            }
-		        );   
-
-	
-});
