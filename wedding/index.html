@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بک‌گراند تصویر</title>
     <link rel="stylesheet" href="style.css">
+        <script src="
+https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js
+"></script>
     <style>
         @font-face {
             font-family: 'ASuls';
@@ -22,7 +25,7 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            background-color: #000; /* برای بهتر دیدن متن */
+            background-color: #fff; /* برای بهتر دیدن متن */
         }
 
         .main {
@@ -172,6 +175,36 @@
     </style>
 </head>
 <body>
+    <canvas id="balloonCanvas"></canvas>
+    <script>
+        function fireConfetti() {
+            const duration = 50 * 1000; 
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 250,
+                    origin: { x: 0 }
+                });
+                confetti({
+                    particleCount: 8,
+                    angle:50,
+                    spread: 250,
+                    origin: { x: 1 }
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+        window.onload = fireConfetti;
+
+
+ 
+        animateBalloons();
+    </script>
     <section class="main">
         <div class="content">
             <h1>✨به نام آنکه عشق آفرید✨</h1>

@@ -1,99 +1,27 @@
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>کارت عروسی</title>
-    <style>
-        body {
-            font-family: 'Tahoma', sans-serif;
-            background: linear-gradient(to right, #ffafbd, #ffc3a0);
-            text-align: center;
-            padding: 50px;
+var searchValue = $("#searchTable").val();
+var params = {}; // شرط لازم برای نمایش وام های فردی که فرم را باز میکند
+
+if(searchValue==''){
+    params = $.extend(params, {Where: "CancleStatus = 0"});
+}else{
+    params = $.extend(params, {Where: "CancleStatus = 0 AND PersonnelNO LIKE '%"+ searchValue+"%'"});
+}
+showLoading();
+readRows(params,
+    function(list)
+    {
+        if(list.length > 0){
+            
+            for(var i = 0, l = list.length; i < l; i += 1)
+            {
+                addRow(list[i], i + 1);
+            }
         }
-
-        .invitation {
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 2px solid #e7e7e7;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
-            margin: auto;
-            transition: transform 0.3s;
-        }
-
-        .invitation:hover {
-            transform: scale(1.05);
-        }
-
-        h1 {
-            color: #d35400;
-            font-size: 36px;
-        }
-
-        p {
-            font-size: 20px;
-            color: #333333;
-        }
-
-        .details {
-            margin: 20px 0;
-            text-align: left;
-        }
-
-        .gif-container {
-            margin: 20px 0;
-        }
-
-        .footer {
-            margin-top: 30px;
-            font-size: 16px;
-            color: #777777;
-        }
-
-        .colorful-design {
-            height: 200px;
-            background: linear-gradient(to right, #f6d743, #f6d743, #f8a3a0, #f8a3a0);
-            border-radius: 10px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="invitation">
-    <h1>دعوتنامه عروسی</h1>
-    <p>با کمال میل شما را به جشن عروسی ما دعوت می‌کنیم:</p>
-
-    <div class="details">
-        <p>عروس: <strong>نام عروس</strong></p>
-        <p>داماد: <strong>نام داماد</strong></p>
-        <p>تاریخ: <strong>تاریخ عروسی</strong></p>
-        <p>زمان: <strong>زمان عروسی</strong></p>
-        <p>مکان: <strong>آدرس محل برگزاری</strong></p>
-    </div>
-
-    <p>منتظر حضور گرمتان هستیم!</p>
-
-    <div class="gif-container">
-        <img src="https://media.giphy.com/media/3o85xI3ZV0qXyH5O8g/giphy.gif" alt="رقص عروس و داماد" width="300">
-    </div>
-
-    <div class="colorful-design">
-        شادی و عشق در یک روز خاص!
-    </div>
-
-    <div class="footer">
-        <p>با احترام، خانواده‌های عروس و داماد</p>
-    </div>
-</div>
-
-</body>
-</html>
+        myHideLoading();
+    },
+    function(error)
+    {
+        myHideLoading();
+        alert(error);
+    }
+);
