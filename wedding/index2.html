@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>انیمیشن بادکنک</title>
+</head>
+<style>
+    body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #87CEEB; /* رنگ پس‌زمینه آسمانی */
+}
+
+.balloon-container {
+    position: absolute;
+    bottom: 0; /* شروع از پایین صفحه */
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.balloon {
+    width: 50px; /* اندازه بادکنک */
+    animation: float 5s infinite; /* انیمیشن حرکت */
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0); /* شروع در پایین */
+    }
+    100% {
+        transform: translateY(-100vh); /* حرکت به سمت بالا */
+    }
+}
+</style>
+<body>
+    <div class="balloon-container">
+        <img class="balloon" src="balloon.gif" alt="بادکنک">
+        <img class="balloon" src="balloon.gif" alt="بادکنک">
+        <img class="balloon" src="balloon.gif" alt="بادکنک">
+    </div>
+</body>
+</html>
