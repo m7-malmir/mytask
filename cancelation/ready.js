@@ -2,6 +2,13 @@ var $form;
 var currentActorId;
 var ProcessStatus;
 var PersonnelNO;
+
+var DocumentId;
+var CurrentUserActorId;
+var InboxId;
+
+var selectedId;
+
 $(function(){
 	$form = (function()
 	{
@@ -15,19 +22,23 @@ $(function(){
 		//******************************************************************************************************	
 		function init()
 		{
-			
 			//اگر از جریان فرآیند یا بصورت پاپ آپ از یک فرم دیگر باز شود
 			if(typeof dialogArguments !== "undefined")
 			{
 				if(primaryKeyName in dialogArguments)
 				{
 					pk = dialogArguments[primaryKeyName];
+					
 					inEditMode = true;
 					readData();
 				}
 				if("FormParams" in dialogArguments)
 				{
 					pk = dialogArguments.FormParams;
+					DocumentId = dialogArguments["DocumentId"];
+					CurrentUserActorId = dialogArguments["WorkItem"]["ActorId"];
+					InboxId = dialogArguments["WorkItem"]["InboxId"];
+					
 					inEditMode = true;
 					readData();
 				}
@@ -37,6 +48,7 @@ $(function(){
 			$("#btnReject").css('display','none');
 			$("#txtLabelDesc2").css('display','none');
 			$("#txtDescConfirm").css('display','none');
+			
 		    $('#tblLoanList .CHbox').change(function() {
 	            // اگر چک باکس فعلی تیک خورده باشد
 	           if ($(this).is(':checked')) {
@@ -44,9 +56,11 @@ $(function(){
 	                $('#tblLoanList .CHbox').not(this).prop('checked', false);
 	            }
 			 });
+			
 			build();
 			createControls();
 			bindEvents();
+			
 		}
         //******************************************************************************************************
 		function build()
@@ -64,11 +78,11 @@ $(function(){
 						hideLoading();
 						var xmlActor = $.xmlDOM(data);
 						currentActorId = xmlActor.find('actor').attr('pk');
-						var params = {Where: "ActorId = " + currentActorId};
 						
 						//----------------------------------------------------------------
 						// دریافت اطلاعات و نمایش در صفحه
 						//----------------------------------------------------------------
+						var params = {Where: "ActorId = " + currentActorId};
 						BS_GetUserInfo.Read(params
 							, function(data)
 							{
@@ -78,34 +92,100 @@ $(function(){
 									dataXml = $.xmlDOM(data);
 									fullName = dataXml.find("row:first").find(">col[name='fullName']").text();
 									RoleName = dataXml.find("row:first").find(">col[name='RoleName']").text();
-									PersonnelNO = dataXml.find("row:first").find(">col[name='Codepersonel']").text();
-																
-									$("#txtFullName").val(fullName).prop('disabled', true);
-									$("#txtPersonnelNO").val(PersonnelNO).prop('disabled', true);
-									$("#txtRoleName").val(RoleName).prop('disabled', true);
+									ServiceLocation = dataXml.find("row:first").find(">col[name='mahalkhedmat']").text();
+									UnitsName = dataXml.find("row:first").find(">col[name='UnitsName']").text();
+									UserName = dataXml.find("row:first").find(">col[name='UserName']").text();
+									employmentdate = dataXml.find("row:first").find(">col[name='employmentdate']").text();
+									Codepersonel = dataXml.find("row:first").find(">col[name='Codepersonel']").text();
+									ServiceLocationId = dataXml.find("row:first").find(">col[name='ServiceLocation_ID']").text();
+									
+									$("#txtFullName").val(fullName);
+									$("#txtServiceLoc").val(ServiceLocation);
+									$("#txtUnits").val(UnitsName);
+									$("#txtPersonnel").val(Codepersonel);
+									$("#txtPosition").val(RoleName);
+									$("#txtHireDate").val(employmentdate);
 									tblMain.refresh();
+									
 								}
+							}, 
+							function(error){
+								alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+								return;
 							}
 						);
 						//----------------------------------------------------------------
-					},
-					function(err){
-						hideLoading();
-						$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
+					}, 
+					function(error){
+						alert('خطایی در سیستم رخ داده است: '+error);
+						return;
 					}
 				);
-			}else{
-			/*
-			btnConfirm show
-			btnReject show
-			btnRegister hide
-				*/
+				
+			}else{ //inEditMode
+				$("#btnRegister").css('display','none');
+				$("#btnConfirm").css('display','block');
+				$("#btnReject").css('display','block');
+				$("#txtCancleRequestDescription").prop('disabled', true);
+				$("#txtDescConfirm").css('display','block');
+				$("#txtLabelDesc2").css('display','block');
+				
+				FormManager.readEntityLoanList({Where: primaryKeyName + " = " + pk },
+					function(list)
+					{
+						$("#txtPersonnel").val(list[0].PersonnelNO);
+						$("#txtCancleRequestDescription").val(list[0].CancleRequestDescription);
+						tblMain.refresh();
+					},
+					function(error)
+				    {
+				        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+				        myHideLoading();
+						return;
+				    }
+				);
 				
 				
-				
-					
-				
-			}
+				readFromData({Where: primaryKeyName + " = " + pk},
+					function(dataXml)
+					{
+						CreatorActor_ID = dataXml.find("row:first").find(">col[name='CreatorActor_ID']").text();
+						var params = {Where: "ActorId = '" + CreatorActor_ID + "' "};
+						BS_GetUserInfo.Read(params
+							, function(data)
+							{
+								var dataXml = null;
+								if($.trim(data) != "")
+								{
+									dataXml = $.xmlDOM(data);
+									fullName = dataXml.find("row:first").find(">col[name='fullName']").text();
+									RoleName = dataXml.find("row:first").find(">col[name='RoleName']").text();
+									ServiceLocation = dataXml.find("row:first").find(">col[name='mahalkhedmat']").text();
+									UnitsName = dataXml.find("row:first").find(">col[name='UnitsName']").text();
+									UserName = dataXml.find("row:first").find(">col[name='UserName']").text();
+									employmentdate = dataXml.find("row:first").find(">col[name='employmentdate']").text();
+									Codepersonel = dataXml.find("row:first").find(">col[name='Codepersonel']").text();
+									ServiceLocationId = dataXml.find("row:first").find(">col[name='ServiceLocation_ID']").text();
+									
+									$("#txtFullName").val(fullName);
+									$("#txtServiceLoc").val(ServiceLocation);
+									$("#txtUnits").val(UnitsName);
+									$("#txtPersonnel").val(Codepersonel);
+									$("#txtPosition").val(RoleName);
+									$("#txtHireDate").val(employmentdate);
+									
+								}
+							},
+							function(error)
+						    {
+						        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+						        myHideLoading();
+								return;
+						    }
+						);
+					}
+				);
+				}
 		}
 		
 		//******************************************************************************************************
@@ -117,7 +197,7 @@ $(function(){
 		//******************************************************************************************************
 		function readData()
 		{
-			showLoading();
+			//showLoading();
 			readFromData({Where: primaryKeyName + " = " + pk},
 				function(dataXml)
 				{
@@ -165,18 +245,16 @@ $(function(){
              var isChecked = $('#tblLoanList .CHbox:checked').length > 0;
    
              if (!isChecked) {
-                 alert("لطفاً حداقل یک ردیف را انتخاب کنید.");
-                 event.preventDefault(); // جلوگیری از ارسال فرم
+				 alert(JSON.stringify("لطفاً حداقل یک ردیف را انتخاب کنید."));
+                 return;
              }else{
-					// نمایش عناصر
-	             $("#txtLabelDesc1").css('display', 'block');
-	             $("#txtCancleRequestDescription").css('display', 'block');
-				  var row = $('#tblLoanList .CHbox:checked').closest('tr'); // ردیف مربوط به چک باکس
-                  var selectedId = row.find('td:eq(2)').text().trim();
-				  //alert(JSON.stringify(id));
+				 var row = $('#tblLoanList .CHbox:checked').closest('tr'); // ردیف مربوط به چک باکس
+	             var selectedId = row.find('td:eq(2)').text().trim();
 			}
+			
 			if($("#txtCancleRequestDescription").val() == ''){
-				alert(JSON.stringify('لطفا توضیحات خود را برای انصراف از وام ثبت در بخش توضیحات ثبت کنید'));
+				alert(JSON.stringify('لطفا توضیحات خود را برای انصراف از وام در بخش توضیحات ثبت کنید'));
+				return;
 			}else{
 
 				showLoading();
@@ -191,28 +269,34 @@ $(function(){
 				FormManager.updateEntityLoanRequest(params,
 		            function(dataXml) {
 						WorkflowService.RunWorkflow("ZJM.LCP.LoanCancelProcess",
-						    '<Content><Id>'+pk+'</Id></Content>',
-						    true,
-						    function(data)
-						    {
-						        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
-									hideLoading();
-						        	closeWindow({OK:true, Result:null});
-								});				
-						    }
-						    ,function(err)
-						    {
-						        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-						        hideLoading();
-						    }
-						);
-		                closeWindow({OK:true, Result:true});
-						
+					    '<Content><Id>'+pk+'</Id></Content>',
+					    true,
+					    function(data)
+					    {
+					        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
+								hideLoading();
+					        	closeWindow({OK:true, Result:null});
+							});				
+					    }
+					    ,function(error)
+					    {
+					        alert('خطایی در سیستم رخ داده است: '+error);
+					        myHideLoading();
+							return;
+					    }
+					);
+					myHideLoading();
+					if($.isFunction(callback))
+					{
+						callback();
+					}
 		            },
-		            function(err) {
-		                hideLoading();
-		                alert(err);
-		            }
+		            function(error)
+				    {
+				        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+				        myHideLoading();
+						return;
+				    }
 		        );   
 			} 
 		}
@@ -254,4 +338,6 @@ $(function(){
 		};
 	}());
 	$form.init();
+	
+
 });
