@@ -1,13 +1,16 @@
 var tblMain = null;
 $(function()
 {
+
     tblMain = (function()
     {
         var element = null,
 			isDirty = false,
             rowPrimaryKeyName = "Id",
             readRows = FormManager.readEntityLoanList;
+		
         init();
+
 		//ست کردن دیتا در جدول مورد نیاز ما در فرم
         function init()
         {
@@ -15,25 +18,58 @@ $(function()
             bindEvents();
         }
         //عملیات پر کردن دیتای هر سطر می باشد
-		function addRow(rowInfo, rowNumber)
-        {
-			var index = 0,
-            tempRow = element.find("tr.row-template").clone();
-            tempRow.show().removeClass("row-template").addClass("row-data");
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Id);
+		function addRow(rowInfo, rowNumber) {
+	    var index = 0,
+	    tempRow = element.find("tr.row-template").clone();
+	    tempRow.show().removeClass("row-template").addClass("row-data");
+	    // پر کردن اطلاعات سطر
+	    tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+	    if(!$form.isInEditMode()){
+		    var CHbox = $("<input type='checkbox' value='" + rowInfo.Id + "' >").addClass('CHbox');
+		    tempRow.find("td:eq(" + index++ + ")").append(CHbox);
+		}else{
+		    var CHbox = $("<input type='checkbox' value='" + rowInfo.Id + "' checked disabled>").addClass('CHbox');
+    		tempRow.find("td:eq(" + index++ + ")").append(CHbox);	
+		}
 			
-			var CHbox = $("<input type='checkbox'  value='"+rowInfo.Id+"'>").addClass( 'CHbox' );
-			tempRow.find("td:eq(" + index++ + ")").append(CHbox);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Reason);
-            tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.date);
-            element.find("tr.row-template").before(tempRow);
-			myHideLoading();
-        }
+	    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Id);
+	    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Reason);
+	    tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
+			
+		var gbd=rowInfo.date;
+        jbd = miladi_be_shamsi(parseInt(gbd.split('/')[2]), parseInt(gbd.split('/')[0]), parseInt(gbd.split('/')[1]));
+        tempRow.find("td:eq(" + index++ + ")").empty().text(jbd[0] + '/' + jbd[1] + '/' + jbd[2]);	
+			
+		element.find("tr.row-template").before(tempRow);
+        myHideLoading();
+}
+/****************************************************************************************/
+		
         function bindEvents()
         {
+			//کد مورد نظر برای اینکه فقط یک ردیف را انتخاب کند
+			  element.on("click", ".CHbox",
+                function()
+                {
+                  clicked = $(this);
+				  if ($(this).is(':checked')) {
+				    $('.CHbox:checked').not($(this)).each(function() {
+				      $(this).prop('checked', false);
+				      $(this).trigger('change');
+				    });
+					    var that = $(this),
+                        row = that.closest("tr");
+						r_info = row.data("rowInfo");
+					  	
+					  	$("#txtServiceId").val(r_info.OwnerPersonnelName);
+					  	carId=r_info.Id;
+					  	NewOwnerName=r_info.OwnerPersonnelName;
+					  
+				  };
+                }
+            );
         }
-
+/****************************************************************************************/
         function addNewRow(rowInfo)
         {
         }
@@ -60,26 +96,57 @@ $(function()
 /****************************************************************************************/
         function load()
         {
-			var params = {}; // شرط لازم برای نمایش وام های فردی که فرم را باز میکند
-			params = $.extend(params, {Where : "PersonnelNO = "+$("#txtPersonnelNO").val()});
-			showLoading();
-            readRows(params,
-                function(list)
-                {
-					if(list.length > 0){
-						for(var i = 0, l = list.length; i < l; i += 1)
-	                    {
-	                        addRow(list[i], i + 1);
-	                    }
-					}
-					myHideLoading();
-                },
-                function(error)
-                {
-					myHideLoading();
-                    alert(error);
-                }
-            );
+
+			if($form.isInEditMode()){
+				
+				var params = {}; // شرط لازم برای نمایش وام های فردی که فرم را باز میکند
+				params = $.extend(params, {Where: "PersonnelNO =" + $("#txtPersonnel").val() + " AND CancleStatus = 1"});
+				
+				showLoading();
+	            readRows(params,
+	                function(list)
+	                {
+						if(list.length > 0){
+							
+							for(var i = 0, l = list.length; i < l; i += 1)
+		                    {
+		                        addRow(list[i], i + 1);
+		                    }
+						}
+						myHideLoading();
+	                },
+	                function(error)
+	                {
+						myHideLoading();
+	                    alert(error);
+	                }
+	            );
+			}else{
+			
+				var params = {}; // شرط لازم برای نمایش وام های فردی که فرم را باز میکند
+				params = $.extend(params, {Where : "PersonnelNO = "+$("#txtPersonnel").val()+ " and CancleStatus = 0 " });//and PayStatus <> 2 and PayStatus <> 3
+				
+				showLoading();
+	            readRows(params,
+	                function(list)
+	                {
+						if(list.length > 0){
+							for(var i = 0, l = list.length; i < l; i += 1)
+		                    {
+		                        addRow(list[i], i + 1);
+		                    }
+						}
+						myHideLoading();
+	                },
+	                function(error)
+	                {
+						myHideLoading();
+	                    alert(error);
+	                }
+	            );
+			}
+			
+			
         }
 /***********************************************************************************************/
         function saveData(callback)
@@ -147,6 +214,7 @@ $(function()
 
         function refresh()
         {
+			//alert(JSON.stringify('4'));
 			element.find("tr.row-data").remove();
             load();
         }
