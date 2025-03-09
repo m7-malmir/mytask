@@ -152,3 +152,193 @@ $(function(){
 	$form.init();
 });
 //#endregion
+
+//#region js form manager
+var FormManager = {
+	//*****************************************************************************************************
+	readEntityّFoodEdit: function(jsonParams, onSuccess, onError)
+	{
+	    BS_HRCalendar.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+				
+	            xmlvar.find("row").each(
+	                function()
+	                {
+	                    list.push
+	                    ({
+							CalendarId: $(this).find("col[name='CalendarId']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+//*****************************************************************************************************
+	readEntityّMealPlan: function(jsonParams, onSuccess, onError)
+	{
+	    BS_FoodMealPlan.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+				
+	            xmlvar.find("row").each(
+	                function()
+	                {
+	                    list.push
+	                    ({
+							FoodId: $(this).find("col[name='FoodId']").text(),
+							CalendarId: $(this).find("col[name='CalendarId']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+	//******************************************************************************************************
+	insertEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_FoodMealPlan.Insert(jsonParams,
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+			function(error) {
+				var methodName = "insertEntity";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+	//******************************************************************************************************
+	deleteEntity: function(jsonParams, onSuccess, onError)
+	{
+		BS_FoodMealPlan.Delete(jsonParams, 
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			},
+			function(error) {
+					var methodName = "deleteEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+	//******************************************************************************************************
+	updateEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_FoodEdit.Update(jsonParams
+			, function(data)
+			{
+				
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+		function(error) {
+					var methodName = "deleteEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+		//*****************************************************************************************************
+	readEntityّFoodMealPlan: function(jsonParams, onSuccess, onError)
+	{
+	    vw_HR_FDR_FoodMealPlan.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(
+	                function()
+	                { 
+	                    list.push
+	                    ({
+	                        FoodMealPlanId: $(this).find("col[name='FoodMealPlanId']").text(),
+	                        FoodTitle: $(this).find("col[name='FoodTitle']").text(),
+	                        SolarDate: $(this).find("col[name='SolarDate']").text(),
+							SolarStrDay: $(this).find("col[name='SolarStrDay']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+	//******************************************************************************************************
+};
+//#endregion
