@@ -1,68 +1,159 @@
-element.on("click", "input#delivered", function() {
-    var that = $(this);
-    var row = that.closest("tr");
-    
-    $.qConfirm(that, "آیا از ثبت مطمئن هستید؟", function(btn) {
-        if (btn.toUpperCase() === "OK") {
-            // در اینجا می‌توانیم وضعیت پرداخت را به روز کنیم
-            var LoanPaymentID = row.find('td:nth-child(4)').text().trim();
-            var params = {
-                'PayStatus': 2
-            };
-            params = $.extend(params, { Where: "Id = " + LoanPaymentID });
-
-            FormManager.updateEntity(params,
-                function(list) {
-                    // پس از موفقیت، ردیف را حذف می‌کنیم
-                    removeRow(row);
-                    refresh();
-                },
-                function(err) {
-                    hideLoading();
-                    alert(err);
-                }
-            );
-        }
-    }, null);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function bindEvents()
-{
-	element.on("click", "img.delete",
-		function()
-		{
-			var that = $(this),
-				row = that.closest("tr");
-			
-			$.qConfirm(that, "آیا مطمئن هستید؟", function(btn)
+var FormManager = {
+	//*****************************************************************************************************
+	readEntityّFoodEdit: function(jsonParams, onSuccess, onError)
+	{
+	    BS_HRFood.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(
+	                function()
+	                { 
+	                    list.push
+	                    ({
+	                        FoodId: $(this).find("col[name='FoodId']").text(),
+	                        FoodTitle: $(this).find("col[name='FoodTitle']").text(),
+	                        FoodStatus: $(this).find("col[name='FoodStatus']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+		//*****************************************************************************************************
+	readEntityّFoodMealPlan: function(jsonParams, onSuccess, onError)
+	{
+	   BS_FoodMealPlan.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(
+	                function()
+	                { 
+	                    list.push
+	                    ({
+	                        FoodId: $(this).find("col[name='FoodId']").text(),
+	                        FoodTitle: $(this).find("col[name='FoodTitle']").text(),
+	                        FoodStatus: $(this).find("col[name='FoodStatus']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+	//******************************************************************************************************
+	insertEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_HRFood.Insert(jsonParams,
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
 				{
-					if(btn.toUpperCase() == "OK")
-					{
-						removeRow(row);
-					}
-				}, null
-			);
-		}
-	);
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+			function(error) {
+				var methodName = "insertEntity";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+	//******************************************************************************************************
+	deleteEntity: function(jsonParams, onSuccess, onError)
+	{
+		BS_HRFood.Delete(jsonParams, 
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			},
+			function(error) {
+					var methodName = "deleteEntity";
 	
-	element.on("click", "img.edit",
-		function()
-		{
-			editRow($(this).closest("tr"));
-		}
-	);
-}
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+	//******************************************************************************************************
+	updateEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_HRFood.Update(jsonParams
+			, function(data)
+			{
+				
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+		function(error) {
+					var methodName = "updateEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+};
