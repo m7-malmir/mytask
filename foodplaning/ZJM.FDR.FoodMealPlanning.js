@@ -382,7 +382,6 @@ $(function()
 
 		function bindEvents()
         {
-			
 			$("#btnRegister").click(function(){
 				params =  {};
 				FormManager.readEntityّMealPlan(params,
@@ -410,7 +409,6 @@ $(function()
 				        $.alert("نام غذا و وضعیت آن را تعیین نمایید", "", "rtl");
 				        return;
 					 }
-					
 					params =  {  Where: "SolarDate = '" + $("#txtSelectDate").val() + "'"  };
 					
 					 FormManager.readEntityّFoodEdit(params,
@@ -463,21 +461,29 @@ $(function()
 			    $.qConfirm(that, "آیا از حذف مطمئن هستید؟", function(btn) {
 			        if (btn.toUpperCase() === "OK") { 
 						
-			            params =  { Where: "FoodMealPlanId = "+id };
-					    FormManager.deleteEntity(params,
-					        function(status, list) { 
-								$.alert("حذف غذا در این تاریخ با موفقیت انجام شد.","","rtl",function(){
-									hideLoading();
-						        	tblMain.refresh();
-								});		
-					        },
-					        function(error) { 
-					            console.log("خطای برگشتی:", error);
-					            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-					        }
-					    );
-						
-			        }
+						params =  {};
+						FormManager.readEntityFoodReservationّ(params,
+							function(list,status) {
+								if (list.some(item => item.FoodMealPlanId === id)) {
+								   alert(JSON.stringify('وعده غذایی مورد نظر رزرو می باشد.'));
+								} else {
+									params = { Where: "FoodMealPlanId = "+id };
+								    FormManager.deleteEntity(params,
+								        function(status, list) { 
+											$.alert("حذف غذا در این تاریخ با موفقیت انجام شد.","","rtl",function(){
+												hideLoading();
+									        	tblMain.refresh();
+											});		
+								        },
+								        function(error) { 
+								            console.log("خطای برگشتی:", error);
+								            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+								        }
+								    );
+									
+								}
+						});
+					}
 			    });
 			});
        }
@@ -506,28 +512,6 @@ $(function()
 	    myHideLoading();
 	}
 		//******************************************************************************************************
-		/*function editRow(row)
-        {
-			var rowInfo = row.data("rowInfo"),
-				params = {};
-			
-            params[rowPrimaryKeyName] = rowInfo[rowPrimaryKeyName]; // change params if needed 
-
-            $.showModalForm({registerKey: editFormRegKey, params: params},
-                function(retVal)
-                {
-                    if(retVal.OK)
-                    {
-                        // if edit form saves the changes
-                        refresh();
-
-                        // if edit form passes new values down to be managed here
-                        changeRow(row, retVal.Data);
-                    }
-                }
-            );
-        }*/
-		//******************************************************************************************************
 		//حذف یک سطر
         function removeRow(row)
         {
@@ -554,8 +538,6 @@ $(function()
         {
             var params = {}; // change the params sent to FormManager with needed info
 			showLoading();
-			//متد readRows در ایتدای همین صفحه از FormManager مقدار دهی شده است.
-			// درصورت نیاز به لود از لیست این بخش بازنویسی میگردد
             readRows(params,
                 function(list)
                 {
