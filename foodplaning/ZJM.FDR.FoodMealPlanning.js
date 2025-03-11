@@ -369,13 +369,6 @@ $(function()
 		//******************************************************************************************************
         function build()
         {       
-			//دکمه افزودن     
-            /*var imgAdd = $("<img/>", {src: "Images/add.png", title: "افزودن"}).addClass("add").css({cursor: "pointer"});
-            element.find("tr.row-template").find("td:first").empty().append(imgAdd);*/
-			
-			//برای حذف دکمه افزودن این سطر را فعال و سطر باتلا را حذف کنید
-            // if you don't want to use add button inside table uncomment the line below and remove the lines up
-            //element.find("tr.row-template").hide();
         }
 		//******************************************************************************************************
 		//این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
@@ -384,7 +377,7 @@ $(function()
         {
 			$("#btnRegister").click(function(){
 				params =  {};
-				FormManager.readEntityّMealPlan(params,
+				FormManager.readEntityّFoodMealPlan(params,
 					function(list,status) { 
 						mainList=list;
 			        },
