@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>جدول غذا</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <table id="tblFoodMealPlan" border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+        <tbody>
+            <tr>
+                <td>حذف</td>
+                <td>ویرایش</td>
+                <td>شناسه</td>
+                <td>نام غذا</td>
+            </tr>
+            <tr class="row-data">
+                <td><img src="Images/delete.png" title="حذف" class="delete" style="cursor: pointer;"></td>
+                <td><img src="Images/edit.png" title="ویرایش" class="edit" style="cursor: pointer;"></td>
+                <td>28</td>
+                <td>عدس پلو + ماست</td>
+            </tr>
+            <tr class="row-data">
+                <td><img src="Images/delete.png" title="حذف" class="delete" style="cursor: pointer;"></td>
+                <td><img src="Images/edit.png" title="ویرایش" class="edit" style="cursor: pointer;"></td>
+                <td>62</td>
+                <td>چلوجوجه کباب + ماست موسیر</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <select style="position:absolute;border-top:solid 2px #606060;border-left:solid 2px #606060;border-right:solid 1px lightgrey;border-bottom:solid 1px lightgrey;font-family:Tahoma;font-size:8pt;color:#000000;margin:0px 0px 0px 0px;background-color:#FFFFFF;left:0px;top:0px;width:219px;height:21px" name="cmbHRFood" id="cmbHRFood" required="true">
+        <option value="1">چلوکباب کوبیده + ماست موسیر</option>
+        <option value="2">سبزی پلو و ماهی + ترشی لیته</option>
+        <option value="3">زرشک پلو با مرغ + سالاد فصل</option>
+        <option value="4">چلو خورش فسنجان + زیتون</option>
+        <option value="5">باقالی پلو با گوشت + سالاد فصل</option>
+        <option value="7">چلوگوشت + سالاد فصل</option>
+        <option value="8">چلوخورش فاسولیه + ماست</option>
+        <option value="9">قیمه نثار + ماست</option>
+        <option value="10">چلومرغ اناری + سالاد فصل</option>
+        <option value="11">همبرگر گوشت + سالاد اندونزی</option>
+        <option value="12">ماکارونی + ماست و خیار</option>
+        <option value="13">چلوکباب تابه ای + ماست موسیر</option>
+        <option value="14">چلوخورش قیمه سیب زمینی + ماست</option>
+        <option value="15">عدس پلو + ماست</option>
+        <option value="16">چلوجوجه کباب + ماست موسیر</option>
+        <option value="63">كوفته تبريزي</option>
+    </select>
+
+    <script>
+        $(document).ready(function() {
+            $("#tblFoodMealPlan").on("click", ".edit", function() {
+                var row = $(this).closest('tr'); // پیدا کردن ردیف
+                var foodTitle = row.find('td:eq(3)').text().trim(); // دریافت نام غذا
+
+                // بررسی وجود نام غذا در select
+                var $cmbHRFood = $("#cmbHRFood");
+                var optionExists = $cmbHRFood.find("option").filter(function() {
+                    return $(this).text().trim().toLowerCase() === foodTitle.toLowerCase();
+                }).length > 0;
+
+                if (optionExists) {
+                    // اگر نام غذا در select موجود بود، آن را انتخاب کنید
+                    $cmbHRFood.val($cmbHRFood.find("option").filter(function() {
+                        return $(this).text().trim().toLowerCase() === foodTitle.toLowerCase();
+                    }).val());
+                } else {
+                    alert("نام غذا در لیست موجود نیست.");
+                }
+
+                // برای عیب‌یابی: چاپ نام غذا
+                console.log("Food Title: " + foodTitle);
+            });
+        });
+    </script>
+</body>
+</html>
