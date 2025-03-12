@@ -181,10 +181,10 @@ var FormManager = {
 	        }, onError
 	    );
 	},
-//*****************************************************************************************************
-	readEntityّMealPlan: function(jsonParams, onSuccess, onError)
+		//*****************************************************************************************************
+	readEntityّFoodEdit: function(jsonParams, onSuccess, onError)
 	{
-	    BS_FoodMealPlan.Read(jsonParams
+	    BS_HRCalendar.Read(jsonParams
 	        , function(data)
 	        {
 	            var list = [];
@@ -195,8 +195,33 @@ var FormManager = {
 	                {
 	                    list.push
 	                    ({
-							FoodId: $(this).find("col[name='FoodId']").text(),
 							CalendarId: $(this).find("col[name='CalendarId']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+//*****************************************************************************************************
+	readEntityFoodReservationّ: function(jsonParams, onSuccess, onError)
+	{
+	   BS_FoodReservation.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+				
+	            xmlvar.find("row").each(
+	                function()
+	                {
+	                    list.push
+	                    ({
+							FoodMealPlanId: $(this).find("col[name='FoodMealPlanId']").text()
 	                    });
 	                }
 	            );
@@ -279,7 +304,7 @@ var FormManager = {
 	//******************************************************************************************************
 	updateEntity: function(jsonParams, onSuccess, onError)
 	{
-		 BS_FoodEdit.Update(jsonParams
+		 BS_FoodMealPlan.Update(jsonParams
 			, function(data)
 			{
 				
@@ -338,8 +363,53 @@ var FormManager = {
 	            }
 	        }, onError
 	    );
+	},	
+	//*****************************************************************************************************
+	readReservationCount: function(jsonParams, onSuccess, onError)
+	{
+	 vw_ReservationCounter.Execute(jsonParams,  
+	        function(data) {
+	           
+	            if ($.isFunction(onSuccess)) {
+	                onSuccess(data); 
+	            }
+	        },  
+	        function(error) {
+	
+	            if ($.isFunction(onError)) {
+	                onError(error); 
+	            }
+	        }
+	    );
 	},
+//******************************************************************************************************
+	readEntityّHrFoodMealPlan: function(jsonParams, onSuccess, onError)
+		{
+		    BS_FoodMealPlan.Read(jsonParams
+		        , function(data)
+		        {
+		            var list = [];
+		            var xmlvar = $.xmlDOM(data);
+					
+		            xmlvar.find("row").each(
+		                function()
+		                {
+		                    list.push
+		                    ({
+								CalendarId: $(this).find("col[name='CalendarId']").text()
+		                    });
+		                }
+		            );
+		            if($.isFunction(onSuccess))
+		            {
+		                onSuccess(list);
+		            
+		            }
+		        }, onError
+		    );
+		}
 	//******************************************************************************************************
+	
 };
 //#endregion
 
