@@ -448,7 +448,6 @@ $(function()
         {
 			//update with edit button
 			/***********************************************************************/
-			
 			element.on("click", ".edit", function() {
 				
 			    var row = $(this).closest('tr');
@@ -483,8 +482,7 @@ $(function()
 			//insert food
 			$("#btnRegister").click(function(){
 				
-				
-					if($("#mealPlanSelectId").val()===''){
+				if($("#mealPlanSelectId").val()===''){
 					
 					//insert
 					var tomorrow = new Date();
@@ -497,7 +495,7 @@ $(function()
 					var dateString = $("#txtSelectDate").attr('gdate');
 					var [month2, day2, year2] = dateString.split('/').map(Number);
 					selectedDate = `${year2.toString().padStart(4, '0')}-${month2.toString().padStart(2, '0')}-${day2.toString().padStart(2, '0')}`;
-				
+					//شرط مورد نظر برای چک کردن تاریخ
 					if(selectedDate > tomorrowDate){
 						 if ($("#txtFoodTitle").val() === '') {
 					        $.alert("نام غذا و وضعیت آن را تعیین نمایید", "", "rtl");
@@ -516,12 +514,10 @@ $(function()
 							const isDuplicate = list.some(item => 
 								mainList.some(mainItem => mainItem.CalendarId === item.CalendarId)
 							);
-							
+							//شرط مورد نظر برای چک کردن موارد تکراری برای تاریخ ثبت غذا
 							if (isDuplicate) {
 								alert(JSON.stringify('برای روز انتخابی برنامه غذایی تدوین شده است'));
 							} else {
-								
-							
 								FormManager.insertEntity(list,
 							        function(status, list) { 
 										$.alert("غذا در تاریخ انتخابی با موفقیت ثبت شد","","rtl",function(){
@@ -688,8 +684,8 @@ $(function()
 	               }
 	           );
 			myHideLoading();
-				
-			
+			//تابع خواندن از دیتابیس برای پیداکردن موارد تکراری و فیلتر کردن ان
+			/******************************************************/
 			params =  {};
 				FormManager.readEntityّHrFoodMealPlan(params,
 					function(list,status) { 
@@ -700,8 +696,8 @@ $(function()
 			            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
 			        }
 			    );
-			
-			
+			//خواندن موارد رزرو در هر روز و نمایش به کاربر ادمین
+			/******************************************************/
 			FormManager.readReservationCount({}, function(dataXml) {
 			    var parser = new DOMParser();
 			    var xmlDoc = parser.parseFromString(dataXml, "text/xml");
@@ -711,6 +707,7 @@ $(function()
 			    console.error("Error:", error);
 			    alert("خطا رخ داد: " + JSON.stringify(error));  
 			});
+			/******************************************************/
 		}
 		//******************************************************************************************************
 		//بروز رسانی دیتای جدول
