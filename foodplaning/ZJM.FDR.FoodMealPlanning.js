@@ -354,6 +354,7 @@ $(function()
         var element = null,
 			isDirty = false,
             rowPrimaryKeyName = "Id",
+			readFromData = FormManager.readReservationCount,
             readRows = FormManager.readEntityّFoodMealPlan
 		//فراخوانی سازنده جدول
         init();
@@ -375,81 +376,145 @@ $(function()
 
 		function bindEvents()
         {
-			$("#btnRegister").click(function(){
-				params =  {};
-				FormManager.readEntityّFoodMealPlan(params,
-					function(list,status) { 
-						mainList=list;
-			        },
-			        function(error) { // تابع خطا
-			            console.log("1خطای برگشتی:", error);
-			            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-			        }
-			    );
-				var tomorrow = new Date();
-			    tomorrow.setDate(tomorrow.getDate() );
-				var year = tomorrow.getFullYear();
-			    var month = (tomorrow.getMonth() ).toString().padStart(2, '0');
-			    var day = tomorrow.getDate().toString().padStart(2, '0');
-				var tomorrowDate = `${year}-${month}-${day}`;
-				
-				var dateString = $("#txtSelectDate").attr('gdate');
-				var [month2, day2, year2] = dateString.split('/').map(Number);
-				selectedDate = `${year2.toString().padStart(4, '0')}-${month2.toString().padStart(2, '0')}-${day2.toString().padStart(2, '0')}`;
+			//update with edit button
+			/***********************************************************************/
 			
-				if(selectedDate > tomorrowDate){
-					 if ($("#txtFoodTitle").val() === '') {
-				        $.alert("نام غذا و وضعیت آن را تعیین نمایید", "", "rtl");
-				        return;
-					 }
-					params =  {  Where: "SolarDate = '" + $("#txtSelectDate").val() + "'"  };
+			element.on("click", ".edit", function() {
+				
+			    var row = $(this).closest('tr');
+			    var foodTitle = row.find('td:eq(4)').text().trim();
+			    foodTitle = foodTitle.replace(/\u200C/g, ' ').replace(/\s+/g, ' ').trim();
+				var foodDate = row.find('td:eq(6)').text().trim(); // تاریخ
+    			var foodMealSelect = row.find('td:eq(3)').text().trim(); // شناسه
+				
+			    var $cmbHRFood = $("#cmbHRFood");
+			    var option = $cmbHRFood.find("option").filter(function() {
+			        return $(this).text().trim() === foodTitle;
+			    });
+			    if (option.length > 0) {
+			        var selectedFoodId = option.val(); // متغیر جدید
+			
+			        if ($cmbHRFood.find("option[value='" + selectedFoodId + "']").length) {
+			            $cmbHRFood.val(selectedFoodId).trigger("change");
+			            
+			            $("#hiddenFoodId").val(selectedFoodId);
+						$("#txtSelectDate").val(foodDate);
+					    $("#mealPlanSelectId").val(foodMealSelect);
+						$("#txtSelectDate").attr('disabled',true);
+						$(".ui-datepicker-trigger").css('display','none');
+			        }
+			    } else {
+			        console.warn("گزینه مورد نظر در لیست یافت نشد: " + foodTitle);
+			    }
+				
+			});
+			
+			/***********************************************************************/
+			//insert food
+			$("#btnRegister").click(function(){
+				
+				
+					if($("#mealPlanSelectId").val()===''){
 					
-					 FormManager.readEntityّFoodEdit(params,
-				        function(list,status) {	
-						let foodId =$("#cmbHRFood").val();
-						let mealId = 2;
-						list[0]['FoodId'] = foodId;
-						list[0]['MealId'] = mealId;
+					//insert
+					var tomorrow = new Date();
+				    tomorrow.setDate(tomorrow.getDate() );
+					var year = tomorrow.getFullYear();
+				    var month = (tomorrow.getMonth() ).toString().padStart(2, '0');
+				    var day = tomorrow.getDate().toString().padStart(2, '0');
+					var tomorrowDate = `${year}-${month}-${day}`;
+					
+					var dateString = $("#txtSelectDate").attr('gdate');
+					var [month2, day2, year2] = dateString.split('/').map(Number);
+					selectedDate = `${year2.toString().padStart(4, '0')}-${month2.toString().padStart(2, '0')}-${day2.toString().padStart(2, '0')}`;
+				
+					if(selectedDate > tomorrowDate){
+						 if ($("#txtFoodTitle").val() === '') {
+					        $.alert("نام غذا و وضعیت آن را تعیین نمایید", "", "rtl");
+					        return;
+						 }
+						params =  {  Where: "SolarDate = '" + $("#txtSelectDate").val() + "'"  };
+					
+						 FormManager.readEntityّFoodEdit(params,
+					        function(list,status) {
+								
+							let foodId =$("#cmbHRFood").val();
+							let mealId = 2;
+							list[0]['FoodId'] = foodId;
+							list[0]['MealId'] = mealId;
 							
-						const isDuplicate = list.some(item => 
-							mainList.some(mainItem => mainItem.CalendarId === item.CalendarId)
+							const isDuplicate = list.some(item => 
+								mainList.some(mainItem => mainItem.CalendarId === item.CalendarId)
+							);
+							
+							if (isDuplicate) {
+								alert(JSON.stringify('برای روز انتخابی برنامه غذایی تدوین شده است'));
+							} else {
+								
+							
+								FormManager.insertEntity(list,
+							        function(status, list) { 
+										$.alert("غذا در تاریخ انتخابی با موفقیت ثبت شد","","rtl",function(){
+											hideLoading();
+											$("#txtSelectDate").val('');
+										    $("#cmbHRFood").val('');
+											tblMain.refresh();
+										});
+							        },
+							        function(error) { // تابع خطا
+							            console.log("1خطای برگشتی:", error);
+							            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+							        }
+							    );
+								
+							}	
+					        },
+					        function(error) { // تابع خطا
+					            console.log("2خطای برگشتی:", error);
+					            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+					        }
+					    );
+					}else{
+						alert(JSON.stringify('not ok'));
+						$.alert("تاریخ ثبت غذا باید از بعد از فردا باشد.", "", "rtl",
+							function()
+							{}
 						);
-						
-						if (isDuplicate) {
-							alert(JSON.stringify('برای روز انتخابی برنامه غذایی تدوین شده است'));
-						} else {
-							FormManager.insertEntity(list,
-						        function(status, list) { 
-									$.alert("غذا در تاریخ انتخابی با موفقیت ثبت شد","","rtl",function(){
-										hideLoading();
-							        	tblMain.refresh();
-									});
-						        },
-						        function(error) { // تابع خطا
-						            console.log("1خطای برگشتی:", error);
-						            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-						        }
-						    );
-						}	
+						return;
+					}
+					
+				}else{
+				 list={
+					'FoodId':$("#cmbHRFood").val()
+					};
+				 list = $.extend(list, { Where: "FoodMealPlanId = '" + $("#mealPlanSelectId").val() + "'" });
+					FormManager.updateEntity(list,
+				        function(status, list) { 
+							$.alert("غذا در تاریخ مورد نظر ویرایش شد.","","rtl",function(){
+								hideLoading();
+					        	tblMain.refresh();
+								
+								$("#hiddenFoodId").val('');
+								$("#txtSelectDate").val('');
+							    $("#mealPlanSelectId").val('');
+								$("#txtSelectDate").attr('disabled',false);
+								$(".ui-datepicker-trigger").css('display','inline-flex');
+								
+							});
 				        },
 				        function(error) { // تابع خطا
-				            console.log("2خطای برگشتی:", error);
+				            console.log("1خطای برگشتی:", error);
 				            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
 				        }
-				    );
-				}else{
-					alert(JSON.stringify('not ok'));
-					$.alert("تاریخ ثبت غذا باید از بعد از فردا باشد.", "", "rtl",
-						function()
-						{}
 					);
-					return;
+					
 				}
+
 			});
 			/**************************************************************/
 			element.on("click", ".delete", function() {
 				var row = $(this).closest('tr'); 
-			    var id = row.find('td:eq(2)').text().trim();
+			    var id = row.find('td:eq(3)').text().trim();
 			    var that = $(this); 
 			    $.qConfirm(that, "آیا از حذف مطمئن هستید؟", function(btn) {
 			        if (btn.toUpperCase() === "OK") { 
@@ -495,6 +560,10 @@ $(function()
 	    var imgDelete = $("<img/>", {src: "Images/delete.png", title: "حذف"}).addClass("delete").css({cursor: "pointer"});
 	    tempRow.find("td:eq(" + index++ + ")").append(imgDelete);
 	    tempRow.attr({state: "saved"});
+		
+				var imgDelete = $("<img/>", {src: "Images/edit.png", title: "ویرایش"}).addClass("edit").css({cursor: "pointer"});
+	    tempRow.find("td:eq(" + index++ + ")").append(imgDelete);
+	    tempRow.attr({state: "new"});
 	
 	    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.FoodMealPlanId);
 		tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.FoodTitle);
@@ -529,11 +598,11 @@ $(function()
 		//برگذاری دیتا برای نمایش که در صورت لزوم می توان یک لیست به آن پاس داد
         function load()
         {
-            var params = {}; // change the params sent to FormManager with needed info
+           var params = {}; // change the params sent to FormManager with needed info
 			showLoading();
-            readRows(params,
-                function(list)
-                {
+	           readRows(params,
+	               function(list)
+	               {
 					if(list.length > 0){
 						for(var i = 0, l = list.length; i < l; i += 1)
 	                    {
@@ -541,16 +610,38 @@ $(function()
 	                    }
 					}
 					myHideLoading();
-                },
-                function(error)
-                {
+	               },
+	               function(error)
+	               {
 					myHideLoading();
-                    alert(error);
-                }
-            );
+	                   alert(error);
+	               }
+	           );
 			myHideLoading();
+				
 			
-        }
+			params =  {};
+				FormManager.readEntityّHrFoodMealPlan(params,
+					function(list,status) { 
+						mainList=list;
+			        },
+			        function(error) { // تابع خطا
+			            console.log("1خطای برگشتی:", error);
+			            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+			        }
+			    );
+			
+			
+			FormManager.readReservationCount({}, function(dataXml) {
+			    var parser = new DOMParser();
+			    var xmlDoc = parser.parseFromString(dataXml, "text/xml");
+			    var reservationCounter = xmlDoc.getElementsByTagName("col")[0].textContent;
+				$("#txtReservationCounter").val(reservationCounter);
+			 }, function(error) {
+			    console.error("Error:", error);
+			    alert("خطا رخ داد: " + JSON.stringify(error));  
+			});
+		}
 		//******************************************************************************************************
 		//بروز رسانی دیتای جدول
         function refresh()
