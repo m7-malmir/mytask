@@ -318,8 +318,119 @@ var FormManager = {
 };
 //#endregion
 
-//#region js ready
+//#region js tbl
+var tblMain = null;
+
+$(function () {
+    tblMain = (function () {
+        var element = $("#tblFood");
+        init();
+        function init() {
+            bindEvents();
+        }
+
+        function bindEvents() {
+		$("#btnRegisterGuests").click(function () {
+		    var firstName = $("#txtFirstName").val().trim();
+		    var lastName = $("#txtLastName").val().trim();
+		    var vip = $("#cmbVIP").val(); // دریافت مقدار VIP
+		    var giftpack = $("#cmbGiftpack").val(); // دریافت مقدار پک هدیه
+		    var breakfast = $("#cmbBreakfast").val(); // دریافت مقدار صبحانه
+		    var lunch = $("#cmbLunch").val(); // دریافت مقدار ناهار
+		    var dinner = $("#cmbDinner").val(); // دریافت مقدار شام
+		
+		    // بررسی اینکه نام و نام خانوادگی وارد شده باشد
+		    if (firstName === "" || lastName === "") {
+		        alert("لطفاً نام و نام خانوادگی را وارد کنید.");
+		        return;
+		    }
+		
+			// بررسی تکراری نبودن نام و نام خانوادگی
+			var isDuplicate = false;
+			$("#tblFood tr.row-data").each(function() {
+			    var existingFirstName = $(this).find("td:eq(2)").text().trim(); 
+			    var existingLastName = $(this).find("td:eq(3)").text().trim(); 
+			    
+			    if (existingFirstName === firstName && existingLastName === lastName) {
+			        isDuplicate = true;
+			        return false; 
+			    }
+			});
+			
+			if (isDuplicate) {
+			    alert("این نام و نام خانوادگی قبلاً ثبت شده است.");
+			    return;
+			}
+		
+		    // محاسبه شماره ردیف جدید
+		    var newRowNumber = $("#tblFood tr.row-data").length + 1; 
+		
+		    // اطلاعات ردیف جدید
+		    var rowInfo = {
+		        RowNumber: newRowNumber, 
+		        FirstName: firstName,
+		        LastName: lastName,
+		        VIP: vip,
+		        Giftpack: giftpack,
+		        Breakfast: breakfast,
+		        Lunch: lunch,
+		        Dinner: dinner
+		    };
+		    
+		    addRow(rowInfo); // تابع برای اضافه کردن ردیف جدید به جدول
+		
+		    // پاک کردن مقادیر ورودی‌ها
+		    $("#txtFirstName").val('');
+		    $("#txtLastName").val('');
+		    $("#cmbVIP").val('ندارد'); 
+		    $("#cmbGiftpack").val('ندارد'); 
+		    $("#cmbBreakfast").val('ندارد'); 
+		    $("#cmbLunch").val('ندارد'); 
+		    $("#cmbDinner").val('ندارد'); 
+		});
+			
+		
+
+          element.on("click", ".delete", function () {
+              $(this).closest("tr").remove();
+              updateRowNumbers(); // به‌روزرسانی شماره‌ها بعد از حذف
+          });
+        }
+		function addRow(rowInfo) {
+		    var tempRow = $("#tblFood").find("tr.row-template").clone(); // کپی ردیف الگو
+		    tempRow.show().removeClass("row-template").addClass("row-data"); // نمایش و تغییر کلاس
+		
+		    var index = 0;
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.RowNumber); // شماره ردیف
+		
+		    var imgDelete = $("<img/>", {
+		        src: "Images/delete.png",
+		        title: "حذف",
+		        class: "delete",
+		        css: { cursor: "pointer" }
+		    });
+		
+		    tempRow.find("td:eq(" + index++ + ")").empty().append(imgDelete); // حذف
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.FirstName); // نام
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.LastName); // نام خانوادگی
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.VIP); // VIP
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Giftpack); // پک هدیه
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Breakfast); // صبحانه
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Lunch); // ناهار
+		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Dinner); // شام
+		
+		    $("#tblFood").find("tbody").append(tempRow); // اضافه کردن ردیف جدید به جدول
+		}
+
+        function updateRowNumbers() {
+            element.find("tr.row-data").each(function (index, row) {
+                $(row).find("td:eq(0)").text(index + 1);  
+            });
+        }
+    })();
+});
+
 //#endregion
 
-//#region js ready
+//#region js 
 //#endregion
