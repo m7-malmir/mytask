@@ -80,39 +80,53 @@ $(function(){
 			}
 		}
 		//******************************************************************************************************
-		function insertData(callback)
-		{
-			showLoading();
-			var params = $.getFormDataValues(bindingSourceName);
-			params.CreatorActor_ID = currentActorId;
-			insertFromData(params,
-				function()
-				{
-					alert(JSON.stringify(pk));
-					WorkflowService.RunWorkflow("ZJM.FDR.FoodGuestsReservation",
-					    '<Content><Id>'+pk+'</Id></Content>',
-					    true,
-					    function(data)
-					    {
-					        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
-								hideLoading();
-					        	closeWindow({OK:true, Result:null});
-							});				
-					    }
-					    ,function(err)
-					    {
-					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-					        hideLoading();
-					    }
-					);
-					myHideLoading();
-					if($.isFunction(callback))
-					{
-						callback();
-					}
-				}
-			);	    
-		}
+function isValidDate(dateString) {
+    const regex = /^\d{4}-\d{2}-\d{2}$/; // فرمت YYYY-MM-DD
+    if (!dateString.match(regex)) return false;
+    
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date);
+}
+
+function insertData(callback) {
+    // تعریف params به عنوان یک شیء خالی
+    var params = {}; 
+	var sdate=$("#txtSelectStartDate").attr('gdate').replace(/\//g, '-');
+	var edate=$("#txtSelectEndDate").attr('gdate').replace(/\//g, '-');
+    params.CreatorActorId = currentActorId;
+    params.StartDate = sdate;
+    params.EndDate = edate;
+    params.Description = $("#txtDescription").val().trim(); 
+	//alert(JSON.stringify(pk));
+    // فراخوانی تابع insertFromData با params به‌روزرسانی شده
+    insertFromData(params,
+        function(dataXml) {
+			pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+			
+			
+			alert(JSON.stringify(pk));
+            WorkflowService.RunWorkflow("ZJM.FDR.FoodGuestsReservation",
+                '<Content><Id>' + pk + '</Id></Content>',
+                true,
+                function(data) {
+                    $.alert("درخواست شما با موفقیت ارسال شد.", "", "rtl", function() {
+                        hideLoading();
+                        closeWindow({ OK: true, Result: null });
+                    });
+                },
+                function(err) {
+                    console.error('مشکلی در شروع فرآیند به وجود آمده:', err); // چاپ خطا در کنسول
+                    alert('مشکلی در شروع فرآیند به وجود آمده. ' + err);
+                    hideLoading();
+                }
+            );
+            myHideLoading();
+            if ($.isFunction(callback)) {
+                callback();
+            }
+        }
+    );	    
+}
 		//******************************************************************************************************
 		function updateData(callback)
 		{
