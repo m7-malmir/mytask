@@ -1,3 +1,4 @@
+//#region js ready
 var $form;
 var currentActorId;
 var ProcessStatus;
@@ -80,53 +81,39 @@ $(function(){
 			}
 		}
 		//******************************************************************************************************
-function isValidDate(dateString) {
-    const regex = /^\d{4}-\d{2}-\d{2}$/; // فرمت YYYY-MM-DD
-    if (!dateString.match(regex)) return false;
-    
-    const date = new Date(dateString);
-    return date instanceof Date && !isNaN(date);
-}
-
-function insertData(callback) {
-    // تعریف params به عنوان یک شیء خالی
-    var params = {}; 
-	var sdate=$("#txtSelectStartDate").attr('gdate').replace(/\//g, '-');
-	var edate=$("#txtSelectEndDate").attr('gdate').replace(/\//g, '-');
-    params.CreatorActorId = currentActorId;
-    params.StartDate = sdate;
-    params.EndDate = edate;
-    params.Description = $("#txtDescription").val().trim(); 
-	//alert(JSON.stringify(pk));
-    // فراخوانی تابع insertFromData با params به‌روزرسانی شده
-    insertFromData(params,
-        function(dataXml) {
-			pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
-			
-			
-			alert(JSON.stringify(pk));
-            WorkflowService.RunWorkflow("ZJM.FDR.FoodGuestsReservation",
-                '<Content><Id>' + pk + '</Id></Content>',
-                true,
-                function(data) {
-                    $.alert("درخواست شما با موفقیت ارسال شد.", "", "rtl", function() {
-                        hideLoading();
-                        closeWindow({ OK: true, Result: null });
-                    });
-                },
-                function(err) {
-                    console.error('مشکلی در شروع فرآیند به وجود آمده:', err); // چاپ خطا در کنسول
-                    alert('مشکلی در شروع فرآیند به وجود آمده. ' + err);
-                    hideLoading();
-                }
-            );
-            myHideLoading();
-            if ($.isFunction(callback)) {
-                callback();
-            }
-        }
-    );	    
-}
+		function insertData(callback)
+		{
+			showLoading();
+			var params = $.getFormDataValues(bindingSourceName);
+			params.CreatorActor_ID = currentActorId;
+			insertFromData(params,
+				function()
+				{
+					alert(JSON.stringify(pk));
+					WorkflowService.RunWorkflow("ZJM.FDR.FoodGuestsReservation",
+					    '<Content><Id>'+pk+'</Id></Content>',
+					    true,
+					    function(data)
+					    {
+					        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
+								hideLoading();
+					        	closeWindow({OK:true, Result:null});
+							});				
+					    }
+					    ,function(err)
+					    {
+					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
+					        hideLoading();
+					    }
+					);
+					myHideLoading();
+					if($.isFunction(callback))
+					{
+						callback();
+					}
+				}
+			);	    
+		}
 		//******************************************************************************************************
 		function updateData(callback)
 		{
@@ -166,3 +153,173 @@ function insertData(callback) {
 	}());
 	$form.init();
 });
+//#endregion
+
+//#region js form manager
+var FormManager = {
+	//*****************************************************************************************************
+	readEntityّFoodEdit: function(jsonParams, onSuccess, onError)
+	{
+	  /*  BS_HRFood.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(
+	                function()
+	                { 
+	                    list.push
+	                    ({
+	                        FoodId: $(this).find("col[name='FoodId']").text(),
+	                        FoodTitle: $(this).find("col[name='FoodTitle']").text(),
+	                        FoodStatus: $(this).find("col[name='FoodStatus']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );*/
+	},
+		//*****************************************************************************************************
+	readEntityّFoodMealPlan: function(jsonParams, onSuccess, onError)
+	{
+	   BS_FoodMealPlan.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(
+	                function()
+	                { 
+	                    list.push
+	                    ({
+	                        FoodId: $(this).find("col[name='FoodId']").text(),
+	                        FoodTitle: $(this).find("col[name='FoodTitle']").text(),
+	                        FoodStatus: $(this).find("col[name='FoodStatus']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+	//******************************************************************************************************
+	insertEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_HRGuestRequest.Insert(jsonParams,
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+			function(error) {
+				var methodName = "insertEntity";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+		
+	},
+	//******************************************************************************************************
+	deleteEntity: function(jsonParams, onSuccess, onError)
+	{
+		BS_HRFood.Delete(jsonParams, 
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			},
+			function(error) {
+					var methodName = "deleteEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+	//******************************************************************************************************
+	updateEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_HRFood.Update(jsonParams
+			, function(data)
+			{
+				
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+		function(error) {
+					var methodName = "deleteEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+};
+//#endregion
+
+//#region js ready
+//#endregion
+
+//#region js ready
+//#endregion
