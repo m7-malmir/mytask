@@ -81,38 +81,93 @@ $(function(){
 			}
 		}
 		//******************************************************************************************************
-		function insertData(callback)
-		{
-			showLoading();
-			var params = $.getFormDataValues(bindingSourceName);
-			params.CreatorActor_ID = currentActorId;
-			insertFromData(params,
-				function()
-				{
-					alert(JSON.stringify(pk));
-					WorkflowService.RunWorkflow("ZJM.FDR.FoodGuestsReservation",
-					    '<Content><Id>'+pk+'</Id></Content>',
-					    true,
-					    function(data)
-					    {
-					        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
-								hideLoading();
-					        	closeWindow({OK:true, Result:null});
-							});				
-					    }
-					    ,function(err)
-					    {
-					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-					        hideLoading();
-					    }
-					);
-					myHideLoading();
-					if($.isFunction(callback))
-					{
-						callback();
+
+		function insertData(callback) {
+		    // تعریف params به عنوان یک شیء خالی
+		    var params = {}; 
+			var sdate = $("#txtSelectStartDate").attr("gdate").split('/').join('-');
+			var edate = $("#txtSelectEndDate").attr("gdate").split('/').join('-');
+		    params.CreatorActorId = currentActorId;
+		    params.StartDate = sdate;
+		    params.EndDate = edate;
+		    params.Description = $("#txtDescription").val().trim(); 
+			
+		    // فراخوانی تابع insertFromData با params به‌روزرسانی شده
+		    insertFromData(params,
+		        function(dataXml) {
+				    var GuestRequestId = dataXml.find("row:first").find(">col[name='Id']").text();
+					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+					const guestCodes = new Set();
+					
+					// تابع برای تولید کد مهمان یکتا
+					function generateUniqueGuestCode() {
+					    let code;
+					    do {
+					        code = Math.floor(Math.random() * 900000) + 100000;
+					    } while (code.toString().startsWith('5') || code.toString().startsWith('0') || guestCodes.has(code));
+					
+					    guestCodes.add(code);
+					    return code;
 					}
+					// پیمایش روی ردیف‌های جدول
+					var Guests = [];
+					var param={};
+					$('#tblFood .row-data').each(function() {
+					    var $row = $(this);
+					    var guestCode = generateUniqueGuestCode(); // فرض بر اینه این تابع قبلاً تعریف شده
+					    var param = {
+					        'GuestRequestId': GuestRequestId, // فرض بر اینه این متغیر هم قبلاً تعریف شده
+					        'GuestCode': guestCode,
+					        'FirsName': $row.find('td').eq(2).text().trim(),
+					        'LastName': $row.find('td').eq(3).text().trim(),
+					        'VIP': $row.find('td').eq(4).text().trim().toLowerCase() === "دارد" ? 1 : 0,
+					        'GiftPack': $row.find('td').eq(5).text().trim().toLowerCase() === "دارد" ? 1 : 0,
+					        'BreakFast': $row.find('td').eq(6).text().trim().toLowerCase() === "دارد" ? 1 : 0,
+					        'Lunch': $row.find('td').eq(7).text().trim().toLowerCase() === "دارد" ? 1 : 0,
+					        'Dinner': $row.find('td').eq(8).text().trim().toLowerCase() === "دارد" ? 1 : 0
+					    };
+					
+					    Guests.push(param); // اضافه کردن مهمان به لیست
+					});
+					FormManager.insertGuestDetail(Guests,
+					    function(dataXml) { 
+							
+								WorkflowService.RunWorkflow("ZJM.FDR.FoodGuestsReservation",
+									'<Content><Id>' + pk + '</Id></Content>',
+									true,
+								
+									function(data) {
+					
+										   $.alert("درخواست شما با موفقیت ارسال شد.", "", "rtl", function() {
+											hideLoading();
+											closeWindow({ OK: true, Result: null });
+										});
+									},
+									function(err) {
+										console.error('مشکلی در شروع فرآیند به وجود آمده:', err); // چاپ خطا در کنسول
+										alert('مشکلی در شروع فرآیند به وجود آمده. ' + err);
+										hideLoading();
+									}
+								);
+								myHideLoading();
+								if ($.isFunction(callback)) {
+									callback();
+								}
+											        $.alert("اطلاعات مهمان با موفقیت ثبت شد.","","rtl",function(){	
+									closeWindow({OK:true, Result:null});
+						        });
+						    },
+						    function(error) { // تابع خطا
+						        console.log("خطای برگشتی:", error);
+						        $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+						    }
+						);
+		            myHideLoading();
+		            if ($.isFunction(callback)) {
+		                callback();
+		            }
 				}
-			);	    
+		    );		    
 		}
 		//******************************************************************************************************
 		function updateData(callback)
@@ -142,6 +197,17 @@ $(function(){
 				}
 			}
 		}
+		//******************************************************************************************************
+		return {
+			init: init,
+			getPK: getPK,
+			isInEditMode: isInEditMode,
+			validateForm: validateForm,
+			saveData: saveData
+		};
+	}());
+	$form.init();
+});
 		//******************************************************************************************************
 		return {
 			init: init,
