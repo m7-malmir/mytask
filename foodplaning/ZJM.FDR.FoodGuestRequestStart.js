@@ -208,17 +208,6 @@ $(function(){
 	}());
 	$form.init();
 });
-		//******************************************************************************************************
-		return {
-			init: init,
-			getPK: getPK,
-			isInEditMode: isInEditMode,
-			validateForm: validateForm,
-			saveData: saveData
-		};
-	}());
-	$form.init();
-});
 //#endregion
 
 //#region js form manager
