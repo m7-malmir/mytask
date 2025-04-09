@@ -160,260 +160,304 @@ $(function(){
 
 //#region js form manager
 var FormManager = {
-	insertEntity: function(jsonParams, onSuccess, onError)
-{
-	 BS_HRGuestRequest.Insert(jsonParams,
-		function(data)
-		{
-			var dataXml = null;
-			if($.trim(data) != "")
-			{
-				dataXml = $.xmlDOM(data);
-			}
-			if($.isFunction(onSuccess))
-			{
-				onSuccess(dataXml);
-			}
-		}, 
-		function(error) {
-			var methodName = "insertEntity";
-
-			if ($.isFunction(onError)) {
-				var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-				console.error("Error:", erroMessage);
-				console.error("Details:", error);
-				
-				onError({
-					message: erroMessage,
-					details: error
-				});
-			} else {
-				console.error(erroMessage+ " (no onError callback provided):", error);
-			}
-		}
-	);
-	
-},
-/*****************************************************************************/
-insertGuestDetail: function(jsonParams, onSuccess, onError)
-{
-	 BS_HRGuestRequestDetail.Insert(jsonParams,
-		function(data)
-		{
-			var dataXml = null;
-			if($.trim(data) != "")
-			{
-				dataXml = $.xmlDOM(data);
-			}
-			if($.isFunction(onSuccess))
-			{
-				onSuccess(dataXml);
-			}
-		}, 
-		function(error) {
-			var methodName = "insertEntity";
-
-			if ($.isFunction(onError)) {
-				var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-				console.error("Error:", erroMessage);
-				console.error("Details:", error);
-				
-				onError({
-					message: erroMessage,
-					details: error
-				});
-			} else {
-				console.error(erroMessage+ " (no onError callback provided):", error);
-			}
-		}
-	);
-},
-//******************************************************************************************************
-
-//******************************************************************************************************
-deleteEntity: function(jsonParams, onSuccess, onError)
-{
-	BS_HRFood.Delete(jsonParams, 
-		function(data)
-		{
-			var dataXml = null;
-			if($.trim(data) != "")
-			{
-				dataXml = $.xmlDOM(data);
-			}
-			if($.isFunction(onSuccess))
-			{
-				onSuccess(dataXml);
-			}
-		},
-		function(error) {
-				var methodName = "deleteEntity";
-
-				if ($.isFunction(onError)) {
-					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-					console.error("Error:", erroMessage);
-					console.error("Details:", error);
-					
-					onError({
-						message: erroMessage,
-						details: error
-					});
-				} else {
-					console.error(erroMessage+ " (no onError callback provided):", error);
-				}
-			}
-	);
-},
-//******************************************************************************************************
-updateEntity: function(jsonParams, onSuccess, onError)
-{
-	 BS_HRFood.Update(jsonParams
-		, function(data)
-		{
-			
-			var dataXml = null;
-			if($.trim(data) != "")
-			{
-				dataXml = $.xmlDOM(data);
-			}
-			if($.isFunction(onSuccess))
-			{
-				onSuccess(dataXml);
-			}
-		}, 
-	function(error) {
-				var methodName = "deleteEntity";
-
-				if ($.isFunction(onError)) {
-					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-					console.error("Error:", erroMessage);
-					console.error("Details:", error);
-					
-					onError({
-						message: erroMessage,
-						details: error
-					});
-				} else {
-					console.error(erroMessage+ " (no onError callback provided):", error);
-				}
-			}
-	);
-},
-};
+    readEntity: function(jsonParams, onSuccess, onError)
+        {
+            BS_HRGuestRequest.Read(jsonParams,
+                function(data)
+                {
+                    var dataXml = null;
+                    if($.trim(data) != "")
+                    {
+                        dataXml = $.xmlDOM(data);
+                    }
+                    if($.isFunction(onSuccess))
+                    {
+                        onSuccess(dataXml);
+                    }
+                },
+                function(error) {
+                    var methodName = "readEntity";
+    
+                    if ($.isFunction(onError)) {
+                        var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                        console.error("Error:", erroMessage);
+                        console.error("Details:", error);
+                        
+                        onError({
+                            message: erroMessage,
+                            details: error
+                        });
+                    } else {
+                        console.error(erroMessage+ " (no onError callback provided):", error);
+                    }
+                }
+            );
+        },
+        //******************************************************************************************************
+    readEntityRequestDetail: function(jsonParams, onSuccess, onError)
+        {
+            BS_HRGuestRequestDetail.Read(jsonParams
+                , function(data)
+                {
+                    var list = [];
+                    var xmlvar = $.xmlDOM(data);
+                    xmlvar.find("row").each(
+                        function()
+                        {
+                            list.push
+                            ({
+                                GuestCode: $(this).find("col[name='GuestCode']").text(),
+                                FirsName: $(this).find("col[name='FirsName']").text(),
+                                LastName: $(this).find("col[name='LastName']").text(),
+                                BreakFast: $(this).find("col[name='BreakFast']").text(),
+                                Lunch: $(this).find("col[name='Lunch']").text(),
+                                Dinner: $(this).find("col[name='Dinner']").text(),
+                                GiftPack: $(this).find("col[name='GiftPack']").text(),
+                                VIP: $(this).find("col[name='VIP']").text()
+                                
+                            });
+                        }
+                    );
+                    if($.isFunction(onSuccess))
+                    {
+                        onSuccess(list);
+                    }
+                },
+                function(error) {
+                    var methodName = "readEntityLoanList";
+    
+                    if ($.isFunction(onError)) {
+                        var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                        console.error("Error:", erroMessage);
+                        console.error("Details:", error);
+                        
+                        onError({
+                            message: erroMessage,
+                            details: error
+                        });
+                    } else {
+                        console.error(erroMessage+ " (no onError callback provided):", error);
+                    }
+                }
+            );
+        }
+    };
 //#endregion
 
 //#region js tbl
 var tblMain = null;
+$(function()
+{
 
-$(function () {
-    tblMain = (function () {
-        var element = $("#tblFood");
+    tblMain = (function()
+    {
+        var element = null,
+			isDirty = false,
+            rowPrimaryKeyName = "Id",
+            readRows = FormManager.readEntityRequestDetail;
+		
         init();
-        function init() {
+
+		//ست کردن دیتا در جدول مورد نیاز ما در فرم
+        function init()
+        {
+            element = $("#tblFood");
             bindEvents();
         }
-
-        function bindEvents() {
-		$("#btnRegisterGuests").click(function () {
-		    var firstName = $("#txtFirstName").val().trim();
-		    var lastName = $("#txtLastName").val().trim();
-		    var vip = $("#cmbVIP").val(); // دریافت مقدار VIP
-		    var giftpack = $("#cmbGiftpack").val(); // دریافت مقدار پک هدیه
-		    var breakfast = $("#cmbBreakfast").val(); // دریافت مقدار صبحانه
-		    var lunch = $("#cmbLunch").val(); // دریافت مقدار ناهار
-		    var dinner = $("#cmbDinner").val(); // دریافت مقدار شام
+        //عملیات پر کردن دیتای هر سطر می باشد
+		function addRow(rowInfo, rowNumber) {
+		    var index = 0,
+		        tempRow = element.find("tr.row-template").clone();
+		    tempRow.show().removeClass("row-template").addClass("row-data");
 		
-		    // بررسی اینکه نام و نام خانوادگی وارد شده باشد
-		    if (firstName === "" || lastName === "") {
-		        alert("لطفاً نام و نام خانوادگی را وارد کنید.");
-		        return;
+		    // تابع برای تبدیل true/false به دارد/ندارد
+		    function tf(val) {
+		        return val === "true" ? "دارد" : "ندارد";
 		    }
 		
-			// بررسی تکراری نبودن نام و نام خانوادگی
-			var isDuplicate = false;
-			$("#tblFood tr.row-data").each(function() {
-			    var existingFirstName = $(this).find("td:eq(2)").text().trim(); 
-			    var existingLastName = $(this).find("td:eq(3)").text().trim(); 
-			    
-			    if (existingFirstName === firstName && existingLastName === lastName) {
-			        isDuplicate = true;
-			        return false; 
-			    }
-			});
-			
-			if (isDuplicate) {
-			    alert("این نام و نام خانوادگی قبلاً ثبت شده است.");
-			    return;
-			}
+		    // پر کردن اطلاعات سطر
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GuestCode);
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.FirsName);
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.LastName);
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(tf(rowInfo.VIP));
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(tf(rowInfo.GiftPack));
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(tf(rowInfo.BreakFast));
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(tf(rowInfo.Lunch));
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(tf(rowInfo.Dinner));
 		
-		    // محاسبه شماره ردیف جدید
-		    var newRowNumber = $("#tblFood tr.row-data").length + 1; 
-		
-		    // اطلاعات ردیف جدید
-		    var rowInfo = {
-		        RowNumber: newRowNumber, 
-		        FirstName: firstName,
-		        LastName: lastName,
-		        VIP: vip,
-		        Giftpack: giftpack,
-		        Breakfast: breakfast,
-		        Lunch: lunch,
-		        Dinner: dinner
-		    };
-		    
-		    addRow(rowInfo); // تابع برای اضافه کردن ردیف جدید به جدول
-		
-		    // پاک کردن مقادیر ورودی‌ها
-		    $("#txtFirstName").val('');
-		    $("#txtLastName").val('');
-		    $("#cmbVIP").val('ندارد'); 
-		    $("#cmbGiftpack").val('ندارد'); 
-		    $("#cmbBreakfast").val('ندارد'); 
-		    $("#cmbLunch").val('ندارد'); 
-		    $("#cmbDinner").val('ندارد'); 
-		});
-			
-		
-
-          element.on("click", ".delete", function () {
-              $(this).closest("tr").remove();
-              updateRowNumbers(); // به‌روزرسانی شماره‌ها بعد از حذف
-          });
-        }
-		function addRow(rowInfo) {
-		    var tempRow = $("#tblFood").find("tr.row-template").clone(); // کپی ردیف الگو
-		    tempRow.show().removeClass("row-template").addClass("row-data"); // نمایش و تغییر کلاس
-		
-		    var index = 0;
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.RowNumber); // شماره ردیف
-		
-		    var imgDelete = $("<img/>", {
-		        src: "Images/delete.png",
-		        title: "حذف",
-		        class: "delete",
-		        css: { cursor: "pointer" }
-		    });
-		
-		    tempRow.find("td:eq(" + index++ + ")").empty().append(imgDelete); // حذف
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.FirstName); // نام
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.LastName); // نام خانوادگی
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.VIP); // VIP
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Giftpack); // پک هدیه
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Breakfast); // صبحانه
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Lunch); // ناهار
-		    tempRow.find("td:eq(" + index++ + ")").text(rowInfo.Dinner); // شام
-		
-		    $("#tblFood").find("tbody").append(tempRow); // اضافه کردن ردیف جدید به جدول
+		    element.find("tr.row-template").before(tempRow);
+		    myHideLoading();
 		}
 
-        function updateRowNumbers() {
-            element.find("tr.row-data").each(function (index, row) {
-                $(row).find("td:eq(0)").text(index + 1);  
-            });
+/****************************************************************************************/
+		
+        function bindEvents()
+        {
+			//کد مورد نظر برای اینکه فقط یک ردیف را انتخاب کند
+			  element.on("click", ".CHbox",
+                function()
+                {
+                  clicked = $(this);
+				  if ($(this).is(':checked')) {
+				    $('.CHbox:checked').not($(this)).each(function() {
+				      $(this).prop('checked', false);
+				      $(this).trigger('change');
+				    });
+					    var that = $(this),
+                        row = that.closest("tr");
+						r_info = row.data("rowInfo");
+					  	
+					  	$("#txtServiceId").val(r_info.OwnerPersonnelName);
+					  	carId=r_info.Id;
+					  	NewOwnerName=r_info.OwnerPersonnelName;
+					  
+				  };
+                }
+            );
         }
-    })();
-});
+/****************************************************************************************/
+        function addNewRow(rowInfo)
+        {
+        }
 
+        function showAddDialog()
+        {
+
+        }
+
+        function editRow(row)
+        {
+			
+        }
+
+        function changeRow(row, newRowInfo)
+        {
+            
+        }
+
+        function removeRow(row)
+        {
+           
+        }
+/****************************************************************************************/
+        function load()
+        {
+
+			var params = {}; // شرط لازم برای نمایش وام‌های فردی که فرم را باز می‌کند
+			params = $.extend(params, { Where: "GuestRequestId = 2" });
+			
+			//showLoading();
+			readRows(params,
+			    function(list) {
+					console.log(list);
+			        if (list.length > 0) {
+			            for (var i = 0, l = list.length; i < l; i += 1) {
+			                addRow(list[i], i + 1);
+			            }
+			        }
+			        myHideLoading();
+			    },
+			    function(error) {
+			        myHideLoading();
+			        alert(error);
+			    }
+			);
+        }
+/***********************************************************************************************/
+        function saveData(callback)
+        {			
+			if(!isDirty)
+			{
+				if($.isFunction(callback))
+				{
+				    callback();
+				}
+				return;
+			}
+            var defObjs = [$.Deferred(), $.Deferred(), $.Deferred()];
+			
+			showLoading();
+			
+            insertNewRows(
+                function()
+                {
+                    defObjs[0].resolve();
+                }
+            );
+            updateChangedRows(
+                function()
+                {
+                    defObjs[1].resolve();
+                }
+            );
+            deleteRemovedRows(
+                function()
+                {
+                    defObjs[2].resolve();
+                }
+            );
+            $.when(defObjs[0], defObjs[1], defObjs[2]).done(
+                function()
+                {
+					isDirty = false;
+					hideLoading();
+                    if($.isFunction(callback))
+                    {
+                        callback();
+                    }
+                }
+            );
+        }
+
+        function insertNewRows(callback)
+        {
+			
+        }
+
+        function updateChangedRows(callback)
+        {
+        }
+
+        function deleteRemovedRows(callback)
+        {
+		}
+
+        function rearrangeRows()
+        {
+           
+        }
+
+        function refresh()
+        {
+			//alert(JSON.stringify('4'));
+			element.find("tr.row-data").remove();
+            load();
+        }
+
+        function validateData()
+        {
+			// change the validation method if needed
+            if(element.find("tr.row-data").length == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        return {
+            refresh: refresh,
+            addRow: addNewRow,
+            saveData: saveData,
+            showAddDialog: showAddDialog,
+			validateData: validateData,
+			load: load
+        };
+    }());
+});
 //#endregion
 
 //#region js 
