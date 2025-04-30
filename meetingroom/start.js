@@ -327,8 +327,6 @@ $(function()
 });
 //#endregion
 
-
-
 //#region form-manager
 var FormManager = {
 	//******************************************************************************************************
@@ -470,7 +468,67 @@ var FormManager = {
 };
 //#endregion
 
+//#region btn-register/edit
+$("#btnRegisterRoom").click(function () {
 
+	var RoomId=$("#hiddenId").val();
+	var params = {
+            'Title': $("#txtRoomTitle").val(), 
+            'Address': $("#txtLocation").val(),
+		    'Capasity': $("#txtCapacity").val(), 
+			'Projector': $('#cmbProjector').val() === "دارد" ? '1' : '0',
+			'IsLive': $('#cmbIsOnline').val() === "دارد" ? '1' : '0',
+			'Telephone': $('#cmbTelephone').val() === "دارد" ? '1' : '0',
+			'WhiteBoard': $('#cmbWhiteboard').val() === "دارد" ? '1' : '0',
+            'Active': $("#cmbActive").val() === "فعال" ? '1' : '0'
+       };
+    if (RoomId!='') {
+        params = $.extend(params, { Where: "Id = "+RoomId });
+		FormManager.updateEntity(params,
+				function(status, list) { 
+					$.alert("ویرایش اتاق با موفقیت انجام شد.","","rtl",function(){
+						$("#txtRoomTitle").val('');
+						$("#txtLocation").val('');
+		    			$("#txtCapacity").val('');
+						hideLoading();
+						tblMain.refresh();
+					});		
+				},
+				function(error) { // تابع خطا
+					console.log("خطای برگشتی:", error);
+					$.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+				}
+			);
+    }else{
+	
+		if ($("#txtRoomTitle").val() === '' || $("#txtLocation").val() === '') {
+	        $.alert("لطفا نام اتاق و آدرس آن را رد قسمت مربوطه وارد نمایید.", "", "rtl");
+	        return;		
+	    }	
 
-//#region 
+		const isDuplicate = mainList.some(item => item.Title.trim() === params.Title.trim());
+		if (isDuplicate) {
+		    alert(JSON.stringify('این اتاق قبلا در لیست ثبت شده است.'));
+			return;
+		} else {
+	      FormManager.insertEntity(params,
+       	 function(status, list) { 
+				$.alert("ثبت اتاق با موفقیت انجام شد.","","rtl",function(){
+					hideLoading();
+		        	tblMain.refresh();
+					$("#txtRoomTitle").val('');
+					$("#txtLocation").val('');
+	    			$("#txtCapacity").val('');
+					$form.refresh();
+				});
+	        },
+	        function(error) { // تابع خطا
+				handleError(error,'btnRegisterRoom');
+        	}
+    	  );
+			
+		}	
+	}
+	
+});
 //#endregion
