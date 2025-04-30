@@ -329,7 +329,145 @@ $(function()
 
 
 
-//#region 
+//#region form-manager
+var FormManager = {
+	//******************************************************************************************************
+	readEntityّRooms: function(jsonParams, onSuccess, onError)
+	{
+	    BS_MMMeetingRooms.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(
+	                function()
+	                { 
+	                    list.push
+	                    ({
+							Id: $(this).find("col[name='Id']").text(),
+	                        Title: $(this).find("col[name='Title']").text(),
+	                        Address: $(this).find("col[name='Address']").text(),
+	                        Capasity: $(this).find("col[name='Capasity']").text(),
+							Projector: $(this).find("col[name='Projector']").text(),
+							IsLive: $(this).find("col[name='IsLive']").text(),
+							Telephone: $(this).find("col[name='Telephone']").text(),
+							WhiteBoard: $(this).find("col[name='WhiteBoard']").text(),
+							Active: $(this).find("col[name='Active']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+	//******************************************************************************************************
+	insertEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_MMMeetingRooms.Insert(jsonParams,
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+			function(error) {
+				var methodName = "insertEntity";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+	//******************************************************************************************************
+	deleteEntity: function(jsonParams, onSuccess, onError)
+	{
+		BS_MMMeetingRooms.Delete(jsonParams, 
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			},
+			function(error) {
+					var methodName = "deleteEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+	//******************************************************************************************************
+	updateEntity: function(jsonParams, onSuccess, onError)
+	{
+		 BS_MMMeetingRooms.Update(jsonParams
+			, function(data)
+			{
+				
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+		function(error) {
+					var methodName = "deleteEntity";
+	
+		            if ($.isFunction(onError)) {
+						var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+						console.error("Error:", erroMessage);
+						console.error("Details:", error);
+		                
+		                onError({
+		                    message: erroMessage,
+		                    details: error
+		                });
+		            } else {
+		                console.error(erroMessage+ " (no onError callback provided):", error);
+		            }
+		        }
+		);
+	},
+};
 //#endregion
 
 
