@@ -470,7 +470,6 @@ var FormManager = {
 
 //#region btn-register/edit
 $("#btnRegisterRoom").click(function () {
-
 	var RoomId=$("#hiddenId").val();
 	var params = {
             'Title': $("#txtRoomTitle").val(), 
@@ -529,6 +528,6 @@ $("#btnRegisterRoom").click(function () {
 			
 		}	
 	}
-	
 });
 //#endregion
+
