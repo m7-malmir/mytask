@@ -19,3 +19,52 @@ TextBoxControl4 -> txtBankPaymentNum
 ButtonControl3->btnRegister
 ButtonControl4->btnViewed
 ButtonControl13->btnStartProcess
+
+txtCheckNumLabel
+txtBankPaymentNumLabel
+
+DatePickerPayLabel
+txtPaymentOrderNumLabel
+
+cmbPaymentByLabel
+cmbPaymentBy
+
+
+										
+//	params =  {  Where: "Id = '" + $("#txtSelectDate").val() + "'"  };
+FormManager.readEntity(params,
+    function(status, list) { 
+        $.alert("غذا در تاریخ مورد نظر ویرایش شد.","","rtl",function(){
+            hideLoading();
+            tblMain.refresh();
+            
+            $("#hiddenFoodId").val('');
+            $("#txtSelectDate").val('');
+            $("#mealPlanSelectId").val('');
+            $("#txtSelectDate").attr('disabled',false);
+            $(".ui-datepicker-trigger").css('display','inline-flex');
+            
+        });
+    },
+    function(error) { // تابع خطا
+        console.log("1خطای برگشتی:", error);
+        $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+    }
+);
+
+
+
+
+
+txtCheckNumLabel
+txtCheckNum
+txtBankPaymentNumLabel
+txtBankPaymentNum
+
+DatePickerPayLabel
+DatePickerPay
+txtPaymentOrderNumLabel
+txtPaymentOrderNum
+
+cmbPaymentBy
+cmbPaymentByLabel
