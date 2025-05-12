@@ -1,5 +1,85 @@
-btnSeparateGuyUnpaid
-txtBankPaymentNum
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>نت‌های موسیقی در حال حرکت</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
 
+    let w, h;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-BS_FundPaymentProcess
+    const notes = ['♪', '♫', '♬', '♩'];
+
+    class Note {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.size = Math.random() * 25 + 20;
+        this.alpha = 1;
+        this.fadeSpeed = Math.random() * 0.01 + 0.005;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+        this.char = notes[Math.floor(Math.random() * notes.length)];
+        this.colorHue = Math.floor(Math.random() * 360);
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= this.fadeSpeed;
+
+        if (this.alpha <= 0) {
+          this.reset();
+        }
+      }
+
+      draw(ctx) {
+        ctx.fillStyle = `hsla(${this.colorHue}, 80%, 70%, ${this.alpha})`;
+        ctx.font = `${this.size}px Arial`;
+        ctx.fillText(this.char, this.x, this.y);
+      }
+    }
+
+    const notesArray = Array.from({length: 12}, () => new Note());
+
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+      notesArray.forEach(note => {
+        note.update();
+        note.draw(ctx);
+      });
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

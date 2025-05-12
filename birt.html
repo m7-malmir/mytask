@@ -1,239 +1,108 @@
-var $form;
-var PaymentMethod;
-var total_count = 0;
-var total_sum = 0;
-var current_role_id = 0;
-$(function(){
-	$form = (function()
-	{
-		var pk,
-			inEditMode = false,
-			primaryKeyName = "Id",
-			bindingSourceName = "BS_PaymentProcess",
-            insertFromData = FormManager.insertEntity;
-		
-		function init()
-		{
-			if(typeof dialogArguments !== "undefined")
-			{
-				if(primaryKeyName in dialogArguments)
-				{
-					pk = dialogArguments[primaryKeyName];
-					inEditMode = true;
-					readData();
-				}
-				if("FormParams" in dialogArguments)
-				{
-					pk = dialogArguments.FormParams;
-					inEditMode = true;
-					readData();
-				}
-			}
-			build();
-			createControls();
-			bindEvents();
-		}
-		
-		function build()
-		{
-			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
-			$("#Form1").css({top: "0", left: "0", width: $(document).width() + "px", height: $(document).height() + "px"});
-		}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>نت‌های موسیقی واکنش‌پذیر</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
 
-		function createControls()
-		{
-			if(!inEditMode){
-				$("#ButtonControl13").show();
-			}
-			alert(JSON.stringify('aaaa'));
-			if(/*check_date*/1){
-				UserService.GetCurrentActor(true,
-					function(data){
-						hideLoading();
-						var xmlActor = $.xmlDOM(data);
-						currentActorId = xmlActor.find('actor').attr('pk');
-						var params = {'actor_id': currentActorId}
-						FormManager.GetRoleId(params,
-							function(list)
-							{
-								current_role_id = list[0]["RoleId"];
-								if(current_role_id == 30){
-									$("#ButtonControl14").show();
-									$("#ButtonControl11").hide();
-									$("#ButtonControl12").hide();
-								}else{
-									if(inEditMode){
-										$("#ButtonControl13").show();
-										$("#LabelControl1").show();
-										$("#DatePickerControl1").show();
-										$("#LabelControl2").show();
-										$("#TextBoxControl2").show();
-										$("#LabelControl3").show();
-										$("#TextBoxControl3").show();
-										$("#LabelControl4").show();
-										$("#TextBoxControl4").show();
-									}
-								}
-							},
-							function(err)
-							{
-								hideLoading();
-								alert(err);
-							}
-						);
-						tblMeetingPersons.refresh();
-							
-					},
-					function(err){
-						hideLoading();
-						$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
-					}
-				);
-			}else{
-				$.alert("بازه مجاز پرداخت از چهاردهم هر ماه بجز فروردین و اسفند است.","","rtl",function(){
-					hideLoading();
-		        	closeWindow({OK:true, Result:null});
-				});
-			}
-		}
+    let w, h;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-		function bindEvents()
-		{
-			/*randomFileId = Math.floor(Math.random() * (1000000000)) - 2000000;
-			firstRandomId = randomFileId;*/
-		}
+    const notes = ['♪', '♫', '♬', '♩'];
 
-		function readData()
-		{
-			
-			/*showLoading();
-			readFromData({Where: primaryKeyName + " = " + pk},
-				function(dataXml)
-				{
-					hideLoading();
-					$.setFormDataValues(bindingSourceName, dataXml);
-				},
-				function(err)
-				{
-					hideLoading();
-					alert(err);
-				}
-			);*/
-		}
+    const mouse = { x: null, y: null };
+    window.addEventListener('mousemove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
 
-		function getPK()
-		{
-			return pk;
-		}
+    class Note {
+      constructor() {
+        this.reset();
+      }
 
-		function isInEditMode()
-		{
-			return inEditMode;
-		}
+      reset() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.vx = 0;
+        this.vy = 0;
+        this.size = Math.random() * 25 + 20;
+        this.alpha = 1;
+        this.fadeSpeed = Math.random() * 0.01 + 0.005;
+        this.char = notes[Math.floor(Math.random() * notes.length)];
+        this.colorHue = Math.floor(Math.random() * 360);
+      }
 
-		function saveData(callback)
-		{
-			validateForm(
-				function()
-				{
-					if(inEditMode)
-					{
-						//updateData(callback);
-					}
-					else
-					{
-						insertData(callback);
-					}
-				},
-				function()
-				{
-					$.alert("لطفا موارد اجباری را تکمیل نمایید.", "", "rtl",
-						function()
-						{}
-					);
-				}
-			);
-		}
+      update() {
+        // واکنش به موس
+        if (mouse.x && mouse.y) {
+          const dx = this.x - mouse.x;
+          const dy = this.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const minDist = 100;
 
-		function insertData(callback)
-		{
-			//showLoading();
-			var params = $.getFormDataValues(bindingSourceName);
-			params.CreatorActor_ID = currentActorId;
-			params.PaymentAmount = rcommafy($("#txtAllAmount").val());
-			params.PaymentReqAmount = $("#txtAllReqs").val();
-			insertFromData(params,
-				function(dataXml)
-				{
-					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
-					randomFileId = pk;
-					var result = "<data><" + primaryKeyName + ">" + pk + "</" + primaryKeyName + "></data>";
-					inEditMode = true;
-					WorkflowService.RunWorkflow("ZJM.FMS.FPP.FundPaymentProcess",
-					    '<Content><Id>'+pk+'</Id></Content>',
-					    true,
-					    function(data)
-					    {
-					        $.alert("درخواست پرداخت با موفقیت ارسال شد.","","rtl",function(){
-								hideLoading();
-					        	closeWindow({OK:true, Result:null});
-							});				
-					    }
-					    ,function(err)
-					    {
-					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-					        hideLoading();
-					    }
-					);	
-					hideLoading();
-					if($.isFunction(callback))
-					{
-						callback();
-					}
-				},
-				function(err)
-				{
-					hideLoading();
-					alert(err);
-				}
-			);
-		}
+          if (dist < minDist) {
+            const angle = Math.atan2(dy, dx);
+            const force = (1 - dist / minDist) * 2;
+            this.vx += Math.cos(angle) * force;
+            this.vy += Math.sin(angle) * force;
+          }
+        }
 
-		function updateData(callback)
-		{
-			//showLoading();
-		}
-		
-		function deleteData(callback)
-		{
-			showLoading();
-		}
+        // حرکت و محو
+        this.x += this.vx;
+        this.y += this.vy;
 
-		function validateForm(onSuccess, onError)
-		{
-			try
-			{
-				$("[role]").validateData(true);
-				if($.isFunction(onSuccess))
-				{
-					onSuccess();
-				}
-			}
-			catch(e)
-			{
-				if($.isFunction(onError))
-				{
-					onError();
-				}
-			}
-		}
-		
-		return {
-			init: init,
-			getPK: getPK,
-			isInEditMode: isInEditMode,
-			saveData: saveData
-		};
-	}());
-	$form.init();
-});
+        this.vx *= 0.9;  // کاهش سرعت
+        this.vy *= 0.9;
+
+        this.alpha -= this.fadeSpeed;
+        if (this.alpha <= 0) this.reset();
+      }
+
+      draw(ctx) {
+        ctx.fillStyle = `hsla(${this.colorHue}, 80%, 70%, ${this.alpha})`;
+        ctx.font = `${this.size}px Arial`;
+        ctx.fillText(this.char, this.x, this.y);
+      }
+    }
+
+    const notesArray = Array.from({length: 12}, () => new Note());
+
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+      notesArray.forEach(note => {
+        note.update();
+        note.draw(ctx);
+      });
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
