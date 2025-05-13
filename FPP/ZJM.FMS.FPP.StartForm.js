@@ -1,4 +1,5 @@
 //#region js.ready 
+
 var $form;
 var PaymentMethod;
 var total_count = 0;
@@ -305,5 +306,226 @@ $(function(){
 		};
 	}());
 	$form.init();
+});
+//#endregion ready.js
+
+//#region form manager
+
+
+//#endregion
+
+
+//#region tbl js ready 
+var tblMain = null;
+
+$(function()
+{
+    tblMain = (function()
+    {
+        var element = null,
+			isDirty = false,
+            rowPrimaryKeyName = "Id",
+            readRows = FormManager.readEntity,
+            insertRows = FormManager.insertEntity,
+            updateRows = FormManager.updateEntity,
+            deleteRows = FormManager.deleteEntity,
+            editFormRegKey = "EditFormRegKey",
+            insertFormRegKey = "InsertFormRegKey";
+
+        init();
+
+        function init()
+        {
+            element = $("#tblPaymentItems");
+            build();
+            bindEvents();
+        }
+
+        function build()
+        {            
+        }
+
+        function bindEvents()
+        {	
+        }
+
+        function addRow(rowInfo, rowNumber, l)
+        {
+            var index = 0,
+                tempRow = element.find("tr.row-template").clone();
+
+            tempRow.show().removeClass("row-template").addClass("row-data");
+            tempRow.data("rowInfo", rowInfo);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.UnitsName);
+			
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.FuelCount);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.FuelSum));
+			total_count += parseInt(rowInfo.FuelCount);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.CarCount);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.CarSum));
+			total_count += parseInt(rowInfo.CarCount);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.MissionCount);
+			total_count += parseInt(rowInfo.MissionCount);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.MissionSum));
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.TotalSUM));
+			total_sum += parseInt(rowInfo.TotalSUM);
+			if(rowNumber = l){
+				$("#txtAllAmountUnpaid").val(commafy(total_sum));
+				$("#txtAllReqsUnpaidCount").val(commafy(total_count));
+			}
+            element.find("tr.row-template").before(tempRow);
+        }
+
+        function addNewRow(rowInfo)
+        {
+            addRow(rowInfo, element.find("tr.row-data").filter(":visible").length + 1);
+			isDirty = true;
+        }
+
+        function showAddDialog()
+        {
+            var params = {}; // change params if needed
+
+            $.showModalForm({registerKey: insertFormRegKey, params: params},
+                function(retVal)
+                {
+                    if(retVal.OK)
+                    {
+                        // if edit form saves the changes
+                        refresh();
+
+                        // if edit form passes new values down to be managed here
+                        addNewRow(retVal.Data);
+                    }
+                }
+            );
+        }
+
+        function editRow(row)
+        {
+			var rowInfo = row.data("rowInfo"),
+				params = {};
+			
+            params[rowPrimaryKeyName] = rowInfo[rowPrimaryKeyName]; // change params if needed 
+
+            $.showModalForm({registerKey: editFormRegKey, params: params},
+                function(retVal)
+                {
+                    if(retVal.OK)
+                    {
+                        // if edit form saves the changes
+                        refresh();
+
+                        // if edit form passes new values down to be managed here
+                        changeRow(row, retVal.Data);
+                    }
+                }
+            );
+        }
+
+        function changeRow(row, newRowInfo)
+        {
+            var index = 1;
+            row.find("td:eq(" + index++ + ")").text(newRowInfo.Name);
+
+            row.attr({state: "changed"});
+            row.data("rowInfo", newRowInfo);
+			isDirty = true;
+        }
+
+        function removeRow(row)
+        {
+            if(row.attr("state") == "new")
+			{
+			    row.remove();
+				rearrangeRows();
+			}
+			else
+			{
+	            row.attr({state: "deleted"});
+	            row.hide();
+	            rearrangeRows();
+			}
+			isDirty = true;
+        }
+
+        function load()
+        {
+			// در حالت editmode 
+			if($form.isInEditMode()){
+				params = {};	
+				params = $.extend(params, { 'PaymentProcessID':$form.getPK()});	
+				FormManager.readReportTableEditMode(params,
+					function(list)
+					{
+						for(var i = 0, l = list.length; i < l; i += 1)
+			            {
+							addRow(list[i], i + 1, l);
+			            }
+					},
+					function(err)
+					{
+						hideLoading();
+						alert(err);
+					}
+				);
+			//در حالت ثبت اولیه
+			}else{
+				params = {};			
+				FormManager.readReportTable(params,
+					function(list)
+					{
+						for(var i = 0, l = list.length; i < l; i += 1)
+			            {
+							addRow(list[i], i + 1, l);
+			            }
+					},
+					function(err)
+					{
+						hideLoading();
+						alert(err);
+					}
+				);
+			}
+        }
+
+        function rearrangeRows()
+        {
+            element.find("tr.row-data").filter(":visible").each(
+                function(index)
+                {
+                    $(this).find("td:eq(0)").text(index + 1);
+                }
+            );
+        }
+
+        function refresh()
+        {
+			element.find("tr.row-data").remove();
+            load();
+        }
+
+        function validateData()
+        {
+			// change the validation method if needed
+            if(element.find("tr.row-data").length == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        return {
+            refresh: refresh,
+            addRow: addNewRow,
+            showAddDialog: showAddDialog,
+			validateData: validateData,
+			load: load
+        };
+    }());
 });
 //#endregion
