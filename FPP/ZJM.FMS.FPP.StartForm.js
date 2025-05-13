@@ -769,7 +769,6 @@ readReportTableEditMode: function(jsonParams, onSuccess, onError)
 };
 //#endregion
 
-
 //#region tbl js ready 
 var tblMain = null;
 
@@ -983,4 +982,8 @@ $(function()
         };
     }());
 });
+//#endregion
+
+//#region 
+
 //#endregion

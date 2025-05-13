@@ -2,84 +2,104 @@
 <html lang="fa">
 <head>
   <meta charset="UTF-8">
-  <title>نت‌های موسیقی در حال حرکت</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تماس با ما</title>
   <style>
-    body, html {
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap');
+
+    body {
       margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
+      font-family: 'Vazirmatn', sans-serif;
+      background: #f4f7f8;
+      color: #333;
+      direction: rtl;
     }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
+
+    .contact-container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    form input, form textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    form input:focus, form textarea:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    form button {
+      background-color: #3498db;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    form button:hover {
+      background-color: #2980b9;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .contact-container {
+        margin: 20px;
+        padding: 25px;
+      }
     }
   </style>
 </head>
 <body>
-  <canvas id="bgCanvas"></canvas>
-  <script>
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
 
-    let w, h;
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
+<div class="contact-container">
+  <h2>تماس با ما</h2>
+  <form action="#" method="POST">
+    <label for="name">نام شما</label>
+    <input type="text" id="name" name="name" placeholder="نام کامل" required>
 
-    const notes = ['♪', '♫', '♬', '♩'];
+    <label for="email">ایمیل</label>
+    <input type="email" id="email" name="email" placeholder="example@email.com" required>
 
-    class Note {
-      constructor() {
-        this.reset();
-      }
+    <label for="subject">موضوع</label>
+    <input type="text" id="subject" name="subject" placeholder="موضوع پیام" required>
 
-      reset() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.size = Math.random() * 25 + 20;
-        this.alpha = 1;
-        this.fadeSpeed = Math.random() * 0.01 + 0.005;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.speedY = Math.random() * 1 - 0.5;
-        this.char = notes[Math.floor(Math.random() * notes.length)];
-        this.colorHue = Math.floor(Math.random() * 360);
-      }
+    <label for="message">پیام شما</label>
+    <textarea id="message" name="message" rows="5" placeholder="متن پیام..." required></textarea>
 
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.alpha -= this.fadeSpeed;
+    <button type="submit">ارسال پیام</button>
+  </form>
+</div>
 
-        if (this.alpha <= 0) {
-          this.reset();
-        }
-      }
-
-      draw(ctx) {
-        ctx.fillStyle = `hsla(${this.colorHue}, 80%, 70%, ${this.alpha})`;
-        ctx.font = `${this.size}px Arial`;
-        ctx.fillText(this.char, this.x, this.y);
-      }
-    }
-
-    const notesArray = Array.from({length: 12}, () => new Note());
-
-    function animate() {
-      ctx.clearRect(0, 0, w, h);
-      notesArray.forEach(note => {
-        note.update();
-        note.draw(ctx);
-      });
-      requestAnimationFrame(animate);
-    }
-
-    animate();
-  </script>
 </body>
 </html>
