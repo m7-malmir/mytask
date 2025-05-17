@@ -1,311 +1,422 @@
 //#region js.ready 
-
 var $form;
 var PaymentMethod;
 var total_count = 0;
 var total_sum = 0;
 var current_role_id = 0;
 
+var DocumentId;
+var CurrentUserActorId;
+var InboxId;
+showLoading(1000);
 $(function(){
-	$form = (function()
-	{
-		
-		var pk,
-			inEditMode = false,
-			primaryKeyName = "Id",
-			bindingSourceName = "BS_FundPaymentProcess",
-            insertFromData = FormManager.insertEntity;
-		//متغیر اضافه شده در فرم
-			
-		
-		function init()
-		{
-			if(typeof dialogArguments !== "undefined")
-			{
-				if(primaryKeyName in dialogArguments)
-				{
-					pk = dialogArguments[primaryKeyName];
-					inEditMode = true;
-					readData();
-				}
-				if("FormParams" in dialogArguments)
-				{
-					pk = dialogArguments.FormParams;
-					inEditMode = true;
-					readData();
-				}
-			}
-			build();
-			createControls();
-			bindEvents();
-		}
-		
-		function build()
-		{
-			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
-			$("#Form1").css({top: "0", left: "0", width: $(document).width() + "px", height: $(document).height() + "px"});
-		}
+    $form = (function()
+    {
+        var pk,
+            inEditMode = false,
+            primaryKeyName = "Id",
+            bindingSourceName = "BS_FundPaymentProcess",
+            insertFromData = FormManager.insertEntity,
+            updateFromData = FormManager.updateEntity,
+            updateFundManagmentProcess = FormManager.updateFundManagmentProcess;
 
-		function createControls()
-		{
-			if(!inEditMode){
-				$("#btnStartProcess").show();
-			}
-		
-			if(/*check_date*/1){
-				UserService.GetCurrentActor(true,
-					function(data){
-						hideLoading();
-						var xmlActor = $.xmlDOM(data);
-						currentActorId = xmlActor.find('actor').attr('pk');
-						var params = {'actor_id': currentActorId}
-						FormManager.GetRoleId(params,
-							function(list)
-							{
-								current_role_id = list[0]["RoleId"];
-								if(current_role_id == 30){
-									$("#btnCostSeparatUnpaid4").show();
-									$("#btnCostSeparatUnpaid1").hide();
-									$("#btnCostSeparatUnpaid2").hide();
-								}else{
-									if(inEditMode){
-									    $("#cmbPaymentBy").hide();
-										$("#cmbPaymentByLabel").hide();
-									params =  {  Where: "Id =" + dialogArguments.FormParams  };
-										
-									FormManager.readEntity(params,
-										
-									    function(list, status) { 
-											var paymentMethod = list[0].PaymentMethod;
-											if(paymentMethod==1){
-												
-												$("#DatePickerPayLabel").show();
-												$("#DatePickerPay").show();
-												$("#txtPaymentOrderNumLabel").show();
-												$("#txtPaymentOrderNum").show();
-												
-												$("#txtCheckNumLabel").hide();
-												$("#txtCheckNum").hide();
-												$("#txtBankPaymentNumLabel").hide();
-												$("#txtBankPaymentNum").hide();
-												
-											}else if(paymentMethod==2){
-												$("#DatePickerPayLabel").hide();
-												$("#DatePickerPay").hide();
-												$("#txtPaymentOrderNumLabel").hide();
-												$("#txtPaymentOrderNum").hide();
-												$("#btnViewed").hide();
-												$("#btnStartProcess").hide();
-												
-												$("#btnRegister").show();
-												$("#txtCheckNumLabel").show();
-												$("#txtCheckNum").show();
-												$("#txtCheckNum").prop("disabled", false);
-												$("#txtBankPaymentNumLabel").show();
-												$("#txtBankPaymentNum").show();
-												$("#txtBankPaymentNum").prop("disabled", false);
-												
-												
-												
-											}
-													
-									    },
-									    function(error) { // تابع خطا
-									        console.log("1خطای برگشتی:", error);
-									        $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-									    }
-									);
-										
-										$("#btnStartProcess").show();
-										$("#DatePickerPay").show();
-										$("#txtCheckNum").show();
-										$("#LabelControl3").show();
-										$("#txtPaymentOrderNum").show();
-										$("#LabelControl4").show();
-										$("#txtBankPaymentNum").show();
-									}
-								}
-							},
-							function(err)
-							{
-								hideLoading();
-								alert(err);
-							}
-						);
-						tblMeetingPersons.refresh();
-							
-					},
-					function(err){
-						hideLoading();
-						$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
-					}
-				);
-			}else{
-				$.alert("بازه مجاز پرداخت از چهاردهم هر ماه بجز فروردین و اسفند است.","","rtl",function(){
-					hideLoading();
-		        	closeWindow({OK:true, Result:null});
-				});
-			}
-		}
+        // تابع init برای راه‌اندازی فرم و خواندن داده‌ها در صورت ویرایش
+        function init()
+        { 
+            if(typeof dialogArguments !== "undefined")
+            {
+                if(primaryKeyName in dialogArguments)
+                {
+                    pk = dialogArguments[primaryKeyName];
+                    inEditMode = true;
+                    readData();
+                }
+                if("FormParams" in dialogArguments)
+                {
+                    pk = dialogArguments.FormParams;
+                    inEditMode = true;
+                    readData();
+                }
+                if(inEditMode){
+                    DocumentId = dialogArguments["DocumentId"];
+                    CurrentUserActorId = dialogArguments["WorkItem"]["ActorId"];
+                    InboxId = dialogArguments["WorkItem"]["InboxId"];
+                }
+            }
+            build();
+            createControls();
+            bindEvents();
+        }
+        
+        // تابع build برای تنظیمات اولیه فرم و قرار دادن آن در صفحه
+        function build()
+        {
+            $("body").css({overflow: "hidden"}).attr({scroll: "no"});
+            $("#Form1").css({top: "0", left: "0", width: $(document).width() + "px", height: $(document).height() + "px"});
+        }
 
-		function bindEvents()
-		{
-			/*randomFileId = Math.floor(Math.random() * (1000000000)) - 2000000;
-			firstRandomId = randomFileId;*/
-		}
+        // تابع createControls برای ایجاد و تنظیم کنترل‌های فرم بر اساس حالت ویرایش
+        function createControls()
+        {
+            if(!inEditMode){
+                $("#btnStartProcess").show();
+                $("#txtPaymentDateLabel").hide();
+                $("#txtPaymentDateArea").addClass("DatePickerhide");
+            }
+        
+            if(/*check_date*/1){
+                UserService.GetCurrentActor(true,
+                    function(data){
+                        hideLoading();
+                        var xmlActor = $.xmlDOM(data);
+                        currentActorId = xmlActor.find('actor').attr('pk');
+                        var params = {'actor_id': currentActorId}
+                        FormManager.GetRoleId(params,
+                            function(list)
+                            {
+                                current_role_id = list[0]["RoleId"];
+                                if(current_role_id == 30){
+                                    // پنهان کردن برخی از دکمه‌ها برای تسک منابع انسانی
+                                    $("#btnUnpaidIndividual").hide();
+                                    $("#btnUnpaidByExpense").hide();
+                                    $("#txtPaymentDateLabel").hide();
+                                    $("#txtPaymentDateArea").addClass("DatePickerhide");
+                                    $("#txtPaymentOrderNOLabel").hide();
+                                    $("#txtPaymentOrderNO").hide();
+                                    $("#btnViewed").show();
+                                    $("#btnStartProcess").hide();
+                                    $("#txtPaymentCheckNOLabel").hide();
+                                    $("#txtPaymentCheckNO").hide();
+                                    $("#txtPaymentBankNOLabel").hide();
+                                    $("#txtPaymentBankNO").hide();
+                                    $("#cmbPaymentMethod").hide();
+                                    $("#cmbPaymentMethodLabel").hide();
+                                }else{
+                                    
+                                    if(inEditMode){
+                                        $("#cmbPaymentMethod").hide();
+                                        $("#cmbPaymentMethodLabel").hide();
+                                    
+                                        params =  {  Where: "Id =" + dialogArguments.FormParams  };
+                                        FormManager.readEntity(params,
+                                            function(list, status) { 
+                                                var paymentMethod = list[0].PaymentMethod;
+                                                // تنظیمات براساس نوع روش پرداخت
+                                                if(paymentMethod==1){
+                                                    $("#txtPaymentDateLabel").show();
+                                                    $("#txtPaymentDateArea").addClass("DatePickershow");
+                                                    $("#txtPaymentOrderNOLabel").show();
+                                                    $("#txtPaymentOrderNO").show();
+                                                    $("#btnRegister").show();
+                                                    
+                                                    $("#btnStartProcess").hide();
+                                                    $("#txtPaymentCheckNOLabel").hide();
+                                                    $("#txtPaymentCheckNO").hide();
+                                                    $("#txtPaymentBankNOLabel").hide();
+                                                    $("#txtPaymentBankNO").hide();
+                                                }else if(paymentMethod==2){
+                                                    $("#txtPaymentDateLabel").hide();
+                                                    $("#txtPaymentDateArea").addClass("DatePickerhide");
+                                                    $("#txtPaymentOrderNOLabel").hide();
+                                                    $("#txtPaymentOrderNO").hide();
+                                                    $("#btnViewed").hide();
+                                                    $("#btnStartProcess").hide();
+                                                    $("#btnRegister").show();
+                                                    $("#txtPaymentCheckNOLabel").show();
+                                                    $("#txtPaymentCheckNO").show();
+                                                    $("#txtPaymentCheckNO").prop("disabled", false);
+                                                    $("#txtPaymentBankNOLabel").show();
+                                                    $("#txtPaymentBankNO").show();
+                                                    $("#txtPaymentBankNO").prop("disabled", false);    
+                                                }
+                                            },
+                                            function(error) { // تابع خطا
+                                                console.log("1خطای برگشتی:", error);
+                                                $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+                                            }
+                                        );
+                                    }
+                                }
+                            },
+                            function(err)
+                            {
+                                hideLoading();
+                                alert(err);
+                            }
+                        );
+                        
+                        tblMain.refresh();
+                    },
+                    function(err){
+                        hideLoading();
+                        $ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
+                    }
+                );
+            }else{
+                $.alert("بازه مجاز پرداخت از چهاردهم هر ماه بجز فروردین و اسفند است.","","rtl",function(){
+                    hideLoading();
+                    closeWindow({OK:true, Result:null});
+                });
+            }
+        }
 
-		function readData()
-		{
-			
-			/*showLoading();
-			readFromData({Where: primaryKeyName + " = " + pk},
-				function(dataXml)
-				{
-					hideLoading();
-					$.setFormDataValues(bindingSourceName, dataXml);
-				},
-				function(err)
-				{
-					hideLoading();
-					alert(err);
-				}
-			);*/
-		}
+        // تابع bindEvents برای متصل کردن رویدادها به کنترل‌ها 
+        function bindEvents()
+        {
+        }
 
-		function getPK()
-		{
-			return pk;
-		}
+        // تابع readData برای خواندن داده‌ها 
+        function readData()
+        {
+        }
 
-		function isInEditMode()
-		{
-			return inEditMode;
-		}
+        // تابع getPK برای دریافت شناسه ران شده در پروژه
+        function getPK()
+        {
+            return pk;
+        }
 
-		function saveData(callback)
-		{
-			//alert(JSON.stringify('save data'));
-			validateForm(
-				function()
-				{
-					if(inEditMode)
-					{
-						//updateData(callback);
-						alert(JSON.stringify('in edit'));
-					}
-					else
-					{
-						insertData(callback);
-						alert(JSON.stringify('not edit'));
-					}
-				},
-				function()
-				{
-					$.alert("لطفا موارد اجباری را تکمیل نمایید.", "", "rtl",
-						function()
-						{}
-					);
-				}
-			);
-		}
+        // تابع isInEditMode برای بررسی اینکه آیا در حالت ویرایش هستیم یا نه
+        function isInEditMode()
+        {
+            return inEditMode;
+        }
 
-		function insertData(callback)
-		{
-			//showLoading();
-			var selectedValue = $('#cmbPaymentBy').val(); 
-	        var PaymentMethod;
+        // تابع saveData برای ذخیره داده‌ها، بررسی اعتبار فرم و فراخوانی توابع درج یا بروزرسانی
+        function saveData(callback)
+        {
+            validateForm(
+                function()
+                {
+                    if(inEditMode)
+                    {
+                        updateData(callback); 
+                    }
+                    else
+                    {
+                        insertData(callback);
+                    }
+                },
+                function()
+                {
+                    $.alert("لطفا موارد اجباری را تکمیل نمایید.", "", "rtl",
+                        function()
+                        {}
+                    );
+                }
+            );
+        }
 
-	        if (selectedValue === 'تنخواه دار') {
-	            PaymentMethod =1;
-	        } else if (selectedValue === 'خزانه دار') {
-	            PaymentMethod =2;
-	        } else {
-	            PaymentMethod = null; 
-	        }
+        // تابع insertData برای درج داده‌های جدید در فرم
+        function insertData(callback) {
+            var selectValue = $('#cmbPaymentMethod').val().trim(); 
+            var PaymentMethod;
+            var ProcessStatus;
 
-			var params = $.getFormDataValues(bindingSourceName);
-			params.CreatorActor_ID = currentActorId;
-			params.PaymentAmount = rcommafy($("#txtAllAmountUnpaid").val());
-			params.PaymentReqAmount = $("#txtAllReqsUnpaidCount").val();
-			params.PaymentMethod=PaymentMethod;
-			insertFromData(params,
-				function(dataXml)
-				{
-					alert(JSON.stringify(params));
-					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
-					randomFileId = pk;
-					var result = "<data><" + primaryKeyName + ">" + pk + "</" + primaryKeyName + "></data>";
-					//inEditMode = true;
-					WorkflowService.RunWorkflow("ZJM.FMS.FPP.FundPaymentProcess",
-					    '<Content><Id>'+pk+'</Id><Pay>'+PaymentMethod+'</Pay></Content>',
-					    true,
-					    function(data)
-					    {
-					        $.alert("درخواست پرداخت با موفقیت ارسال شد.","","rtl",function(){
-								hideLoading();
-					        	closeWindow({OK:true, Result:null});
-							});				
-					    }
-					    ,function(err)
-					    {
-							 console.error('Error details: ', err);
-					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
-					        hideLoading();
-							
-					    }
-					);	
-					hideLoading();
-					if($.isFunction(callback))
-					{
-						callback();
-					}
-				},
-				function(err)
-				{
-					hideLoading();
-					alert(err);
-				}
-			);
-		}
+            // تعیین روش پرداخت و وضعیت پردازش بر اساس انتخاب کاربر
+            if (selectValue === 'تنخواه دار') {
+                PaymentMethod = 1;
+                ProcessStatus = 5;
+            } else if (selectValue === 'خزانه دار') {
+                PaymentMethod = 2;
+                ProcessStatus = 10;
+            } else {
+                alert("لطفا روش پرداخت را انتخاب کنید");
+                return;
+            }
 
-		function updateData(callback)
-		{
-			//showLoading();
-		}
-		
-		function deleteData(callback)
-		{
-			showLoading();
-		}
+            // جمع‌آوری اطلاعات فرم برای درج
+            var params = $.getFormDataValues(bindingSourceName);
+            params.CreatorActor_ID = currentActorId;
+            params.PaymentAmount = rcommafy($("#txtTotalUnpaidAmount").val());
+            params.PaymentReqAmount = $("#txtUnpaidRequestCount").val();
+            params.PaymentMethod = PaymentMethod;
+            params.ProcessStatus = ProcessStatus;
 
-		function validateForm(onSuccess, onError)
-		{
-			try
-			{
-				if($.isFunction(onSuccess))
-				{
-					onSuccess();
-				}
-			}
-			catch(e)
-			{
-				console.error("Validation Error:", e);
+            // درج داده‌ها و بروزرسانی وضعیت فرایند پرداخت
+            insertFromData(params, function(dataXml) {
+                pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+                randomFileId = pk;
+                var result = "<data><" + primaryKeyName + ">" + pk + "</" + primaryKeyName + "></data>";
 
-				if($.isFunction(onError))
-				{
-					onError();
-				}
-			}
-		}
-		
-		return {
-			init: init,
-			getPK: getPK,
-			isInEditMode: isInEditMode,
-			saveData: saveData
-		};
-	}());
-	$form.init();
+                // به‌روزرسانی وضعیت فرایند پرداخت
+                params.PaymentProcess_ID = pk;
+                params = $.extend(params, { Where: "ProcessStatus = 15 AND PayStatus = 0" });
+
+                updateFundManagmentProcess(params, function(data) {
+                    WorkflowService.RunWorkflow(
+                        "ZJM.FMS.FPP.FundPaymentProcess",
+                        '<Content><Id>' + pk + '</Id><Pay>' + PaymentMethod + '</Pay></Content>',
+                        true,
+                        function(data) {
+                            $.alert("درخواست پرداخت با موفقیت ارسال شد.", "", "rtl", function() {
+                                hideLoading();
+                                closeWindow({ OK: true, Result: null });
+                            });
+                        },
+                        function(err) {
+                            console.error('Error details: ', err);
+                            alert('مشکلی در شروع فرآیند به وجود آمده. ' + err);
+                            hideLoading();
+                        }
+                    );
+                }, function(err) {
+                    hideLoading();
+                    alert(err);
+                });
+
+                hideLoading();
+                if ($.isFunction(callback)) {
+                    callback();
+                }
+            });
+        }
+
+        // تابع updateData برای به‌روزرسانی داده‌های موجود در فرم
+        function updateData(callback)
+        {
+            params =  {  Where: "Id =" + dialogArguments.FormParams  };
+            FormManager.readEntity(params,
+                function(list, status) { 
+                    var paymentMethod = list[0].PaymentMethod;
+                    params = {};
+                    // بررسی نوع روش پرداخت و انجام اعتبارسنجی لازم
+                    if(paymentMethod==1){
+                        if($("#txtPaymentDate").val()==='' || $("#txtPaymentOrderNO").val()===''){
+                            alert(JSON.stringify('لطفا تاریخ و شماره پرداخت را وارد نمایید'));    
+                            return;
+                        }
+
+                        // دریافت تاریخ و بررسی اعتبار آن
+                        var gdate = $("#txtPaymentDate").attr('gdate').split("/");
+                        var PaymentDate = gdate[2] + '-' + gdate[0] + '-' + gdate[1];
+                        var selectedDate = new Date(PaymentDate);
+                        var today = new Date();
+                        today.setHours(0, 0, 0, 0); // تنظیم ساعت، دقیقه و ثانیه امروز به صفر
+                        
+                        // بررسی اینکه آیا تاریخ انتخاب شده کمتر از امروز است
+                        if (selectedDate < today) {
+                            alert(JSON.stringify('مقدار تاریخ کمتر از تاریخ امروز است.'));
+                            return;
+                        }
+
+                        var PaymentOrderNO = $("#txtPaymentOrderNO").val();
+                        params.PaymentDate=PaymentDate;
+                        params.PaymentOrderNO=PaymentOrderNO;
+                        params = $.extend(params, { Where: "Id =" + dialogArguments.FormParams});
+                        updateFromData(params,
+                            function(data)
+                            {
+                                var hameshDescription = $(this).find('.comment-input').val();
+                                var params = {
+                                    'Context': 'پرداخت توسط تنخواه دار انجام گردید',
+                                    'DocumentId': DocumentId,
+                                    'CreatorActorId': CurrentUserActorId,
+                                    'InboxId': InboxId
+                                };
+                                
+                                FormManager.InsertHamesh(params,
+                                    function(res)
+                                    {
+                                        Office.Inbox.setResponse(dialogArguments.WorkItem,0, "",
+                                            function(data)
+                                            { 
+                                                closeWindow({OK:true, Result:null});
+                                            }, function(err){ throw Error(err); }
+                                        );
+                                    }
+                                );
+                            },
+                            function(err)
+                            {
+                                hideLoading();
+                                alert(err);
+                            }
+                        );
+                    // وقتی از طریق خزانه دار پرداخت میگردد
+                    }else if(paymentMethod==2){
+                        if($("#txtPaymentCheckNO").val()==='' || $("#txtPaymentBankNO").val()===''){
+                            alert(JSON.stringify('لطفا شماره چک و شماره پرداخت بانک را وارد نمایید!'));    
+                            return;
+                        }
+                        var PaymentCheckNO = $("#txtPaymentCheckNO").val();
+                        var PaymentBankNO = $("#txtPaymentBankNO").val();
+                        params.PaymentCheckNO=PaymentCheckNO;
+                        params.PaymentBankNO=PaymentBankNO;
+                        params = $.extend(params, { Where: "Id =" + dialogArguments.FormParams});
+                        updateFromData(params,
+                            function(data)
+                            {
+                                var hameshDescription = $(this).find('.comment-input').val();
+                                var params = {
+                                    'Context': 'پرداخت توسط خزانه دار انجام گردید',
+                                    'DocumentId': DocumentId,
+                                    'CreatorActorId': CurrentUserActorId,
+                                    'InboxId': InboxId
+                                };
+                                
+                                FormManager.InsertHamesh(params,
+                                    function(res)
+                                    {
+                                        Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
+                                            function(data)
+                                            { 
+                                                closeWindow({OK:true, Result:null});
+                                            }, function(err){ throw Error(err); }
+                                        );
+                                    }
+                                );
+                            },
+                            function(err)
+                            {
+                                hideLoading();
+                                alert(err);
+                            }
+                        );
+                    }
+                },
+                function(error) { // تابع خطا
+                    console.log("1خطای برگشتی:", error);
+                    $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+                }
+            );
+        }
+        
+        // تابع deleteData برای حذف داده‌ها (در حال حاضر خالی است)
+        function deleteData(callback)
+        {
+            showLoading();
+        }
+
+        // تابع validateForm برای اعتبارسنجی فرم و فراخوانی تابع مناسب در صورت موفقیت یا خطا
+        function validateForm(onSuccess, onError)
+        {
+            try
+            {
+                if($.isFunction(onSuccess))
+                {
+                    onSuccess();
+                }
+            }
+            catch(e)
+            {
+                console.error("Validation Error:", e);
+
+                if($.isFunction(onError))
+                {
+                    onError();
+                }
+            }
+        }
+        
+        return {
+            init: init,
+            getPK: getPK,
+            isInEditMode: isInEditMode,
+            saveData: saveData
+        };
+    }());
+    $form.init();
 });
 //#endregion ready.js
 

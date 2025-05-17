@@ -6,3 +6,5 @@ txtBankPaymentNum ---- txtPaymentBankNO
 
 txtAllReqsUnpaidCount  ----  txtUnpaidRequestCount
 txtAllAmountUnpaid   ---   txtTotalUnpaidAmount
+
+cmbPaymentBy  --- cmbPaymentMethod
