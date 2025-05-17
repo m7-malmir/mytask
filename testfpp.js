@@ -1,0 +1,8 @@
+txtDatePickerPay  --- txtPaymentDate
+txtPaymentOrderNum ----  txtPaymentOrderNO
+txtCheckNum --- txtPaymentCheckNO
+txtBankPaymentNum ---- txtPaymentBankNO
+
+
+txtAllReqsUnpaidCount  ----  txtUnpaidRequestCount
+txtAllAmountUnpaid   ---   txtTotalUnpaidAmount

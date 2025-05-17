@@ -1,0 +1,109 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="contact-container">
+    <h2>{{ __('contact.title') }}</h2>
+    <form action="{{ route('contact.send') }}" method="POST">
+        @csrf
+
+        <label for="name">{{ __('contact.name') }}</label>
+        <input type="text" id="name" name="name" placeholder="{{ __('contact.name_placeholder') }}" required>
+
+        <label for="email">{{ __('contact.email') }}</label>
+        <input type="email" id="email" name="email" placeholder="{{ __('contact.email_placeholder') }}" required>
+
+        <label for="subject">{{ __('contact.subject') }}</label>
+        <input type="text" id="subject" name="subject" placeholder="{{ __('contact.subject_placeholder') }}" required>
+
+        <label for="message">{{ __('contact.message') }}</label>
+        <textarea id="message" name="message" rows="5" placeholder="{{ __('contact.message_placeholder') }}" required></textarea>
+
+        <button type="submit">{{ __('contact.send') }}</button>
+    </form>
+</div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap');
+
+    body {
+        font-family: 'Vazirmatn', sans-serif;
+        background: #f4f7f8;
+        direction: {{ app()->getLocale() === 'fa' ? 'rtl' : 'ltr' }};
+    }
+
+    .contact-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    form input, form textarea {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    form button {
+        background-color: #3498db;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    form button:hover {
+        background-color: #2980b9;
+    }
+</style>
+@endsection
+
+<!--resources/lang/fa/contact.php
+
+return [
+    'title' => 'تماس با ما',
+    'name' => 'نام شما',
+    'email' => 'ایمیل',
+    'subject' => 'موضوع',
+    'message' => 'پیام شما',
+    'send' => 'ارسال پیام',
+
+    'name_placeholder' => 'نام کامل',
+    'email_placeholder' => 'example@email.com',
+    'subject_placeholder' => 'موضوع پیام',
+    'message_placeholder' => 'متن پیام...',
+];
+
+resources/ end-->
+
+<!--resources/lang/Eng/contact.php
+<?php
+
+return [
+    'title' => 'Contact Us',
+    'name' => 'Your Name',
+    'email' => 'Email',
+    'subject' => 'Subject',
+    'message' => 'Your Message',
+    'send' => 'Send Message',
+
+    'name_placeholder' => 'Full name',
+    'email_placeholder' => 'example@email.com',
+    'subject_placeholder' => 'Subject of your message',
+    'message_placeholder' => 'Write your message here...',
+];
+
+resources/end Eng-->
