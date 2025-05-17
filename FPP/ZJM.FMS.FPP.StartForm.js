@@ -421,7 +421,6 @@ $(function(){
 //#endregion ready.js
 
 //#region form manager
-
 var FormManager = {
 	//******************************************************************************************************
 	readEntity: function(jsonParams, onSuccess, onError)
@@ -601,65 +600,7 @@ readReportTableEditMode: function(jsonParams, onSuccess, onError)
 	        }
 		);
 	},
-	//******************************************************************************************************
-	GetReport: function(jsonParams, onSuccess, onError)
-	{
-		SCMD_GetExcelReport.Execute(jsonParams
-			, function(data)
-			{ 
-				var list = [];
-				var xmlvar = $.xmlDOM(data);
-				Id = 'شماره درخواست';
-				PersonnelNO = 'کد پرسنلی';
-				fullName = 'نام و نام خانوادگی';
-				RahkaranInsertedDate = 'تاریخ ثبت در راهکاران';
-				TotalSUM = 'مبلغ';
-				CreatedDate = 'تاریخ درخواست';
-				RahkaranInsertedDate = 'تاریخ ثبت در راهکاران';
-				desc = 'شرح';
-				
-				xmlvar.find("row").each(
-					function()
-					{
-						gdate = $(this).find("col[name='RahkaranInsertedDate']").text().split(' ')[0];
-						gdate_ = gdate.split('/');
-						
-						jalaliDate = miladi_be_shamsi(parseInt(gdate_[2]), parseInt(gdate_[0]), parseInt(gdate_[1]))[0];
-						
-						desc_ = $(this).find("col[name='FundType']").text();
-						if(desc_ == 1){
-							desc1 = "هزینه سوخت";
-						}else if(desc_ == 2){
-							desc1 = "هزینه خودرو";
-						}else if(desc_ == 3){
-							desc1 = "هزینه ماموریت";
-						}else{
-							desc1 = "نامشخص ... ";
-						}
-						desc = "درخواست بابت " + desc1 + " " + $(this).find("col[name='fullName']").text();
-						
-						gdate2 = $(this).find("col[name='CreatedDate']").text().split(' ')[0];
-						gdate2_ = gdate2.split('/');
-						jalaliDate2 = miladi_be_shamsi(parseInt(gdate2_[2]), parseInt(gdate2_[0]), parseInt(gdate2_[1]))[0];
-						
-						list.push
-						({
-							'کد پرسنلی': $(this).find("col[name='PersonnelNO']").text(),
-							'تاریخ ثبت در راهکاران': jalaliDate,
-							'تاریخ شمسی درخواست': jalaliDate2,
-							'مبلغ': commafy($(this).find("col[name='TotalSUM']").text()),
-							'شرح': desc
-						});
-					}
-				);
-				if($.isFunction(onSuccess))
-				{
-					alert(JSON.stringify(list));
-					onSuccess(list);
-				}
-			}, onError
-		);
-	},
+
 /****************************************************************************************************************/
 	readReportTable: function(jsonParams, onSuccess, onError)
 	{
@@ -721,7 +662,6 @@ readReportTableEditMode: function(jsonParams, onSuccess, onError)
 				);
 				if($.isFunction(onSuccess))
 				{
-					alert(JSON.stringify(list));
 					onSuccess(list);
 				}
 			}, onError
@@ -751,73 +691,7 @@ readReportTableEditMode: function(jsonParams, onSuccess, onError)
 			}, onError
 		);
 	},
-/****************************************************************************************************************/
-	readReportTable2: function(jsonParams, onSuccess, onError)
-	{
-		SCMD_GetReportTable2.Execute(jsonParams
-		    , function(data)
-		    {
-		        var list = [];
-				var xmlvar = $.xmlDOM(data);
-				xmlvar.find("row").each(
-					function()
-					{
-						list.push
-						({
-							CarSum: $(this).find("col[name='CarSum']").text(),
-							CarCount: $(this).find("col[name='CarCount']").text(),
-							FuelSum: $(this).find("col[name='FuelSum']").text(),
-							FuelCount: $(this).find("col[name='FuelCount']").text(),
-							MissionSum: $(this).find("col[name='MissionSum']").text(),
-							MissionCount: $(this).find("col[name='MissionCount']").text(),
-							TotalSUM: $(this).find("col[name='TotalSUM']").text(),
-							UnitsName: $(this).find("col[name='UnitsName']").text()
-						});
-					}
-				);
-				if($.isFunction(onSuccess))
-				{
-					onSuccess(list);
-				}
-		    },onError
-		);
-	},
-/****************************************************************************************************************/
-	GetReport4: function(jsonParams, onSuccess, onError)
-	{
-		SCMD_GetExcelReport4.Execute(jsonParams
-			, function(data)
-			{ 
-				var list = [];
-				var xmlvar = $.xmlDOM(data);
-				PersonnelNO = 'کد پرسنلی';
-				FullName = 'نام و نام خانوادگی';
-				TotalSUM = 'مبلغ';
-				MelliAccount = 'شماره حساب';
-				c = 'تعداد درخواستهای پرداخت نشده';
-				
-				xmlvar.find("row").each(
-					function()
-					{
-						
-						list.push
-						({
-							'کد پرسنلی': $(this).find("col[name='PersonnelNO']").text(),
-							'نام و نام خانوادگی': $(this).find("col[name='FullName']").text(),
-							'مبلغ': commafy($(this).find("col[name='TotalSUM']").text()),
-							'تعداد درخواستهای پرداخت نشده': commafy($(this).find("col[name='c']").text()),
-							'شماره حساب': $(this).find("col[name='MelliAccount']").text()
-						});
-					}
-				);
-				if($.isFunction(onSuccess))
-				{
-					alert(JSON.stringify(list));
-					onSuccess(list);
-				}
-			}, onError
-		);
-	},
+
 /****************************************************************************************************************/
 	GetReport3: function(jsonParams, onSuccess, onError)
 	{
@@ -871,7 +745,64 @@ readReportTableEditMode: function(jsonParams, onSuccess, onError)
 				);
 				if($.isFunction(onSuccess))
 				{
-					alert(JSON.stringify(list));
+					onSuccess(list);
+				}
+			}, onError
+		);
+	},
+/******************************************************************************/
+	GetReport: function(jsonParams, onSuccess, onError)
+	{
+		SCMD_GetExcelReport.Execute(jsonParams
+			, function(data)
+			{ 
+				var list = [];
+				var xmlvar = $.xmlDOM(data);
+				Id = 'شماره درخواست';
+				PersonnelNO = 'کد پرسنلی';
+				fullName = 'نام و نام خانوادگی';
+				RahkaranInsertedDate = 'تاریخ ثبت در راهکاران';
+				TotalSUM = 'مبلغ';
+				CreatedDate = 'تاریخ درخواست';
+				RahkaranInsertedDate = 'تاریخ ثبت در راهکاران';
+				desc = 'شرح';
+				
+				xmlvar.find("row").each(
+					function()
+					{
+						gdate = $(this).find("col[name='RahkaranInsertedDate']").text().split(' ')[0];
+						gdate_ = gdate.split('/');
+						
+						jalaliDate = miladi_be_shamsi(parseInt(gdate_[2]), parseInt(gdate_[0]), parseInt(gdate_[1]))[0];
+						
+						desc_ = $(this).find("col[name='FundType']").text();
+						if(desc_ == 1){
+							desc1 = "هزینه سوخت";
+						}else if(desc_ == 2){
+							desc1 = "هزینه خودرو";
+						}else if(desc_ == 3){
+							desc1 = "هزینه ماموریت";
+						}else{
+							desc1 = "نامشخص ... ";
+						}
+						desc = "درخواست بابت " + desc1 + " " + $(this).find("col[name='fullName']").text();
+						
+						gdate2 = $(this).find("col[name='CreatedDate']").text().split(' ')[0];
+						gdate2_ = gdate2.split('/');
+						jalaliDate2 = miladi_be_shamsi(parseInt(gdate2_[2]), parseInt(gdate2_[0]), parseInt(gdate2_[1]))[0];
+						
+						list.push
+						({
+							'کد پرسنلی': $(this).find("col[name='PersonnelNO']").text(),
+							'تاریخ ثبت در راهکاران': jalaliDate,
+							'تاریخ شمسی درخواست': jalaliDate2,
+							'مبلغ': commafy($(this).find("col[name='TotalSUM']").text()),
+							'شرح': desc
+						});
+					}
+				);
+				if($.isFunction(onSuccess))
+				{
 					onSuccess(list);
 				}
 			}, onError
@@ -913,7 +844,7 @@ $(function()
         function bindEvents()
         {	
         }
-
+//افزودن داده های بارگذاری شده از تابع load مطابق شرط لازم
         function addRow(rowInfo, rowNumber, l)
         {
             var index = 0,
@@ -936,8 +867,8 @@ $(function()
 			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.TotalSUM));
 			total_sum += parseInt(rowInfo.TotalSUM);
 			if(rowNumber = l){
-				$("#txtAllAmountUnpaid").val(commafy(total_sum));
-				$("#txtAllReqsUnpaidCount").val(commafy(total_count));
+				$("#txtTotalUnpaidAmount").val(commafy(total_sum));
+				$("#txtUnpaidRequestCount").val(commafy(total_count));
 			}
             element.find("tr.row-template").before(tempRow);
         }
@@ -1017,7 +948,7 @@ $(function()
 
         function load()
         {
-			// در حالت editmode 
+			// در حالت editmode اجرا میشود
 			if($form.isInEditMode()){
 				params = {};	
 				params = $.extend(params, { 'PaymentProcessID':$form.getPK()});	
@@ -1035,7 +966,7 @@ $(function()
 						alert(err);
 					}
 				);
-			//در حالت ثبت اولیه
+			//برای فرم اول اجرا میشود
 			}else{
 				params = {};			
 				FormManager.readReportTable(params,
