@@ -12,19 +12,32 @@
   <div class="container mx-auto px-4 py-10">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- کارت ویدیو -->
-      <div class="relative bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-        <img src="https://via.placeholder.com/400x200.png?text=Thumbnail" class="w-full h-52 object-cover" />
-        <div class="p-4">
-          <h2 class="text-white text-lg font-bold">ویدیو پیشرفته</h2>
-          <p class="text-yellow-400 text-sm mt-1">کارگردان: نازنین زارع</p>
-          <p class="text-gray-400 text-xs mt-1">مدت: ۳:۳۰ دقیقه</p>
-          <button
-            onclick="openAdvancedPlayer('https://www.w3schools.com/html/mov_bbb.mp4')"
-            class="mt-4 bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-500 transition">
-            پخش ویدیو
-          </button>
-        </div>
-      </div>
+      <!-- کارت ویدیو با دکمه پلی وسط -->
+<!-- کارت ویدیو با دکمه پلی وسط (همیشه نمایان) -->
+<div class="relative bg-gray-900 rounded-xl shadow-lg overflow-hidden">
+  <!-- تصویر thumbnail -->
+  <img src="https://via.placeholder.com/400x200.png?text=Thumbnail" class="w-full h-52 object-cover" />
+
+  <!-- دکمه پلی قرمز -->
+  <button
+    onclick="openAdvancedPlayer('https://www.w3schools.com/html/mov_bbb.mp4')"
+    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+    <div class="bg-red-600 w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:bg-red-700 transition duration-200">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    </div>
+  </button>
+
+  <!-- اطلاعات ویدیو -->
+  <div class="p-4">
+    <h2 class="text-white text-lg font-bold">ویدیو پیشرفته</h2>
+    <p class="text-yellow-400 text-sm mt-1">کارگردان: نازنین زارع</p>
+    <p class="text-gray-400 text-xs mt-1">مدت: ۳:۳۰ دقیقه</p>
+  </div>
+</div>
+
+
     </div>
   </div>
 
