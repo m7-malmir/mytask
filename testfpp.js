@@ -8,3 +8,7 @@ txtAllReqsUnpaidCount  ----  txtUnpaidRequestCount
 txtAllAmountUnpaid   ---   txtTotalUnpaidAmount
 
 cmbPaymentBy  --- cmbPaymentMethod
+
+
+btnStartProcess ---- btnRegister
+btnRegister  ---  btnRegisterPaymentInfo

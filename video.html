@@ -1,0 +1,63 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- کارت ویدیو -->
+        <div class="relative bg-gray-900 rounded-xl shadow-lg overflow-hidden">
+            <img src="/images/thumb1.jpg" class="w-full h-52 object-cover">
+            <div class="p-4">
+                <h2 class="text-white text-lg font-bold">ویدیو پیشرفته</h2>
+                <p class="text-yellow-400 text-sm mt-1">کارگردان: نازنین زارع</p>
+                <p class="text-gray-400 text-xs mt-1">مدت: ۳:۳۰ دقیقه</p>
+                <button
+                    onclick="openAdvancedPlayer('/videos/video1.mp4')"
+                    class="mt-4 bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-500 transition">
+                    پخش ویدیو
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Fullscreen Advanced Player -->
+<div id="advanced-video-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4">
+    <div class="w-full max-w-5xl bg-black rounded-lg overflow-hidden relative aspect-video">
+        <!-- Close Button -->
+        <button onclick="closeAdvancedPlayer()" class="absolute top-3 left-3 z-50 bg-white text-black px-3 py-1 rounded-lg text-sm hover:bg-red-500 hover:text-white">
+            بستن
+        </button>
+
+        <!-- Custom Video Player -->
+        <video id="advanced-video" class="w-full h-full" controls playsinline></video>
+
+        <!-- Custom Controls (Optional Extension Area) -->
+        <!-- قابل توسعه: لیست کیفیت، تایم‌لاین، زیرنویس و... -->
+    </div>
+</div>
+
+<script>
+    function openAdvancedPlayer(source) {
+        const modal = document.getElementById('advanced-video-modal');
+        const video = document.getElementById('advanced-video');
+        video.src = source;
+        video.load();
+        video.play();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeAdvancedPlayer() {
+        const modal = document.getElementById('advanced-video-modal');
+        const video = document.getElementById('advanced-video');
+        video.pause();
+        video.currentTime = 0;
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeAdvancedPlayer();
+    });
+</script>
+@endsection
