@@ -1,134 +1,70 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>نت‌های موسیقی پویا</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ویدیو پیشرفته</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <canvas id="bgCanvas"></canvas>
+<body class="bg-gray-950 text-white font-sans">
+
+  <div class="container mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- کارت ویدیو -->
+      <div class="relative bg-gray-900 rounded-xl shadow-lg overflow-hidden">
+        <img src="https://via.placeholder.com/400x200.png?text=Thumbnail" class="w-full h-52 object-cover" />
+        <div class="p-4">
+          <h2 class="text-white text-lg font-bold">ویدیو پیشرفته</h2>
+          <p class="text-yellow-400 text-sm mt-1">کارگردان: نازنین زارع</p>
+          <p class="text-gray-400 text-xs mt-1">مدت: ۳:۳۰ دقیقه</p>
+          <button
+            onclick="openAdvancedPlayer('https://www.w3schools.com/html/mov_bbb.mp4')"
+            class="mt-4 bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-500 transition">
+            پخش ویدیو
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Fullscreen Advanced Player -->
+  <div id="advanced-video-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4">
+    <div class="w-full max-w-5xl bg-black rounded-lg overflow-hidden relative aspect-video flex items-center justify-center">
+      <!-- Close Button -->
+      <button onclick="closeAdvancedPlayer()" class="absolute top-3 left-3 z-50 bg-white text-black px-3 py-1 rounded-lg text-sm hover:bg-red-500 hover:text-white">
+        بستن
+      </button>
+
+      <!-- Custom Video Player -->
+      <video id="advanced-video" class="w-full h-full" controls playsinline></video>
+    </div>
+  </div>
+
   <script>
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let w, h;
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+    function openAdvancedPlayer(source) {
+      const modal = document.getElementById('advanced-video-modal');
+      const video = document.getElementById('advanced-video');
+      video.src = source;
+      video.load();
+      video.play();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
-    window.addEventListener('resize', resize);
-    resize();
 
-    const notes = ['♪', '♫', '♬', '♩'];
-    const mouse = { x: null, y: null };
-    window.addEventListener('mousemove', e => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
+    function closeAdvancedPlayer() {
+      const modal = document.getElementById('advanced-video-modal');
+      const video = document.getElementById('advanced-video');
+      video.pause();
+      video.currentTime = 0;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeAdvancedPlayer();
     });
-
-    class Note {
-      constructor() {
-        this.reset();
-        // زمان شروع تصادفی
-        this.delay = Math.floor(Math.random() * 300); // تا 5 ثانیه تأخیر
-      }
-
-      reset() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.vx = Math.random() * 4 - 2;
-        this.vy = Math.random() * 4 - 2;
-        this.size = Math.random() * 25 + 20;
-        this.char = notes[Math.floor(Math.random() * notes.length)];
-        this.colorHue = Math.floor(Math.random() * 360);
-        this.life = 0;
-        this.totalLife = 360; // 6 ثانیه
-        this.fadeInDuration = 60;
-        this.fadeOutStart = 300;
-        this.delay = Math.floor(Math.random() * 300); // ریست شدن با تأخیر جدید
-      }
-
-      update() {
-        if (this.life < this.delay) {
-          this.life++;
-          return; // تاخیر
-        }
-
-        const age = this.life - this.delay;
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (mouse.x && mouse.y) {
-          const dx = this.x - mouse.x;
-          const dy = this.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
-            const angle = Math.atan2(dy, dx);
-            const force = (1 - dist / 100) * 4;
-            this.vx += Math.cos(angle) * force;
-            this.vy += Math.sin(angle) * force;
-          }
-        }
-
-        this.vx *= 0.99;
-        this.vy *= 0.99;
-
-        if (age >= this.totalLife) {
-          this.reset();
-        }
-
-        this.life++;
-      }
-
-      getAlpha() {
-        if (this.life < this.delay) return 0;
-
-        const age = this.life - this.delay;
-
-        if (age < this.fadeInDuration) {
-          return age / this.fadeInDuration;
-        } else if (age > this.fadeOutStart) {
-          return 1 - ((age - this.fadeOutStart) / (this.totalLife - this.fadeOutStart));
-        } else {
-          return 1;
-        }
-      }
-
-      draw(ctx) {
-        const alpha = this.getAlpha();
-        if (alpha <= 0) return;
-
-        ctx.fillStyle = `hsla(${this.colorHue}, 80%, 70%, ${alpha})`;
-        ctx.font = `${this.size}px Arial`;
-        ctx.fillText(this.char, this.x, this.y);
-      }
-    }
-
-    const notesArray = Array.from({length: 20}, () => new Note());
-
-    function animate() {
-      ctx.clearRect(0, 0, w, h);
-      notesArray.forEach(note => {
-        note.update();
-        note.draw(ctx);
-      });
-      requestAnimationFrame(animate);
-    }
-
-    animate();
   </script>
+
 </body>
 </html>
