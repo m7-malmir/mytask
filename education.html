@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منوی همبرگری ریسپانسیو با تغییر آیکون</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    }
+    #sidebar {
+      background: white;
+      border-left: 1px solid #e5e7eb;
+      padding: 2rem;
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100vh;
+      width: 16rem;
+      transition: transform 0.3s ease;
+      z-index: 50;
+      transform: translateX(0);
+      overflow-y: auto;
+    }
+    #sidebar.closed {
+      transform: translateX(100%);
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 40;
+    }
+    #overlay.active {
+      display: block;
+    }
+    #hamburger-btn {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 60;
+      background: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      display: none;
+    }
+    #hamburger-btn:hover {
+      background: #e0e7ff;
+    }
+
+    /* دسکتاپ */
+    @media (min-width: 769px) {
+      #sidebar {
+        position: relative;
+        transform: translateX(0);
+        height: auto;
+        width: 16rem;
+        border-left: 1px solid #e5e7eb;
+        padding: 2rem;
+      }
+      #hamburger-btn {
+        display: none;
+      }
+      #overlay {
+        display: none !important;
+      }
+    }
+
+    /* موبایل */
+    @media (max-width: 768px) {
+      #sidebar.closed {
+        transform: translateX(100%);
+      }
+      #hamburger-btn {
+        display: block;
+      }
+    }
+
+    .category-btn {
+      transition: all 0.3s ease;
+      display: block;
+      width: 100%;
+      text-align: right;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+      color: #374151;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    .category-btn.active {
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+      font-weight: 600;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <button id="hamburger-btn" aria-label="باز کردن منو">
+    <!-- آیکون همبرگر (اول) -->
+    <svg id="hamburger-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+    <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none;">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl flex min-h-[600px] overflow-hidden relative">
+    <nav id="sidebar" class="closed flex flex-col space-y-6">
+      <h2 class="text-2xl font-extrabold mb-6 border-b border-gray-300 pb-3 text-gray-700 select-none">دسته‌بندی‌ها</h2>
+      <button data-target="videos" class="category-btn active">ویدیوها</button>
+      <button data-target="audios" class="category-btn">موزیک‌ها</button>
+      <button data-target="documents" class="category-btn">داکیومنت‌ها</button>
+      <button data-target="articles" class="category-btn">مقالات</button>
+    </nav>
+
+    <main class="flex-1 p-10 overflow-auto">
+      <h1 class="text-4xl font-bold mb-8 text-center text-gray-800 select-none">آموزش جامع طراحی وب</h1>
+
+      <section id="videos" class="content-section">
+        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">ویدیوها</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+            <img
+              src="https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg"
+              alt="معرفی طراحی وب"
+              class="w-full h-48 object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-16 w-16 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-6.518-3.75A1 1 0 007 8.393v7.214a1 1 0 001.234.97l6.518-3.75a1 1 0 000-1.72z" />
+              </svg>
+            </div>
+            <h3 class="text-center mt-2 font-semibold text-gray-900">معرفی طراحی وب</h3>
+          </div>
+        </div>
+      </section>
+
+      <section id="audios" class="content-section hidden">
+        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">موزیک‌ها</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+            <img
+              src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80"
+              alt="موسیقی آرامش‌بخش"
+              class="w-full h-48 object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
+              </svg>
+            </div>
+            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی آرامش‌بخش</h3>
+          </div>
+      
+          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+            <img
+              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
+              alt="موسیقی انگیزشی"
+              class="w-full h-48 object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
+              </svg>
+            </div>
+            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی انگیزشی</h3>
+          </div>
+      
+          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+            <img
+              src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=400&q=80"
+              alt="موسیقی ملایم"
+              class="w-full h-48 object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
+              </svg>
+            </div>
+            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی ملایم</h3>
+          </div>
+      
+          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+            <img
+              src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=400&q=80"
+              alt="موسیقی کلاسیک"
+              class="w-full h-48 object-cover"
+            />
+            <div
+              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
+              </svg>
+            </div>
+            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی کلاسیک</h3>
+          </div>
+        </div>
+      </section>
+      
+
+      <section id="documents" class="content-section hidden">
+        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">داکیومنت‌ها</h2>
+        <ul class="list-disc list-inside space-y-4 text-gray-900">
+          <li>
+            <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener" class="download-link">داکیومنت ۱: راهنمای PDF طراحی وب</a>
+          </li>
+          <li>
+            <a href="https://file-examples.com/wp-content/uploads/2017/10/file-sample_150kB.pdf" target="_blank" rel="noopener" class="download-link">داکیومنت ۲: نمونه فایل PDF آموزش</a>
+          </li>
+        </ul>
+      </section>
+
+      <section id="articles" class="content-section hidden">
+        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">مقالات</h2>
+        <div class="space-y-4">
+            <div class="bg-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 w-full flex items-center justify-between">
+                <h3 class="font-semibold text-gray-800">مقاله ۱: مفاهیم پایه طراحی وب</h3>
+                <i class="fas fa-share-alt text-gray-500 hover:text-blue-600 transition-colors duration-200 text-lg cursor-pointer"></i>
+              </div>
+              
+      
+          <div class="bg-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 w-full flex items-center justify-between">
+            <h3 class="font-semibold text-gray-800">مقاله ۱: مفاهیم پایه طراحی وب</h3>
+            <i class="fas fa-share-alt text-gray-500 hover:text-blue-600 transition-colors duration-200 text-lg cursor-pointer"></i>
+          </div>
+          
+        </div>
+      </section>
+       
+      
+    </main>
+  </div>
+
+  <div id="overlay"></div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const overlay = document.getElementById('overlay');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    const closeIcon = document.getElementById('close-icon');
+    const buttons = document.querySelectorAll('.category-btn');
+    const sections = document.querySelectorAll('.content-section');
+
+    // نمایش بخش مربوط به دکمه انتخاب شده
+    function setActiveButton(activeBtn) {
+      buttons.forEach(btn => btn.classList.remove('active'));
+      activeBtn.classList.add('active');
+    }
+
+    function showSection(id) {
+      sections.forEach(section => {
+        if (section.id === id) {
+          section.classList.remove('hidden');
+          section.style.animation = 'none';
+          section.offsetHeight; // trigger reflow
+          section.style.animation = null;
+        } else {
+          section.classList.add('hidden');
+        }
+      });
+    }
+
+    // تغییر بخش و دکمه فعال
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-target');
+        showSection(target);
+        setActiveButton(btn);
+
+        // اگر موبایل است، منو ببند بعد کلیک
+        if (window.innerWidth <= 768) {
+          sidebar.classList.add('closed');
+          overlay.classList.remove('active');
+          hamburgerIcon.style.display = 'block';
+          closeIcon.style.display = 'none';
+        }
+      });
+    });
+
+    // مدیریت نمایش منو و آیکون‌ها
+    hamburgerBtn.addEventListener('click', () => {
+      const isClosed = sidebar.classList.contains('closed');
+      if (isClosed) {
+        sidebar.classList.remove('closed');
+        overlay.classList.add('active');
+        hamburgerIcon.style.display = 'none';
+        closeIcon.style.display = 'block';
+      } else {
+        sidebar.classList.add('closed');
+        overlay.classList.remove('active');
+        hamburgerIcon.style.display = 'block';
+        closeIcon.style.display = 'none';
+      }
+    });
+
+    // کلیک روی بک‌گراند تار منو را ببندد
+    overlay.addEventListener('click', () => {
+      sidebar.classList.add('closed');
+      overlay.classList.remove('active');
+      hamburgerIcon.style.display = 'block';
+      closeIcon.style.display = 'none';
+    });
+
+    // مدیریت وضعیت منو هنگام بارگذاری صفحه و تغییر اندازه
+    function checkWindowSize() {
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('closed');
+        overlay.classList.remove('active');
+        hamburgerIcon.style.display = 'none';
+        closeIcon.style.display = 'none';
+      } else {
+        sidebar.classList.add('closed');
+        overlay.classList.remove('active');
+        hamburgerIcon.style.display = 'block';
+        closeIcon.style.display = 'none';
+      }
+    }
+
+    window.addEventListener('load', () => {
+      checkWindowSize();
+      // مقداردهی اولیه نمایش اولین بخش
+      showSection('videos');
+    });
+
+    window.addEventListener('resize', checkWindowSize);
+  </script>
+</body>
+</html>
