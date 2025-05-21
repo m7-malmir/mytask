@@ -1,63 +1,83 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="container mx-auto px-4 py-10">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- کارت ویدیو -->
-        <div class="relative bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-            <img src="/images/thumb1.jpg" class="w-full h-52 object-cover">
-            <div class="p-4">
-                <h2 class="text-white text-lg font-bold">ویدیو پیشرفته</h2>
-                <p class="text-yellow-400 text-sm mt-1">کارگردان: نازنین زارع</p>
-                <p class="text-gray-400 text-xs mt-1">مدت: ۳:۳۰ دقیقه</p>
-                <button
-                    onclick="openAdvancedPlayer('/videos/video1.mp4')"
-                    class="mt-4 bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-500 transition">
-                    پخش ویدیو
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Fullscreen Advanced Player -->
-<div id="advanced-video-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4">
-    <div class="w-full max-w-5xl bg-black rounded-lg overflow-hidden relative aspect-video">
-        <!-- Close Button -->
-        <button onclick="closeAdvancedPlayer()" class="absolute top-3 left-3 z-50 bg-white text-black px-3 py-1 rounded-lg text-sm hover:bg-red-500 hover:text-white">
-            بستن
-        </button>
-
-        <!-- Custom Video Player -->
-        <video id="advanced-video" class="w-full h-full" controls playsinline></video>
-
-        <!-- Custom Controls (Optional Extension Area) -->
-        <!-- قابل توسعه: لیست کیفیت، تایم‌لاین، زیرنویس و... -->
-    </div>
-</div>
-
-<script>
-    function openAdvancedPlayer(source) {
-        const modal = document.getElementById('advanced-video-modal');
-        const video = document.getElementById('advanced-video');
-        video.src = source;
-        video.load();
-        video.play();
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>جزئیات ویدیو</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Vazirmatn', sans-serif;
     }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-6">
 
-    function closeAdvancedPlayer() {
-        const modal = document.getElementById('advanced-video-modal');
-        const video = document.getElementById('advanced-video');
-        video.pause();
-        video.currentTime = 0;
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+  <div class="w-full max-w-5xl bg-gray-800 rounded-3xl shadow-2xl p-8 space-y-6">
+    
+    <!-- Back Button -->
+    <button onclick="history.back()" class="flex items-center text-gray-300 hover:text-white transition mb-4">
+      <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      بازگشت به لیست
+    </button>
+
+    <!-- Title -->
+    <h1 id="video-title" class="text-3xl sm:text-4xl font-extrabold tracking-tight">عنوان ویدیو</h1>
+    <p id="video-artist" class="text-lg text-gray-400">هنرمند: ---</p>
+
+    <!-- Video Player -->
+    <div class="aspect-video rounded-xl overflow-hidden shadow-lg ring-1 ring-gray-700">
+      <video id="video-player" class="w-full h-full" controls>
+        <source src="" type="video/mp4">
+        مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+      </video>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-300 mb-2">توضیحات</h2>
+      <p id="video-description" class="text-gray-400 leading-relaxed text-justify">
+        متن توضیحات ویدیو در این بخش نمایش داده می‌شود.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const videos = [
+      {
+        id: 1,
+        title: "مستند طبیعت",
+        artist: "علی رضایی",
+        description: "این مستند جذاب شما را به دل جنگل‌های ایران می‌برد و با حیات وحش و طبیعت بکر آشنا می‌کند.",
+        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+      },
+      {
+        id: 2,
+        title: "اجرای زنده موسیقی",
+        artist: "نگار جعفری",
+        description: "ویدیوی اجرای زنده موسیقی در کنسرت تابستان ۱۴۰۲ با حضور بیش از ۵۰۰۰ نفر تماشاگر.",
+        videoUrl: "https://www.w3schools.com/html/movie.mp4"
+      }
+    ];
+
+    const params = new URLSearchParams(window.location.search);
+    const id = parseInt(params.get("id"));
+    const video = videos.find(v => v.id === id);
+
+    if (video) {
+      document.getElementById("video-title").textContent = video.title;
+      document.getElementById("video-artist").textContent = `هنرمند: ${video.artist}`;
+      document.getElementById("video-description").textContent = video.description;
+      document.getElementById("video-player").querySelector("source").src = video.videoUrl;
+      document.getElementById("video-player").load();
+    } else {
+      document.querySelector(".max-w-5xl").innerHTML = `
+        <p class="text-red-500 text-center text-xl font-bold">ویدیو پیدا نشد!</p>
+      `;
     }
-
-    window.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeAdvancedPlayer();
-    });
-</script>
-@endsection
+  </script>
+</body>
+</html>
