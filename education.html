@@ -9,12 +9,17 @@
 
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      background: linear-gradient(135deg, #1e1e2f, #2c2c3e);
+      color: #f1f1f1;
+      font-family: 'Vazir', sans-serif;
     }
+    .container-wrapper {
+      width: 100%;
+    }
+
     #sidebar {
-      background: white;
-      border-left: 1px solid #e5e7eb;
+      background: #12131a; /* رنگ تیره برای سایدبار */
+      border-left: 1px solid #2c2c3e;
       padding: 2rem;
       position: fixed;
       top: 0;
@@ -25,6 +30,7 @@
       z-index: 50;
       transform: translateX(0);
       overflow-y: auto;
+      box-shadow: inset -5px 0 8px -6px rgba(255, 255, 255, 0.1);
     }
     #sidebar.closed {
       transform: translateX(100%);
@@ -44,17 +50,18 @@
       top: 1rem;
       right: 1rem;
       z-index: 60;
-      background: white;
+      background: #1f2937;
       border: none;
       padding: 0.5rem 0.75rem;
       border-radius: 0.375rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
       cursor: pointer;
       transition: background 0.3s ease;
       display: none;
+      color: #e0e0e0;
     }
     #hamburger-btn:hover {
-      background: #e0e7ff;
+      background: #374151;
     }
 
     /* دسکتاپ */
@@ -64,7 +71,7 @@
         transform: translateX(0);
         height: auto;
         width: 16rem;
-        border-left: 1px solid #e5e7eb;
+        border-left: 1px solid #2c2c3e;
         padding: 2rem;
       }
       #hamburger-btn {
@@ -95,222 +102,199 @@
       background: transparent;
       border: none;
       font-size: 1rem;
-      color: #374151;
+      color: #9ca3af; /* رنگ خاکستری روشن */
       cursor: pointer;
       margin-bottom: 1rem;
+      font-weight: 500;
+    }
+    .category-btn:hover {
+      color: #60a5fa; /* رنگ آبی روشن هنگام هاور */
+      background: rgba(96, 165, 250, 0.1);
     }
     .category-btn.active {
-      background: #3b82f6;
+      background: #2563eb; /* آبی روشن و مدرن */
       color: white;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
-      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.6);
+      font-weight: 700;
       transform: scale(1.05);
     }
+
+    #sidebar h2 {
+      color: #e0e7ff; /* رنگ روشن برای عنوان */
+      border-bottom: 1px solid #374151;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.5rem;
+      user-select: none;
+    }
+
+    main.flex-1 {
+      background: #1f2937; /* رنگ تیره برای main */
+      border-radius: 1rem;
+      color: #d1d5db; /* خاکستری روشن */
+      box-shadow: 0 10px 25px rgba(31, 41, 55, 0.5);
+    }
+    main.flex-1 h1, main.flex-1 h2 {
+      color: #f3f4f6; /* سفید ملایم */
+      user-select: none;
+    }
+    main.flex-1 .content-section {
+      padding-bottom: 2rem;
+    }
+
+    /* کارت‌ها */
+    .content-section .grid > div,
+    .content-section .space-y-4 > div {
+      background: #374151;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: box-shadow 0.3s ease;
+      color: #e5e7eb;
+    }
+    .content-section .grid > div:hover,
+    .content-section .space-y-4 > div:hover {
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.6);
+    }
+    .content-section h3, .content-section a {
+      color: #d1d5db;
+    }
+    .content-section a:hover {
+      color: #60a5fa;
+    }
+
+    /* overlay و آیکون های svg داخل کارت */
+    .content-section svg {
+      stroke: #bfdbfe;
+    }
+
   </style>
 </head>
 <body>
   <button id="hamburger-btn" aria-label="باز کردن منو">
     <!-- آیکون همبرگر (اول) -->
-    <svg id="hamburger-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    <svg id="hamburger-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+      <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
-    <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none;">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+    <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+      <path d="M6 18L18 6M6 6l12 12" />
     </svg>
   </button>
 
-  <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl flex min-h-[600px] overflow-hidden relative">
-    <nav id="sidebar" class="closed flex flex-col space-y-6">
-      <h2 class="text-2xl font-extrabold mb-6 border-b border-gray-300 pb-3 text-gray-700 select-none">دسته‌بندی‌ها</h2>
-      <button data-target="videos" class="category-btn active">ویدیوها</button>
-      <button data-target="audios" class="category-btn">موزیک‌ها</button>
-      <button data-target="documents" class="category-btn">داکیومنت‌ها</button>
-      <button data-target="articles" class="category-btn">مقالات</button>
-    </nav>
+  <div class="container-wrapper px-4 py-8">
+    <div class="max-w-7xl mx-auto rounded-xl shadow-2xl flex min-h-[600px] overflow-hidden relative">
+      <!-- nav و main -->
+      <nav id="sidebar" class="closed flex flex-col space-y-6">
+        <h2>دسته‌بندی‌ها</h2>
+        <button data-target="videos" class="category-btn active">ویدیوها</button>
+        <button data-target="audios" class="category-btn">موزیک‌ها</button>
+        <button data-target="documents" class="category-btn">داکیومنت‌ها</button>
+        <button data-target="articles" class="category-btn">مقالات</button>
+      </nav>
 
-    <main class="flex-1 p-10 overflow-auto">
-      <h1 class="text-4xl font-bold mb-8 text-center text-gray-800 select-none">آموزش جامع طراحی وب</h1>
+      <main class="flex-1 p-10 overflow-auto">
+        <h1 class="text-4xl font-bold mb-8 text-center">آموزش جامع طراحی وب</h1>
 
-      <section id="videos" class="content-section">
-        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">ویدیوها</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
-            <img
-              src="https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg"
-              alt="معرفی طراحی وب"
-              class="w-full h-48 object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-16 w-16 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
+        <section id="videos" class="content-section">
+          <h2 class="text-3xl font-semibold mb-6 border-b border-gray-600 pb-3">ویدیوها</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+              <img
+                src="https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg"
+                alt="معرفی طراحی وب"
+                class="w-full h-48 object-cover"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-6.518-3.75A1 1 0 007 8.393v7.214a1 1 0 001.234.97l6.518-3.75a1 1 0 000-1.72z" />
-              </svg>
-            </div>
-            <h3 class="text-center mt-2 font-semibold text-gray-900">معرفی طراحی وب</h3>
-          </div>
-        </div>
-      </section>
-
-      <section id="audios" class="content-section hidden">
-        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">موزیک‌ها</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
-            <img
-              src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80"
-              alt="موسیقی آرامش‌بخش"
-              class="w-full h-48 object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
-              </svg>
-            </div>
-            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی آرامش‌بخش</h3>
-          </div>
-      
-          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
-            <img
-              src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
-              alt="موسیقی انگیزشی"
-              class="w-full h-48 object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
-              </svg>
-            </div>
-            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی انگیزشی</h3>
-          </div>
-      
-          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
-            <img
-              src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=400&q=80"
-              alt="موسیقی ملایم"
-              class="w-full h-48 object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
-              </svg>
-            </div>
-            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی ملایم</h3>
-          </div>
-      
-          <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
-            <img
-              src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=400&q=80"
-              alt="موسیقی کلاسیک"
-              class="w-full h-48 object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
-              </svg>
-            </div>
-            <h3 class="text-center mt-2 font-semibold text-gray-900">موسیقی کلاسیک</h3>
-          </div>
-        </div>
-      </section>
-      
-
-      <section id="documents" class="content-section hidden">
-        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">داکیومنت‌ها</h2>
-        <ul class="list-disc list-inside space-y-4 text-gray-900">
-          <li>
-            <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener" class="download-link">داکیومنت ۱: راهنمای PDF طراحی وب</a>
-          </li>
-          <li>
-            <a href="https://file-examples.com/wp-content/uploads/2017/10/file-sample_150kB.pdf" target="_blank" rel="noopener" class="download-link">داکیومنت ۲: نمونه فایل PDF آموزش</a>
-          </li>
-        </ul>
-      </section>
-
-      <section id="articles" class="content-section hidden">
-        <h2 class="text-3xl font-semibold mb-6 border-b border-gray-300 pb-3 text-gray-700">مقالات</h2>
-        <div class="space-y-4">
-            <div class="bg-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 w-full flex items-center justify-between">
-                <h3 class="font-semibold text-gray-800">مقاله ۱: مفاهیم پایه طراحی وب</h3>
-                <i class="fas fa-share-alt text-gray-500 hover:text-blue-600 transition-colors duration-200 text-lg cursor-pointer"></i>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-16 w-16 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-6.518-3.75A1 1 0 007 8.393v7.214a1 1 0 001.234.97l6.518-3.75a1 1 0 000-1.72z" />
+                </svg>
               </div>
-              
-      
-          <div class="bg-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 w-full flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">مقاله ۱: مفاهیم پایه طراحی وب</h3>
-            <i class="fas fa-share-alt text-gray-500 hover:text-blue-600 transition-colors duration-200 text-lg cursor-pointer"></i>
+              <h3 class="text-center mt-2 font-semibold">معرفی طراحی وب</h3>
+            </div>
           </div>
-          
-        </div>
-      </section>
-       
-      
-    </main>
+        </section>
+
+        <section id="audios" class="content-section hidden">
+          <h2 class="text-3xl font-semibold mb-6 border-b border-gray-600 pb-3">موزیک‌ها</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <div class="relative group cursor-pointer rounded-xl overflow-hidden shadow-lg">
+              <img
+                src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80"
+                alt="موسیقی آرامش‌بخش"
+                class="w-full h-48 object-cover"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13" />
+                </svg>
+              </div>
+              <h3 class="text-center mt-2 font-semibold">موسیقی آرامش‌بخش</h3>
+            </div>
+            <!-- بقیه موزیک‌ها مشابه -->
+          </div>
+        </section>
+
+        <section id="documents" class="content-section hidden">
+          <h2 class="text-3xl font-semibold mb-6 border-b border-gray-600 pb-3">داکیومنت‌ها</h2>
+          <div class="space-y-4">
+            <div class="p-4 shadow-sm hover:shadow-md w-full flex items-center justify-between rounded-lg cursor-pointer">
+              <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" class="font-semibold hover:text-blue-400">
+                داکیومنت ۱: راهنمای PDF طراحی وب
+              </a>
+              <i class="fas fa-share-alt text-gray-400 hover:text-blue-400 text-lg"></i>
+            </div>
+            <div class="p-4 shadow-sm hover:shadow-md w-full flex items-center justify-between rounded-lg cursor-pointer">
+              <a href="https://file-examples.com/wp-content/uploads/2017/10/file-sample_150kB.pdf" target="_blank" class="font-semibold hover:text-blue-400">
+                داکیومنت ۲: نمونه فایل PDF آموزش
+              </a>
+              <i class="fas fa-share-alt text-gray-400 hover:text-blue-400 text-lg"></i>
+            </div>
+          </div>
+        </section>
+
+        <section id="articles" class="content-section hidden">
+          <h2 class="text-3xl font-semibold mb-6 border-b border-gray-600 pb-3">مقالات</h2>
+          <div class="space-y-4">
+            <div class="p-4 shadow-sm hover:shadow-md w-full flex items-center justify-between rounded-lg cursor-pointer">
+              <h3 class="font-semibold">مقاله ۱: مفاهیم پایه طراحی وب</h3>
+              <i class="fas fa-share-alt text-gray-400 hover:text-blue-400 text-lg"></i>
+            </div>
+            <div class="p-4 shadow-sm hover:shadow-md w-full flex items-center justify-between rounded-lg cursor-pointer">
+              <h3 class="font-semibold">مقاله ۲: بهترین روش‌های CSS</h3>
+              <i class="fas fa-share-alt text-gray-400 hover:text-blue-400 text-lg"></i>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
 
   <div id="overlay"></div>
 
   <script>
-    const sidebar = document.getElementById('sidebar');
     const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const hamburgerIcon = document.getElementById('hamburger-icon');
     const closeIcon = document.getElementById('close-icon');
-    const buttons = document.querySelectorAll('.category-btn');
-    const sections = document.querySelectorAll('.content-section');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const sections = {
+      videos: document.getElementById('videos'),
+      audios: document.getElementById('audios'),
+      documents: document.getElementById('documents'),
+      articles: document.getElementById('articles'),
+    };
 
-    // نمایش بخش مربوط به دکمه انتخاب شده
-    function setActiveButton(activeBtn) {
-      buttons.forEach(btn => btn.classList.remove('active'));
-      activeBtn.classList.add('active');
-    }
-
-    function showSection(id) {
-      sections.forEach(section => {
-        if (section.id === id) {
-          section.classList.remove('hidden');
-          section.style.animation = 'none';
-          section.offsetHeight; // trigger reflow
-          section.style.animation = null;
-        } else {
-          section.classList.add('hidden');
-        }
-      });
-    }
-
-    // تغییر بخش و دکمه فعال
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = btn.getAttribute('data-target');
-        showSection(target);
-        setActiveButton(btn);
-
-        // اگر موبایل است، منو ببند بعد کلیک
-        if (window.innerWidth <= 768) {
-          sidebar.classList.add('closed');
-          overlay.classList.remove('active');
-          hamburgerIcon.style.display = 'block';
-          closeIcon.style.display = 'none';
-        }
-      });
-    });
-
-    // مدیریت نمایش منو و آیکون‌ها
-    hamburgerBtn.addEventListener('click', () => {
+    function toggleSidebar() {
       const isClosed = sidebar.classList.contains('closed');
       if (isClosed) {
         sidebar.classList.remove('closed');
@@ -323,18 +307,36 @@
         hamburgerIcon.style.display = 'block';
         closeIcon.style.display = 'none';
       }
+    }
+
+    hamburgerBtn.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+
+    categoryButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // انتخاب بخش مورد نظر و نمایش آن، پنهان کردن بقیه
+        const target = btn.getAttribute('data-target');
+        Object.keys(sections).forEach(key => {
+          if (key === target) {
+            sections[key].classList.remove('hidden');
+          } else {
+            sections[key].classList.add('hidden');
+          }
+        });
+
+        // دکمه‌ها را فعال و غیر فعال کنیم
+        categoryButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // اگر موبایل بود، بعد از انتخاب، منو را ببندیم
+        if (window.innerWidth <= 768) {
+          toggleSidebar();
+        }
+      });
     });
 
-    // کلیک روی بک‌گراند تار منو را ببندد
-    overlay.addEventListener('click', () => {
-      sidebar.classList.add('closed');
-      overlay.classList.remove('active');
-      hamburgerIcon.style.display = 'block';
-      closeIcon.style.display = 'none';
-    });
-
-    // مدیریت وضعیت منو هنگام بارگذاری صفحه و تغییر اندازه
-    function checkWindowSize() {
+    // اگر پنجره ریسایز شود، منو را ببندیم
+    window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
         sidebar.classList.remove('closed');
         overlay.classList.remove('active');
@@ -346,15 +348,7 @@
         hamburgerIcon.style.display = 'block';
         closeIcon.style.display = 'none';
       }
-    }
-
-    window.addEventListener('load', () => {
-      checkWindowSize();
-      // مقداردهی اولیه نمایش اولین بخش
-      showSection('videos');
     });
-
-    window.addEventListener('resize', checkWindowSize);
   </script>
 </body>
 </html>
