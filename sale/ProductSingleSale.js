@@ -537,5 +537,109 @@ $(function()
 
 
 //#region form-manager js
+var FormManager = {
+	//******************************************************************************************************
+	// متد عمومی برای فراخوانی اطلاعات کامل کاربر
+	readEmployeeInfo: function(personnelNO, onSuccess, onError)
+	{
+		var params = {Where: "PersonnelNO = " + personnelNO};
+		
+		BS_EmployeeInfo.Read(params,
+			function(data)
+			{
+				var list = [];
+				var xmlvar = $.xmlDOM(data);
+				xmlvar.find("row").each(
+					function()
+					{
+						list.push
+						({
+							CurrentPersonnelNO: $(this).find(">col[name='PersonnelNO']").text(),
+							CurrentUserCompanyId: $(this).find(">col[name='CompanyId']").text(),
+							NationalCode: $(this).find(">col[name='NationalCode']").text(),
+							CurrentUserFirstName: $(this).find(">col[name='FirstName']").text(),
+							CurrentUserLastName: $(this).find(">col[name='LastName']").text(),
+							Birthday: $(this).find(">col[name='Birthday']").text(),
+							CityName: $(this).find(">col[name='CityName']").text(),
+							Mobile: $(this).find(">col[name='Mobile']").text(),
+							Email: $(this).find(">col[name='Email']").text(),
+							FirstName_EN: $(this).find(">col[name='FirstName_EN']").text(),
+							LastName_EN: $(this).find(">col[name='LastName_EN']").text(),
+							EmploymentDate: $(this).find(">col[name='EmploymentDate']").text(),
+							DCId: $(this).find(">col[name='DCId']").text(),
+							RankTitle: $(this).find(">col[name='RankTitle']").text(),
+							LeaveDate: $(this).find(">col[name='LeaveDate']").text(),
+							Gender: $(this).find(">col[name='Gender']").text(),
+							ActorId: $(this).find(">col[name='ActorId']").text(),
+							UserId: $(this).find(">col[name='UserId']").text(),
+							RoleId: $(this).find(">col[name='RoleId']").text(),
+							RoleName: $(this).find(">col[name='RoleName']").text(),
+							RoleCode: $(this).find(">col[name='RoleCode']").text(),
+							UnitId: $(this).find(">col[name='UnitId']").text(),
+							DepartmentId: $(this).find(">col[name='DepartmentId']").text(),
+							Enabled: $(this).find(">col[name='Enabled']").text(),
+							UserName: $(this).find(">col[name='UserName']").text(),
+							UnitsName: $(this).find(">col[name='UnitsName']").text(),
+							EnabledRole: $(this).find(">col[name='EnabledRole']").text(),
+							EnabledUser: $(this).find(">col[name='EnabledUser']").text(),
+							UsersDefaultActorId: $(this).find(">col[name='UsersDefaultActorId']").text(),
+							DepartmentCode: $(this).find(">col[name='DepartmentCode']").text()
+						});
+					}
+				);
+				
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(list);
+				}
+			},
+			function(error) {
+				var methodName = "readEmployeeInfo";
 
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+	//******************************************************************************************************
+	readEntityGoodsCatalogue: function(jsonParams, onSuccess, onError)
+	{
+	  BS_GoodsCatalogue.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                   list.push
+	                   ({
+			                 GoodsId: $(this).find("col[name='GoodsId']").text(),
+			                 GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+			                 GoodsName: $(this).find("col[name='GoodsName']").text(),
+			                 LogicalQty: $(this).find("col[name='LogicalQty']").text(),
+						     Price: $(this).find("col[name='Price']").text(),
+			                 BrandName: $(this).find("col[name='BrandName']").text()
+	                   });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+};
 //#endregion
