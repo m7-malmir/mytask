@@ -1,83 +1,26 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>جزئیات ویدیو</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Vazirmatn', sans-serif;
-    }
-  </style>
-</head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-6">
-
-  <div class="w-full max-w-5xl bg-gray-800 rounded-3xl shadow-2xl p-8 space-y-6">
-    
-    <!-- Back Button -->
-    <button onclick="history.back()" class="flex items-center text-gray-300 hover:text-white transition mb-4">
-      <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-      </svg>
-      بازگشت به لیست
-    </button>
-
-    <!-- Title -->
-    <h1 id="video-title" class="text-3xl sm:text-4xl font-extrabold tracking-tight">عنوان ویدیو</h1>
-    <p id="video-artist" class="text-lg text-gray-400">هنرمند: ---</p>
-
-    <!-- Video Player -->
-    <div class="aspect-video rounded-xl overflow-hidden shadow-lg ring-1 ring-gray-700">
-      <video id="video-player" class="w-full h-full" controls>
-        <source src="" type="video/mp4">
-        مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
-      </video>
-    </div>
-
-    <!-- Description -->
-    <div>
-      <h2 class="text-xl font-semibold text-gray-300 mb-2">توضیحات</h2>
-      <p id="video-description" class="text-gray-400 leading-relaxed text-justify">
-        متن توضیحات ویدیو در این بخش نمایش داده می‌شود.
-      </p>
-    </div>
-  </div>
-
-  <script>
-    const videos = [
-      {
-        id: 1,
-        title: "مستند طبیعت",
-        artist: "علی رضایی",
-        description: "این مستند جذاب شما را به دل جنگل‌های ایران می‌برد و با حیات وحش و طبیعت بکر آشنا می‌کند.",
-        videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
-      },
-      {
-        id: 2,
-        title: "اجرای زنده موسیقی",
-        artist: "نگار جعفری",
-        description: "ویدیوی اجرای زنده موسیقی در کنسرت تابستان ۱۴۰۲ با حضور بیش از ۵۰۰۰ نفر تماشاگر.",
-        videoUrl: "https://www.w3schools.com/html/movie.mp4"
-      }
-    ];
-
-    const params = new URLSearchParams(window.location.search);
-    const id = parseInt(params.get("id"));
-    const video = videos.find(v => v.id === id);
-
-    if (video) {
-      document.getElementById("video-title").textContent = video.title;
-      document.getElementById("video-artist").textContent = `هنرمند: ${video.artist}`;
-      document.getElementById("video-description").textContent = video.description;
-      document.getElementById("video-player").querySelector("source").src = video.videoUrl;
-      document.getElementById("video-player").load();
-    } else {
-      document.querySelector(".max-w-5xl").innerHTML = `
-        <p class="text-red-500 text-center text-xl font-bold">ویدیو پیدا نشد!</p>
-      `;
-    }
-  </script>
-</body>
-</html>
+{
+  BS_GoodsCatalogue.Read(jsonParams
+       , function(data)
+       {
+           var list = [];
+           var xmlvar = $.xmlDOM(data);
+           xmlvar.find("row").each(
+               function()
+               { 
+                   list.push
+                   ({
+                 GoodsId: $(this).find("col[name='GoodsId']").text(),
+                 GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+                 UnitName: $(this).find("col[name='UnitName']").text(),
+                 CartonQTY: $(this).find("col[name='CartonQTY']").text()
+                   });
+               }
+           );
+           if($.isFunction(onSuccess))
+           {
+               onSuccess(list);
+           
+           }
+       }, onError
+   );
+},
