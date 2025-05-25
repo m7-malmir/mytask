@@ -362,9 +362,46 @@ $(function()
 			    tempRow.append($("<td></td>").css({
 			        "width": "150px", "display": "none", "border": "solid 1px #BED4DC"
 			    }).text(productId));
-			    tempRow.append($("<td></td>").css({
-			        "width": "80px", "border": "solid 1px #BED4DC"
-			    }).append($("<button></button>").text("ویرایش").addClass("editBtn")));
+				
+				// اضافه کردن یک سلول <td> برای productId
+				tempRow.append($("<td></td>").css({
+				    "width": "150px", "display": "none", "border": "solid 1px #BED4DC"
+				}).text(productId));
+				
+				// ایجاد دکمه
+				var reprint = $("<button/>", { title: "حذف" })
+				    .addClass("") // در صورت نیاز، کلاس را اضافه کنید
+				    .css({
+				        cursor: "pointer",
+				        backgroundColor: "red", // رنگ پس‌زمینه قرمز
+				        color: "white", // رنگ متن سفید
+				        border: "0", // حذف حاشیه
+				        padding: "5px 0px", // اضافه کردن کمی فاصله داخلی
+				        borderRadius: "50px", // اضافه کردن گوشه‌های گرد
+				        fontSize: "20px", // اندازه فونت برای خط تیره
+				        lineHeight: "0.2", // تنظیم ارتفاع خط
+				        width: "20px", // تنظیم عرض دکمه به 100%
+						height: "20px",
+				        textAlign: "center" // مرکز چین کردن محتوا
+				    })
+				    .text("-")            .text("-") // متنی برای دکمه (خط تیره)
+            .on("click", function() {
+                // حذف ردیف
+                $(this).closest("tr").remove();
+                // فعال کردن چک باکس مربوطه
+                var productId = $(this).closest("tr").data("id");
+                $('#tblGoods .CHbox:checked').each(function() {
+                    if ($(this).closest("tr").find("td").eq(2).text().trim() === productId) {
+                        $(this).prop("disabled", false);
+                    }
+                });
+            }); // متنی برای دکمه (خط تیره)
+				
+				// اضافه کردن دکمه به tempRow درون یک سلول <td>
+				tempRow.append($("<td></td>").append(reprint).css({
+				    "border": "solid 1px #BED4DC" // می‌توانید استایل‌های دیگر را نیز اضافه کنید
+				}));
+
 			    tempRow.append($("<td></td>").css({
 			        "width": "100px", "border": "solid 1px #BED4DC"
 			    }).text(goodsCode));
@@ -483,32 +520,62 @@ $(function()
         }
 		//******************************************************************************************************
 		//برگذاری دیتا برای نمایش که در صورت لزوم می توان یک لیست به آن پاس داد
-        function load()
-        {
-			
-            var params = {}; 
-			showLoading();
-			//متد readRows در ایتدای همین صفحه از FormManager مقدار دهی شده است.
-			// درصورت نیاز به لود از لیست این بخش بازنویسی میگردد
-            readRows(params,
-                function(list)
-                {
-					//alert(JSON.stringify(list));
-					if(list.length > 0){
-						for(var i = 0, l = list.length; i < l; i += 1)
-	                    {
-	                        addRow(list[i], i + 1);
-	                    }
-					}
-					myHideLoading();
-                },
-                function(error)
-                {
-					myHideLoading();
-                    alert(error);
-                }
-            );
-        }
+		function load() {
+		    let selectedValue = ''; // متغیر برای ذخیره مقدار انتخاب شده
+		    let params = {}; // متغیر params
+		
+		    // صدا زدن اولیه بدون فیلتر برای بارگذاری همه داده‌ها
+		    showLoading();
+		    readRows(params,
+		        function(list) {
+		            if (list.length > 0) {
+		                for (var i = 0, l = list.length; i < l; i += 1) {
+		                    addRow(list[i], i + 1);
+		                }
+		            }
+		            myHideLoading();
+		        },
+		        function(error) {
+		            myHideLoading();
+		            alert(error);
+		        }
+		    );
+		
+		    // هندل تغییر برند
+		    $('#CmbBrandFilter').change(function () {
+		        selectedValue = $(this).find("option:selected").val();
+		
+		        console.log(selectedValue);
+		
+		        if (!selectedValue || selectedValue === 'undefined') {
+		            params = {}; // همه دیتاها
+		        } else {
+		            params = { WHERE: "BrandRef = N'" + selectedValue + "'" }; // فیلتر شده
+		        }
+		
+		        alert(JSON.stringify(params));
+		        showLoading();
+		
+		        // پاک کردن ردیف‌های قبلی
+		        element.find("tr.row-data").remove();
+		
+		        readRows(params,
+		            function (list) {
+		                if (list.length > 0) {
+		                    for (var i = 0, l = list.length; i < l; i += 1) {
+		                        addRow(list[i], i + 1);
+		                    }
+		                }
+		                myHideLoading();
+		            },
+		            function (error) {
+		                myHideLoading();
+		                alert(error);
+		            }
+		        );
+		    });
+		}
+
 		//******************************************************************************************************
 		//بروز رسانی دیتای جدول
         function refresh()
@@ -528,118 +595,4 @@ $(function()
         };
     }());
 });
-//#endregion
-
-
-//#region tblOrderedGoods js
-
-//#endregion
-
-
-//#region form-manager js
-var FormManager = {
-	//******************************************************************************************************
-	// متد عمومی برای فراخوانی اطلاعات کامل کاربر
-	readEmployeeInfo: function(personnelNO, onSuccess, onError)
-	{
-		var params = {Where: "PersonnelNO = " + personnelNO};
-		
-		BS_EmployeeInfo.Read(params,
-			function(data)
-			{
-				var list = [];
-				var xmlvar = $.xmlDOM(data);
-				xmlvar.find("row").each(
-					function()
-					{
-						list.push
-						({
-							CurrentPersonnelNO: $(this).find(">col[name='PersonnelNO']").text(),
-							CurrentUserCompanyId: $(this).find(">col[name='CompanyId']").text(),
-							NationalCode: $(this).find(">col[name='NationalCode']").text(),
-							CurrentUserFirstName: $(this).find(">col[name='FirstName']").text(),
-							CurrentUserLastName: $(this).find(">col[name='LastName']").text(),
-							Birthday: $(this).find(">col[name='Birthday']").text(),
-							CityName: $(this).find(">col[name='CityName']").text(),
-							Mobile: $(this).find(">col[name='Mobile']").text(),
-							Email: $(this).find(">col[name='Email']").text(),
-							FirstName_EN: $(this).find(">col[name='FirstName_EN']").text(),
-							LastName_EN: $(this).find(">col[name='LastName_EN']").text(),
-							EmploymentDate: $(this).find(">col[name='EmploymentDate']").text(),
-							DCId: $(this).find(">col[name='DCId']").text(),
-							RankTitle: $(this).find(">col[name='RankTitle']").text(),
-							LeaveDate: $(this).find(">col[name='LeaveDate']").text(),
-							Gender: $(this).find(">col[name='Gender']").text(),
-							ActorId: $(this).find(">col[name='ActorId']").text(),
-							UserId: $(this).find(">col[name='UserId']").text(),
-							RoleId: $(this).find(">col[name='RoleId']").text(),
-							RoleName: $(this).find(">col[name='RoleName']").text(),
-							RoleCode: $(this).find(">col[name='RoleCode']").text(),
-							UnitId: $(this).find(">col[name='UnitId']").text(),
-							DepartmentId: $(this).find(">col[name='DepartmentId']").text(),
-							Enabled: $(this).find(">col[name='Enabled']").text(),
-							UserName: $(this).find(">col[name='UserName']").text(),
-							UnitsName: $(this).find(">col[name='UnitsName']").text(),
-							EnabledRole: $(this).find(">col[name='EnabledRole']").text(),
-							EnabledUser: $(this).find(">col[name='EnabledUser']").text(),
-							UsersDefaultActorId: $(this).find(">col[name='UsersDefaultActorId']").text(),
-							DepartmentCode: $(this).find(">col[name='DepartmentCode']").text()
-						});
-					}
-				);
-				
-				if($.isFunction(onSuccess))
-				{
-					onSuccess(list);
-				}
-			},
-			function(error) {
-				var methodName = "readEmployeeInfo";
-
-	            if ($.isFunction(onError)) {
-					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-					console.error("Error:", erroMessage);
-					console.error("Details:", error);
-	                
-	                onError({
-	                    message: erroMessage,
-	                    details: error
-	                });
-	            } else {
-	                console.error(erroMessage+ " (no onError callback provided):", error);
-	            }
-	        }
-		);
-	},
-	//******************************************************************************************************
-	readEntityGoodsCatalogue: function(jsonParams, onSuccess, onError)
-	{
-	  BS_GoodsCatalogue.Read(jsonParams
-	       , function(data)
-	       {
-	           var list = [];
-	           var xmlvar = $.xmlDOM(data);
-	           xmlvar.find("row").each(
-	               function()
-	               { 
-	                   list.push
-	                   ({
-			                 GoodsId: $(this).find("col[name='GoodsId']").text(),
-			                 GoodsCode: $(this).find("col[name='GoodsCode']").text(),
-			                 GoodsName: $(this).find("col[name='GoodsName']").text(),
-			                 LogicalQty: $(this).find("col[name='LogicalQty']").text(),
-						     Price: $(this).find("col[name='Price']").text(),
-			                 BrandName: $(this).find("col[name='BrandName']").text()
-	                   });
-	               }
-	           );
-	           if($.isFunction(onSuccess))
-	           {
-	               onSuccess(list);
-	           
-	           }
-	       }, onError
-	   );
-	},
-};
 //#endregion
