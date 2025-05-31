@@ -144,8 +144,7 @@ $(function(){
 						return;
 				    }
 				);
-				
-				
+
 				readFromData({Where: primaryKeyName + " = " + pk},
 					function(dataXml)
 					{
