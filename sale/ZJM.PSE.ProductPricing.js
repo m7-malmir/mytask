@@ -398,6 +398,51 @@ $(function(){
 //#endregion
 
 //#region btnsearch.js
+$("#btnGoodsCodeSearch").click(function() {
+    // گرفتن کد محصول از فیلد ورودی
+    var goodsCode = $("#txtGoodsCode").val();
 
+    // بررسی اینکه آیا کد محصول خالی است یا خیر
+    if (!goodsCode) {
+        alert("لطفا کد محصول را وارد کنید.");
+        return;
+    }
+
+    // فراخوانی تابع برای خواندن اطلاعات کالا
+    FormManager.ReadGoodsInfo({}, function(list) {
+        // جستجوی محصول در لیست
+        var foundItem = list.find(item => item.GoodsCode === goodsCode);
+
+        if (foundItem) {
+            // اگر محصول پیدا شد، داده‌ها را در فیلدهای مربوطه قرار می‌دهیم
+            $("#txtGoodsName").val(foundItem.GoodsName);
+            $("#txtPackUnitName").val(foundItem.PackUnitName);
+            $("#txtBrandName").val(foundItem.BrandName);
+            $("#txtUnitName").val(foundItem.UnitName);
+			
+			
+			    FormManager.ReadGoodsPriceCatalogue({}, function(list) {
+					 var foundItem2 = list.find(item => item.GoodsId === foundItem.ID);
+					if(foundItem2){
+					 $("#txtPrice").val(foundItem2.Price);
+					}
+			        //GoodsId
+					// جستجوی محصول در لیست
+			        alert(JSON.stringify(list));
+					
+					
+			    }, function(error) {
+			        alert('خطایی در سیستم رخ داده است: ' + error.errorMessage);
+			    });
+					
+			
+	
+        } else {
+            alert("محصولی با این کد پیدا نشد.");
+        }
+    }, function(error) {
+        alert('خطایی در سیستم رخ داده است: ' + error.errorMessage);
+    });
+});
 
 //#endregion
