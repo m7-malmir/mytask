@@ -398,6 +398,7 @@ $(function(){
 //#endregion
 
 //#region btnsearch.js
+
 $("#btnGoodsCodeSearch").click(function() {
     // گرفتن کد محصول از فیلد ورودی
     var goodsCode = $("#txtGoodsCode").val();
@@ -444,5 +445,43 @@ $("#btnGoodsCodeSearch").click(function() {
         alert('خطایی در سیستم رخ داده است: ' + error.errorMessage);
     });
 });
+
+//#endregion
+
+
+//#region btnregister.js
+$("#btnRegister").click(function(){
+	
+	var ProductId=$("#txtProductId").val();
+    var Price=$("#txtPrice").val();
+	
+	if(Price==''){
+		alert(JSON.stringify('لطفا کد محصول را به درستی وارد نمایید!'));
+		return;	
+	}
+	var params = {
+        'Price': Price,
+    };
+    params = $.extend(params, { Where: "Id = "+ProductId });
+	FormManager.updateProductPrice(params,
+		function(status, list) { 
+				$.alert("ویرایش قیمت محصول با موفقیت انجام شد.","","rtl",function(){
+			    $("#txtGoodsName").val('');
+	            $("#txtPackUnitName").val('');
+	            $("#txtBrandName").val('');
+	            $("#txtUnitName").val('');
+				$("#txtProductId").val('');
+	   		 $("#txtPrice").val('');
+					hideLoading();
+				});		
+			},
+			function(error) { // تابع خطا
+				console.log("خطای برگشتی:", error);
+				$.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+			}
+		);
+});
+
+
 
 //#endregion
