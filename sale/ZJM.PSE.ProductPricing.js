@@ -448,7 +448,6 @@ $("#btnGoodsCodeSearch").click(function() {
 
 //#endregion
 
-
 //#region btnregister.js
 $("#btnRegister").click(function(){
 	
@@ -482,6 +481,11 @@ $("#btnRegister").click(function(){
 		);
 });
 
-
-
 //#endregion
+
+
+//#region  btnClose.js
+$("#btnClose").click(function(){
+	closeWindow({ OK: true, Result: null });
+});
+//#endregion btnClose.js
