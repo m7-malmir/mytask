@@ -723,3 +723,53 @@ var FormManager = {
 	}
 };
 //#endregion
+
+//#region btnRegister.js
+ $("#btnRegister").click(function(){
+var jsonArray = [];
+
+// جمع‌آوری داده‌ها از جدول
+$('#tblOrderedGoods tbody tr[data-id]').each(function () {
+    var productId = $(this).find('td').eq(1).text(); // کد محصول
+    var price = parseFloat($(this).find('td.total-price').text());
+    var quantity = parseInt($(this).find('td').eq(6).find('span').text());
+
+    jsonArray.push({
+        GoodsId: productId,
+        Price: price,
+        Qty: quantity
+    });
+});
+
+// بررسی وجود داده
+if (jsonArray.length === 0) {
+    alert("هیچ داده‌ای برای ارسال وجود ندارد.");
+    return;
+}
+
+// پارامترها با نام درست
+var params = {
+    UserId: currentUserId,
+    username: currentusername,
+    jsonArray: JSON.stringify(jsonArray),
+    Description: $("#txtDiscription").val(),
+    Ordertype: 1 // اینجا درست شد!
+};
+alert(JSON.stringify(params));
+// ارسال درخواست
+FormManager.RetailPersonnelOrder(params, function (list) {
+    if (list.length > 0) {
+        var res = list[0]["Result"];
+        alert(JSON.stringify(res));
+    } else {
+        alert("هیچ نتیجه‌ای دریافت نشد.");
+    }
+    loadTable();
+}, function (error) {
+	console.log(error);
+   // alert("خطا در ارسال درخواست: " + error);
+});
+
+	
+});
+//#endregion btnRegister.js
