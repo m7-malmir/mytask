@@ -18,9 +18,11 @@ var leaveDate;
 var gender;
 
 var currentActorId;
+var selectedValue;
 //---------------------------------
+var CreditBalance;
 var ProcessStatus;
-
+var currentUserId;
 $(function(){
 	$form = (function()
 	{ 
@@ -29,8 +31,8 @@ $(function(){
 			inEditMode = false,
 			primaryKeyName = "Id",
 			bindingSourceName = "",
-			insertFromData = FormManager.insertEntity,
-			readRows = FormManager.readEntityّSPFoodView,
+			readBrandName=FormManager.ReadBrandName,
+			ReadPersonnelCredit=FormManager.ReadPersonnelCredit,
 			readEmployeeInfo = UserHelpes.readEmployeeInfo;
 		//******************************************************************************************************	
 		function init()
@@ -61,22 +63,49 @@ $(function(){
 			    console.warn("Cannot reach parent document:", e);
 			    isInTestMode = false;
 			  }
-			//-----------------------------------
-			
+			/******************************************************************************/
+			var jsonParams = {}; // پارامترهای مورد نیاز برای خواندن داده‌ها
+
+		    readBrandName(jsonParams, function(brandOptions) {
+		        // پر کردن سلکتور با گزینه‌ها
+		        $('#CmbBrandFilter').html(brandOptions);
+		    }, function(error) {
+		        console.error("Error fetching brand data:", error);
+		    });
+			/******************************************************************************/
+	
 			showLoading();
 			UserService.GetCurrentUser(true,
 				function(data){
 						hideLoading(); 
-						tblMain.refresh();
+						FormManager.ReadPersonnelCredit({},
+							function(list)
+							{
+								CreditBalance=list[0].RemainCredit;
+								$("#txtCreditBalance").val(CreditBalance);	
+								
+								if(list[0].CancelCredit=='false'){
+									//alert(JSON.stringify('falssssse'));
+									}
+							},
+							function(error)
+						    {
+						        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+						        myHideLoading();
+								return;
+						    }
+						);
+						
 						var xml = $.xmlDOM(data);
+						currentUserId = xml.find("user > id").text().trim();
 				        currentusername = xml.find("user > username").text().trim();
 				        currentUserfirstname = xml.find("user > firstname").text().trim();
 				        currentUserlastname = xml.find("user > lastname").text().trim();
 				        currentActorId = xml.find("actor").attr("pk");
-						
+						//alert(JSON.stringify(currentUserId));
 						$("#txtFullName").val(currentUserfirstname+' '+currentUserlastname);
 						$("#txtPersonnelNO").val(currentusername);
-
+						tblMain.refresh();
 						readEmployeeInfo(currentusername,
 			                function(list)
 			                {
@@ -85,6 +114,7 @@ $(function(){
 								}
 								else {
 									currentUserCompanyId = list[0]["CurrentUserCompanyId"];
+									
 								}
 								myHideLoading();
 			                },
@@ -100,6 +130,9 @@ $(function(){
 					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
 				}
 			);
+			
+
+						
 		}
 		//******************************************************************************************************
 		// تمام ایونت های مربوط به یک المان یا خود فرم در این متد نوشته می شوند
