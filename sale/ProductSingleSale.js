@@ -303,7 +303,7 @@ $(function()
         var element = null,
 			isDirty = false,
             rowPrimaryKeyName = "Id",
-            readRows = FormManager.readEntityGoodsCatalogue
+            readRows = FormManager.readEntityGoodsCatalogue;
 		//فراخوانی سازنده جدول
         init();
 		//******************************************************************************************************
@@ -315,41 +315,39 @@ $(function()
         }
 		//******************************************************************************************************
         function build()
-        {       
-			//دکمه افزودن     
-            /*var imgAdd = $("<img/>", {src: "Images/add.png", title: "افزودن"}).addClass("add").css({cursor: "pointer"});
-            element.find("tr.row-template").find("td:first").empty().append(imgAdd);*/
-			
-			//برای حذف دکمه افزودن این سطر را فعال و سطر باتلا را حذف کنید
-            // if you don't want to use add button inside table uncomment the line below and remove the lines up
-            //element.find("tr.row-template").hide();
+        {   
         }
 		//******************************************************************************************************
 		//این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
         function bindEvents()
         {
+			var element = $('#tblGoods');
+			
 			element.on("click", ".CHbox", function () {
 			    if (!this.checked) return;
 			
 			    var $row = $(this).closest("tr");
 			
-			    // استفاده از ایندکس به‌جای name
 			    var productId = $row.find("td").eq(2).text().trim();
 			    var goodsCode = $row.find("td").eq(3).text().trim();
 			    var brandName = $row.find("td").eq(4).text().trim();
 			    var goodsName = $row.find("td").eq(5).text().trim();
-			    var price = $row.find("td").eq(6).text().trim();
-				//بررسی شناسه محصول و صحت آن
+			    var price = parseFloat($row.find("td").eq(6).text().trim());
+			
 			    if (!productId) {
 			        alert("شناسه محصول نامعتبر است.");
 			        return;
 			    }
 			
-			    // بررسی تکراری بودن با data-id
 			    var alreadyAdded = $('#tblOrderedGoods tbody tr[data-id="' + productId + '"]').length > 0;
-			
 			    if (alreadyAdded) {
 			        alert("این کالا قبلاً اضافه شده است.");
+			        return;
+			    }
+			
+			    var remainingBalance = CreditBalance - getTotalPrice();
+			    if (remainingBalance < price) {
+			        alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
 			        return;
 			    }
 			
@@ -359,78 +357,177 @@ $(function()
 			        "width": "25px", "background-color": "#E0F6FE",
 			        "border": "solid 1px #BED4DC", "text-align": "center"
 			    }));
+			
 			    tempRow.append($("<td></td>").css({
 			        "width": "150px", "display": "none", "border": "solid 1px #BED4DC"
 			    }).text(productId));
-				
-				// اضافه کردن یک سلول <td> برای productId
-				tempRow.append($("<td></td>").css({
-				    "width": "150px", "display": "none", "border": "solid 1px #BED4DC"
-				}).text(productId));
-				
-				// ایجاد دکمه
-				var reprint = $("<button/>", { title: "حذف" })
-				    .addClass("") // در صورت نیاز، کلاس را اضافه کنید
-				    .css({
-				        cursor: "pointer",
-				        backgroundColor: "red", // رنگ پس‌زمینه قرمز
-				        color: "white", // رنگ متن سفید
-				        border: "0", // حذف حاشیه
-				        padding: "5px 0px", // اضافه کردن کمی فاصله داخلی
-				        borderRadius: "50px", // اضافه کردن گوشه‌های گرد
-				        fontSize: "20px", // اندازه فونت برای خط تیره
-				        lineHeight: "0.2", // تنظیم ارتفاع خط
-				        width: "20px", // تنظیم عرض دکمه به 100%
-						height: "20px",
-				        textAlign: "center" // مرکز چین کردن محتوا
-				    })
-				    .text("-")            .text("-") // متنی برای دکمه (خط تیره)
-            .on("click", function() {
-                // حذف ردیف
-                $(this).closest("tr").remove();
-                // فعال کردن چک باکس مربوطه
-                var productId = $(this).closest("tr").data("id");
-                $('#tblGoods .CHbox:checked').each(function() {
-                    if ($(this).closest("tr").find("td").eq(2).text().trim() === productId) {
-                        $(this).prop("disabled", false);
-                    }
-                });
-            }); // متنی برای دکمه (خط تیره)
-				
-				// اضافه کردن دکمه به tempRow درون یک سلول <td>
-				tempRow.append($("<td></td>").append(reprint).css({
-				    "border": "solid 1px #BED4DC" // می‌توانید استایل‌های دیگر را نیز اضافه کنید
-				}));
-
+			
+			    var reprint = $("<button/>", { title: "حذف" })
+			        .css({
+			            cursor: "pointer",
+			            backgroundColor: "red",
+			            color: "white",
+			            border: "0",
+			            padding: "5px 0px",
+			            borderRadius: "50px",
+			            fontSize: "20px",
+			            lineHeight: "0.2",
+			            width: "20px",
+			            height: "20px",
+			            textAlign: "center"
+			        })
+			        .text("-")
+			        .on("click", function () {
+			            $(this).closest("tr").remove();
+			            updateTotalPrice();
+			            checkAddButtonState();
+			        });
+			
+			    tempRow.append($("<td></td>").append(reprint).css({
+			        "border": "solid 1px #BED4DC"
+			    }));
+			
 			    tempRow.append($("<td></td>").css({
 			        "width": "100px", "border": "solid 1px #BED4DC"
 			    }).text(goodsCode));
+			
 			    tempRow.append($("<td></td>").css({
 			        "width": "120px", "border": "solid 1px #BED4DC"
 			    }).text(brandName));
+			
 			    tempRow.append($("<td></td>").css({
 			        "width": "320px", "border": "solid 1px #BED4DC"
 			    }).text(goodsName));
-				
-			   tempRow.append($("<td></td>").css({"width": "50px","border": "solid 1px #BED4DC"})
-				.append(
-				    $("<input>").attr({
-				        type: "number",
-				        value: 1,
-				        min: 1
-				    }).css({
-				        "width": "85%",
-				        "text-align": "center"
-				    })
-				));
-			    tempRow.append($("<td></td>").css({
+			
+			    var quantity = 1;
+			
+			    var plusButton = $("<button/>")
+			        .text("+")
+			        .css({
+			            "font-weight": "900",
+			            "width": "18px",
+			            "height": "18px",
+			            "fontSize": "12px",
+			            "background-color": "#FF9999",
+			            "background-color": "#000",
+			            "border": "1px solid rgb(252 252 252)",
+			            "border-radius": "50%",
+			            "color": "#fff"
+			        });
+			
+			    var minusButton = $("<button/>")
+			        .text("-")
+			        .css({
+			            "font-weight": "900",
+			            "width": "18px",
+			            "height": "18px",
+			            "fontSize": "12px",
+			            "background-color": "#FF9999",
+			            "background-color": "#000",
+			            "border": "1px solid rgb(252 252 252)",
+			            "border-radius": "50%",
+			            "color": "#fff"
+			        });
+			
+			    var quantityDisplay = $("<span></span>")
+			        .text(quantity)
+			        .css({
+			            "margin": "0 15px",
+			            "fontSize": "13px"
+			        });
+			
+			    function updateRowTotal() {
+			        var totalPrice = quantity * price;
+			        tempRow.find('.total-price').text(totalPrice.toFixed(2));
+			        updateTotalPrice();
+			        checkAddButtonState();
+			    }
+			
+			    plusButton.on("click", function () {
+			        if (quantity >= 10) {
+			            alert("تعداد هر کالا نمی‌تواند بیشتر از 10 باشد.");
+			            return;
+			        }
+			
+			        var currentTotal = getTotalPrice();
+			        var nextItemTotal = (quantity + 1) * price;
+			        var currentItemTotal = quantity * price;
+			
+			        var newTotal = currentTotal - currentItemTotal + nextItemTotal;
+			        if (newTotal > CreditBalance) {
+			            alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
+			            return;
+			        }
+			
+			        quantity++;
+			        quantityDisplay.text(quantity);
+			        updateRowTotal();
+			    });
+			
+			    minusButton.on("click", function () {
+			        if (quantity > 1) {
+			            quantity--;
+			            quantityDisplay.text(quantity);
+			            updateRowTotal();
+			        }
+			    });
+			
+			    var quantityCell = $("<td></td>").css({
+			        "width": "100px", "border": "solid 1px #BED4DC", "text-align": "center"
+			    }).append(minusButton).append(quantityDisplay).append(plusButton);
+			
+			    tempRow.append(quantityCell);
+			
+			    tempRow.append($("<td class='total-price'></td>").css({
 			        "width": "100px", "border": "solid 1px #BED4DC"
-			    }).text(price));
+			    }).text(price.toFixed(2)));
 			
 			    $('#tblOrderedGoods tbody').append(tempRow);
 			    $(this).prop("disabled", true);
+			    updateTotalPrice();
+			    checkAddButtonState();
 			});
-        }
+			
+			function checkAddButtonState() {
+			    var totalQuantity = 0;
+			    $('#tblOrderedGoods tbody tr').each(function () {
+			        var quantityText = $(this).find('td').eq(6).find('span').text(); // assuming quantity is in the 6th td
+			        totalQuantity += parseInt(quantityText);
+			    });
+			
+			    if (totalQuantity >= 10) {
+			        $('#addRow').prop("disabled", true);
+			    } else {
+			        $('#addRow').prop("disabled", false);
+			    }
+			}
+			
+			function updateTotalPrice() {
+			    var total = getTotalPrice();
+			    var totalPriceFormatted = commafy(total.toFixed(2));
+			    $('#TotalPrice').val(totalPriceFormatted);
+			
+			    var remainingBalance = CreditBalance - total;
+			    $('#RemainCredit').val(commafy(remainingBalance.toFixed(2)));
+			
+			    checkAddButtonState();
+			}
+			
+			function getTotalPrice() {
+			    var total = 0;
+			    $('#tblOrderedGoods tbody tr').each(function () {
+			        var priceText = $(this).find('td.total-price').text();
+			        var price = parseFloat(priceText) || 0;
+			        total += price;
+			    });
+			    return total;
+			}
+			
+			function commafy(num) {
+			    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			}
+
+		}
 		//******************************************************************************************************
 		//عملیات پر کردن دیتای هر سطر می باشد
         function addRow(rowInfo, rowNumber)
@@ -448,55 +545,15 @@ $(function()
 			tempRow.find("td:eq(" + index++ + ")").append(CHbox);
 			
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsId);
-			
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Price);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.LogicalQty);
-
-
-			
-			
-			
-            /*if(rowPrimaryKeyName in rowInfo)
-            {
-                var imgDelete = $("<img/>", {src: "Images/delete.png", title: "حذف"}).addClass("delete").css({cursor: "pointer"});
-                tempRow.find("td:eq(" + index++ + ")").append(imgDelete);
-                tempRow.attr({state: "saved"});
-            }
-            else
-            {
-				index++;
-                var imgDelete = $("<img/>", {src: "Images/delete.png", title: "حذف"}).addClass("delete").css({cursor: "pointer"});
-                tempRow.find("td:eq(" + index++ + ")").append(imgDelete);
-                tempRow.attr({state: "new"});
-            }*/
             element.find("tr.row-template").before(tempRow);
 			myHideLoading();
         }
-		//******************************************************************************************************
-		/*function editRow(row)
-        {
-			var rowInfo = row.data("rowInfo"),
-				params = {};
-			
-            params[rowPrimaryKeyName] = rowInfo[rowPrimaryKeyName]; // change params if needed 
 
-            $.showModalForm({registerKey: editFormRegKey, params: params},
-                function(retVal)
-                {
-                    if(retVal.OK)
-                    {
-                        // if edit form saves the changes
-                        refresh();
-
-                        // if edit form passes new values down to be managed here
-                        changeRow(row, retVal.Data);
-                    }
-                }
-            );
-        }*/
 		//******************************************************************************************************
 		//حذف یک سطر
         function removeRow(row)
@@ -521,11 +578,11 @@ $(function()
 		//******************************************************************************************************
 		//برگذاری دیتا برای نمایش که در صورت لزوم می توان یک لیست به آن پاس داد
 		function load() {
+			
 		    let selectedValue = ''; // متغیر برای ذخیره مقدار انتخاب شده
 		    let params = {}; // متغیر params
-		
-		    // صدا زدن اولیه بدون فیلتر برای بارگذاری همه داده‌ها
 		    showLoading();
+			params = { WHERE: "BrandRef = '1'" }; // فیلتر شده با سان استار
 		    readRows(params,
 		        function(list) {
 		            if (list.length > 0) {
@@ -552,8 +609,6 @@ $(function()
 		        } else {
 		            params = { WHERE: "BrandRef = N'" + selectedValue + "'" }; // فیلتر شده
 		        }
-		
-		        alert(JSON.stringify(params));
 		        showLoading();
 		
 		        // پاک کردن ردیف‌های قبلی
