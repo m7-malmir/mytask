@@ -1,6 +1,5 @@
 //#region main js
 	var $form;
-
 	//---------------------------------
 	// Global Variables For UserInfo
 	//---------------------------------
@@ -52,27 +51,6 @@
 			//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
 			function createControls()
 			{
-				//-----------------------------------
-				//	Get Test Mode Value
-				//-----------------------------------
-				try {
-					const parentUrl = window.parent?.location?.href;
-					const url = new URL(parentUrl);
-				isInTestMode = url.searchParams.get("icantestmode") === "1";
-				}
-				catch (e) {
-					console.warn("Cannot reach parent document:", e);
-					isInTestMode = false;
-				}
-				/******************************************************************************/
-				var jsonParams = {}; // پارامترهای مورد نیاز برای خواندن داده‌ها
-
-				readBrandName(jsonParams, function(brandOptions) {
-					// پر کردن سلکتور با گزینه‌ها
-					$('#CmbBrandFilter').html(brandOptions);
-				}, function(error) {
-					console.error("Error fetching brand data:", error);
-				});
 				/******************************************************************************/
 		
 				showLoading();
@@ -93,7 +71,7 @@
 									}else{
 										Discount=LimitDiscountPercent;
 									}
-									alert(JSON.stringify(Discount));
+									
 								},
 								function(error)
 								{
@@ -109,7 +87,6 @@
 							currentUserfirstname = xml.find("user > firstname").text().trim();
 							currentUserlastname = xml.find("user > lastname").text().trim();
 							currentActorId = xml.find("actor").attr("pk");
-							//alert(JSON.stringify(currentUserId));
 							$("#txtFullName").val(currentUserfirstname+' '+currentUserlastname);
 							$("#txtPersonnelNO").val(currentusername);
 							tblMain.refresh();
