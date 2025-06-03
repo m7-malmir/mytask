@@ -12,3 +12,13 @@ cmbPaymentBy  --- cmbPaymentMethod
 
 btnStartProcess ---- btnRegister
 btnRegister  ---  btnRegisterPaymentInfo
+
+
+
+
+
+DiscountPercent
+LimitDiscountPercent
+
+RemainCredit
+TotalPricetoFixedtoFixed
