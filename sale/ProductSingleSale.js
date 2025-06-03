@@ -1,328 +1,226 @@
 //#region main js
-var $form;
+	var $form;
 
-//---------------------------------
-// Global Variables For UserInfo
-//---------------------------------
-var currentusername;
-var currentPersonnelNO;
-var currentUserCompanyId;
-var nationalCode;
-var currentUserfirstname;
-var currentUserlastname;
-var birthday;
-var email;
-var employmentDate;
-var rankTitle;
-var leaveDate;
-var gender;
+	//---------------------------------
+	// Global Variables For UserInfo
+	//---------------------------------
+	var currentusername;
+	var currentPersonnelNO;
+	var currentUserCompanyId;
+	var nationalCode;
+	var currentUserfirstname;
+	var currentUserlastname;
+	var birthday;
+	var email;
+	var employmentDate;
+	var rankTitle;
+	var leaveDate;
+	var gender;
 
-var currentActorId;
-var selectedValue;
-//---------------------------------
-var CreditBalance;
-var ProcessStatus;
-var currentUserId;
-$(function(){
-	$form = (function()
-	{ 
-		var pk,
-			isInTestMode = false;
-			inEditMode = false,
-			primaryKeyName = "Id",
-			bindingSourceName = "",
-			readBrandName=FormManager.ReadBrandName,
-			ReadPersonnelCredit=FormManager.ReadPersonnelCredit,
-			readEmployeeInfo = UserHelpes.readEmployeeInfo;
-		//******************************************************************************************************	
-		function init()
+	var currentActorId;
+	var selectedValue;
+	//---------------------------------
+	var CreditBalance;
+	var ProcessStatus;
+	var currentUserId;
+	var Discount;
+	$(function(){
+		$form = (function()
 		{ 
-			build();
-			createControls();
-			bindEvents();
-		}
-        //******************************************************************************************************
-		function build()
-		{
-			//اگر بخواهیم استیل دهی خاصی داشته باشیم در این متد اعمال می شود
-			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
-		}
-		//******************************************************************************************************
-		//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
-		function createControls()
-		{
-			//-----------------------------------
-			//	Get Test Mode Value
-			//-----------------------------------
-			try {
-				const parentUrl = window.parent?.location?.href;
-				const url = new URL(parentUrl);
-		   	 isInTestMode = url.searchParams.get("icantestmode") === "1";
-			  }
-			  catch (e) {
-			    console.warn("Cannot reach parent document:", e);
-			    isInTestMode = false;
-			  }
-			/******************************************************************************/
-			var jsonParams = {}; // پارامترهای مورد نیاز برای خواندن داده‌ها
+			var pk,
+				isInTestMode = false;
+				inEditMode = false,
+				primaryKeyName = "Id",
+				bindingSourceName = "",
+				readBrandName=FormManager.ReadBrandName,
+				ReadPersonnelCredit=FormManager.ReadPersonnelCredit,
+				readEmployeeInfo = UserHelpes.readEmployeeInfo;
+			//******************************************************************************************************	
+			function init()
+			{ 
+				build();
+				createControls();
+				bindEvents();
+			}
+			//******************************************************************************************************
+			function build()
+			{
+				//اگر بخواهیم استیل دهی خاصی داشته باشیم در این متد اعمال می شود
+				$("body").css({overflow: "hidden"}).attr({scroll: "no"});
+			}
+			//******************************************************************************************************
+			//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
+			function createControls()
+			{
+				//-----------------------------------
+				//	Get Test Mode Value
+				//-----------------------------------
+				try {
+					const parentUrl = window.parent?.location?.href;
+					const url = new URL(parentUrl);
+				isInTestMode = url.searchParams.get("icantestmode") === "1";
+				}
+				catch (e) {
+					console.warn("Cannot reach parent document:", e);
+					isInTestMode = false;
+				}
+				/******************************************************************************/
+				var jsonParams = {}; // پارامترهای مورد نیاز برای خواندن داده‌ها
 
-		    readBrandName(jsonParams, function(brandOptions) {
-		        // پر کردن سلکتور با گزینه‌ها
-		        $('#CmbBrandFilter').html(brandOptions);
-		    }, function(error) {
-		        console.error("Error fetching brand data:", error);
-		    });
-			/******************************************************************************/
-	
-			showLoading();
-			UserService.GetCurrentUser(true,
-				function(data){
-						hideLoading(); 
-						FormManager.ReadPersonnelCredit({},
-							function(list)
-							{
-								CreditBalance=list[0].RemainCredit;
-								$("#txtCreditBalance").val(CreditBalance);	
-								
-								if(list[0].CancelCredit=='false'){
-									//alert(JSON.stringify('falssssse'));
-									}
-							},
-							function(error)
-						    {
-						        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
-						        myHideLoading();
-								return;
-						    }
-						);
-						
-						var xml = $.xmlDOM(data);
-						currentUserId = xml.find("user > id").text().trim();
-				        currentusername = xml.find("user > username").text().trim();
-				        currentUserfirstname = xml.find("user > firstname").text().trim();
-				        currentUserlastname = xml.find("user > lastname").text().trim();
-				        currentActorId = xml.find("actor").attr("pk");
-						//alert(JSON.stringify(currentUserId));
-						$("#txtFullName").val(currentUserfirstname+' '+currentUserlastname);
-						$("#txtPersonnelNO").val(currentusername);
-						tblMain.refresh();
-						readEmployeeInfo(currentusername,
-			                function(list)
-			                {
-								if(list.length > 1){
-									ErrorMessage("خطا در دیافت اطلاعات کاربری، لطفاً به پشتیبانی سیستم اطلاع رسانی نمایید",list);
-								}
-								else {
-									currentUserCompanyId = list[0]["CurrentUserCompanyId"];
+				readBrandName(jsonParams, function(brandOptions) {
+					// پر کردن سلکتور با گزینه‌ها
+					$('#CmbBrandFilter').html(brandOptions);
+				}, function(error) {
+					console.error("Error fetching brand data:", error);
+				});
+				/******************************************************************************/
+		
+				showLoading();
+				UserService.GetCurrentUser(true,
+					function(data){
+							hideLoading(); 
+							FormManager.ReadPersonnelCredit({},
+								function(list)
+								{
+									CreditBalance=list[0].RemainCredit;
+									DiscountPercent=list[0].DiscountPercent;
+									LimitDiscountPercent=list[0].LimitDiscountPercent;
 									
-								}
-								myHideLoading();
-			                },
-			                function(error)
-			                {
-								myHideLoading();
-			                    alert(error);
-			                }
-			            );
-					},
-				function(err){
-					hideLoading();
-					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
-				}
-			);
-			
-
-						
-		}
-		//******************************************************************************************************
-		// تمام ایونت های مربوط به یک المان یا خود فرم در این متد نوشته می شوند
-		// مانند ماوس هاور و ...
-		function bindEvents()
-		{
-		}
-		//******************************************************************************************************
-		function readData()
-		{
-		}
-		//******************************************************************************************************
-		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
-		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
-		function getPK()
-		{
-			return pk;
-		}
-		//******************************************************************************************************
-		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
-		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
-		function isInEditMode()
-		{
-			return inEditMode;
-		}
-		//******************************************************************************************************
-		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
-		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
-		function isInEditMode()
-		{
-			return inEditMode;
-		}
-		//******************************************************************************************************
-		function saveData(callback)
-		{
-			validateForm(
-				function()
-				{
-					if(inEditMode)
-					{
-						updateData(callback);
-					}
-					else
-					{
-						insertData(callback);
-					}
-				},
-				function(errorMessage) {
-		            $.alert(errorMessage || "لطفا موارد اجباری را تکمیل نمایید.", "", "rtl",
-		                function() {}
-		            );
-		        }
-			);
-		}
-		//******************************************************************************************************
-		function insertData(callback) {
-		    var params = {}; 
-			params.CompanyId = currentUserCompanyId;
-		    params.CreatorActorId = currentActorId;
-		    params.StartDate = $("#txtStartDate").attr("gdate").split('/').join('-');
-		    params.EndDate = $("#txtEndDate").attr("gdate").split('/').join('-');
-		    params.Description = $("#txtDescription").val().trim(); 
-			
-		    // ثبت Geust Master
-		    insertFromData(params,
-		        function(dataXml) {
-				    var GuestRequestId = dataXml.find("row:first").find(">col[name='Id']").text();
-					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
-					
-					// پیمایش روی ردیف‌های جدول
-					var Guests = [];
-					var param={};
-					$('#tblGuestList .row-data').each(function() {
-						//ایجاد کد مهمان
-						var guestCode = GenerateRandomCode(6);
-						
-						// ثبت شدن این کد از قبل چک شود
-						
-					    var $row = $(this);
-					    var param = {
-					        'GuestRequestId': GuestRequestId,
-					        'GuestCode': guestCode,
-					        'FirstName': $row.find('td').eq(2).text().trim(),
-					        'LastName': $row.find('td').eq(3).text().trim(),
-					        'VIP': $row.find('td').eq(4).text().trim().toLowerCase() === "دارد" ? 1 : 0,
-					        'GiftPack': $row.find('td').eq(5).text().trim().toLowerCase() === "دارد" ? 1 : 0,
-					        'BreakFast': $row.find('td').eq(6).text().trim().toLowerCase() === "دارد" ? 1 : 0,
-					        'Lunch': $row.find('td').eq(7).text().trim().toLowerCase() === "دارد" ? 1 : 0,
-					        'Dinner': $row.find('td').eq(8).text().trim().toLowerCase() === "دارد" ? 1 : 0
-					    };
-					
-					    Guests.push(param); // اضافه کردن مهمان به لیست
-					});
-					
-					FormManager.insertGuestDetail(Guests,
-					    function(dataXml) { 
-							WorkflowService.RunWorkflow("ZJM.GUR.GuestRequest",
-								'<Content><Id>' + pk + '</Id><IsInTestMode>' + isInTestMode + '</IsInTestMode></Content>',
-								true,
-								function(data) {
-										handleRunWorkflowResponse(data);
-									},
-								function(err) {
-										handleError(err,'WorkflowService.RunWorkflow');
+									$("#txtCreditBalance").val(CreditBalance);	
+									
+									if(list[0].CancelCredit=='false'){
+										Discount=DiscountPercent;	
+									}else{
+										Discount=LimitDiscountPercent;
 									}
+									alert(JSON.stringify(Discount));
+								},
+								function(error)
+								{
+									alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+									myHideLoading();
+									return;
+								}
 							);
-					    },
-					    function(error) {
-					        handleError(err,'FormManager.insertGuestDetail');
-					    }
-					);
-
-		            if ($.isFunction(callback)) {
-		                callback();
-		            }
-				}
-		    );		    
-		}
-		//******************************************************************************************************
-		function updateData(callback)
-		{
-		}
-		//******************************************************************************************************
-		function deleteData(callback)
-		{
-			// اگر بخواهیم خود اینستنس فرایند را حذف کنیم کد فراخوانی حذف از فرم منیجر را اینجا می نویسیم
-		}
-		//******************************************************************************************************
-		function validateForm(onSuccess, onError)
-		{
-			try
-			{
-				var startDate = $('#txtStartDate').val().trim();
-			    var endDate = $('#txtEndDate').val().trim();
-			    var description = $('#txtDescription').val().trim();
-												
-			    if ($('#txtStartDate').val().trim() == '' ) {
-					if ($.isFunction(onError)) {
-		                onError("لطفا تاریخ ورود مهمان (ها) را تعیین نمایید");
-		            }
-			        return; 
-			    }
+							
+							var xml = $.xmlDOM(data);
+							currentUserId = xml.find("user > id").text().trim();
+							currentusername = xml.find("user > username").text().trim();
+							currentUserfirstname = xml.find("user > firstname").text().trim();
+							currentUserlastname = xml.find("user > lastname").text().trim();
+							currentActorId = xml.find("actor").attr("pk");
+							//alert(JSON.stringify(currentUserId));
+							$("#txtFullName").val(currentUserfirstname+' '+currentUserlastname);
+							$("#txtPersonnelNO").val(currentusername);
+							tblMain.refresh();
+							readEmployeeInfo(currentusername,
+								function(list)
+								{
+									if(list.length > 1){
+										ErrorMessage("خطا در دیافت اطلاعات کاربری، لطفاً به پشتیبانی سیستم اطلاع رسانی نمایید",list);
+									}
+									else {
+										currentUserCompanyId = list[0]["CurrentUserCompanyId"];
+										
+									}
+									myHideLoading();
+								},
+								function(error)
+								{
+									myHideLoading();
+									alert(error);
+								}
+							);
+						},
+					function(err){
+						hideLoading();
+						$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
+					}
+				);
 				
-				if ($('#txtEndDate').val().trim() == '' ) {
-					if ($.isFunction(onError)) {
-		                onError("لطفا تاریخ خروج مهمان (ها) را تعیین نمایید");
-		            }
-			        return; 
-			    }
 
-				if ($('#txtDescription').val().trim() == '' ) {
-					if ($.isFunction(onError)) {
-		                onError("لطفا متن توضیح علت حضور مهمان (ها) را وارد نمایید");
-		            }
-			        return; 
-			    }
-								
-				var $rows = $('#tblGuestList .row-data');
-				if ($rows.length === 0) {
-					if ($.isFunction(onError)) {
-		                onError("لطفاً اطلاعات مهمان(ها) را وارد نمایید");
-		            }
-				    return; 
-				}
-				
-				$("[role]").validateData(true);
-				if($.isFunction(onSuccess))
-				{
-					onSuccess();
-				}
+							
 			}
-			catch(e)
+			//******************************************************************************************************
+			// تمام ایونت های مربوط به یک المان یا خود فرم در این متد نوشته می شوند
+			// مانند ماوس هاور و ...
+			function bindEvents()
 			{
-				if($.isFunction(onError))
-				{
-					onError();
-				}
 			}
-		}
-		//******************************************************************************************************
-		return {
-			init: init,
-			getPK: getPK,
-			isInEditMode: isInEditMode,
-			validateForm: validateForm,
-			saveData: saveData
-		};
-	}());
-	$form.init();
-});
+			//******************************************************************************************************
+			function readData()
+			{
+			}
+			//******************************************************************************************************
+			// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
+			// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
+			function getPK()
+			{
+				return pk;
+			}
+			//******************************************************************************************************
+			// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
+			// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
+			function isInEditMode()
+			{
+				return inEditMode;
+			}
+			//******************************************************************************************************
+			// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
+			// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
+			function isInEditMode()
+			{
+				return inEditMode;
+			}
+			//******************************************************************************************************
+			function saveData(callback)
+			{
+				validateForm(
+					function()
+					{
+						if(inEditMode)
+						{
+							updateData(callback);
+						}
+						else
+						{
+							insertData(callback);
+						}
+					},
+					function(errorMessage) {
+						$.alert(errorMessage || "لطفا موارد اجباری را تکمیل نمایید.", "", "rtl",
+							function() {}
+						);
+					}
+				);
+			}
+			//******************************************************************************************************
+			function insertData(callback) {		    
+			}
+			//******************************************************************************************************
+			function updateData(callback)
+			{
+			}
+			//******************************************************************************************************
+			function deleteData(callback)
+			{
+				// اگر بخواهیم خود اینستنس فرایند را حذف کنیم کد فراخوانی حذف از فرم منیجر را اینجا می نویسیم
+			}
+			//******************************************************************************************************
+			function validateForm(onSuccess, onError)
+			{
+			}
+			//******************************************************************************************************
+			return {
+				init: init,
+				getPK: getPK,
+				isInEditMode: isInEditMode,
+				validateForm: validateForm,
+				saveData: saveData
+			};
+		}());
+		$form.init();
+	});
 //#endregion
 
 //#region tblGoods js
@@ -354,211 +252,160 @@ $(function()
 		//این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
         function bindEvents()
         {
-			var element = $('#tblGoods');
-			
-			element.on("click", ".CHbox", function () {
-			    if (!this.checked) return;
-			
-			    var $row = $(this).closest("tr");
-			
-			    var productId = $row.find("td").eq(2).text().trim();
-			    var goodsCode = $row.find("td").eq(3).text().trim();
-			    var brandName = $row.find("td").eq(4).text().trim();
-			    var goodsName = $row.find("td").eq(5).text().trim();
-			    var price = parseFloat($row.find("td").eq(6).text().trim());
-			
-			    if (!productId) {
-			        alert("شناسه محصول نامعتبر است.");
-			        return;
-			    }
-			
-			    var alreadyAdded = $('#tblOrderedGoods tbody tr[data-id="' + productId + '"]').length > 0;
-			    if (alreadyAdded) {
-			        alert("این کالا قبلاً اضافه شده است.");
-			        return;
-			    }
-			
-			    var remainingBalance = CreditBalance - getTotalPrice();
-			    if (remainingBalance < price) {
-			        alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
-			        return;
-			    }
-			
-			    var tempRow = $("<tr></tr>").attr("data-id", productId);
-			
-			    tempRow.append($("<td></td>").text("*").css({
-			        "width": "25px", "background-color": "#E0F6FE",
-			        "border": "solid 1px #BED4DC", "text-align": "center"
-			    }));
-			
-			    tempRow.append($("<td></td>").css({
-			        "width": "150px", "display": "none", "border": "solid 1px #BED4DC"
-			    }).text(productId));
-			
-			    var reprint = $("<button/>", { title: "حذف" })
-			        .css({
-			            cursor: "pointer",
-			            backgroundColor: "red",
-			            color: "white",
-			            border: "0",
-			            padding: "5px 0px",
-			            borderRadius: "50px",
-			            fontSize: "20px",
-			            lineHeight: "0.2",
-			            width: "20px",
-			            height: "20px",
-			            textAlign: "center"
-			        })
-			        .text("-")
-			        .on("click", function () {
-			            $(this).closest("tr").remove();
-			            updateTotalPrice();
-			            checkAddButtonState();
-			        });
-			
-			    tempRow.append($("<td></td>").append(reprint).css({
-			        "border": "solid 1px #BED4DC"
-			    }));
-			
-			    tempRow.append($("<td></td>").css({
-			        "width": "100px", "border": "solid 1px #BED4DC"
-			    }).text(goodsCode));
-			
-			    tempRow.append($("<td></td>").css({
-			        "width": "120px", "border": "solid 1px #BED4DC"
-			    }).text(brandName));
-			
-			    tempRow.append($("<td></td>").css({
-			        "width": "320px", "border": "solid 1px #BED4DC"
-			    }).text(goodsName));
-			
-			    var quantity = 1;
-			
-			    var plusButton = $("<button/>")
-			        .text("+")
-			        .css({
-			            "font-weight": "900",
-			            "width": "18px",
-			            "height": "18px",
-			            "fontSize": "12px",
-			            "background-color": "#FF9999",
-			            "background-color": "#000",
-			            "border": "1px solid rgb(252 252 252)",
-			            "border-radius": "50%",
-			            "color": "#fff"
-			        });
-			
-			    var minusButton = $("<button/>")
-			        .text("-")
-			        .css({
-			            "font-weight": "900",
-			            "width": "18px",
-			            "height": "18px",
-			            "fontSize": "12px",
-			            "background-color": "#FF9999",
-			            "background-color": "#000",
-			            "border": "1px solid rgb(252 252 252)",
-			            "border-radius": "50%",
-			            "color": "#fff"
-			        });
-			
-			    var quantityDisplay = $("<span></span>")
-			        .text(quantity)
-			        .css({
-			            "margin": "0 15px",
-			            "fontSize": "13px"
-			        });
-			
-			    function updateRowTotal() {
-			        var totalPrice = quantity * price;
-			        tempRow.find('.total-price').text(totalPrice.toFixed(2));
-			        updateTotalPrice();
-			        checkAddButtonState();
-			    }
-			
-			    plusButton.on("click", function () {
-			        if (quantity >= 10) {
-			            alert("تعداد هر کالا نمی‌تواند بیشتر از 10 باشد.");
-			            return;
-			        }
-			
-			        var currentTotal = getTotalPrice();
-			        var nextItemTotal = (quantity + 1) * price;
-			        var currentItemTotal = quantity * price;
-			
-			        var newTotal = currentTotal - currentItemTotal + nextItemTotal;
-			        if (newTotal > CreditBalance) {
-			            alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
-			            return;
-			        }
-			
-			        quantity++;
-			        quantityDisplay.text(quantity);
-			        updateRowTotal();
-			    });
-			
-			    minusButton.on("click", function () {
-			        if (quantity > 1) {
-			            quantity--;
-			            quantityDisplay.text(quantity);
-			            updateRowTotal();
-			        }
-			    });
-			
-			    var quantityCell = $("<td></td>").css({
-			        "width": "100px", "border": "solid 1px #BED4DC", "text-align": "center"
-			    }).append(minusButton).append(quantityDisplay).append(plusButton);
-			
-			    tempRow.append(quantityCell);
-			
-			    tempRow.append($("<td class='total-price'></td>").css({
-			        "width": "100px", "border": "solid 1px #BED4DC"
-			    }).text(price.toFixed(2)));
-			
-			    $('#tblOrderedGoods tbody').append(tempRow);
-			    $(this).prop("disabled", true);
-			    updateTotalPrice();
-			    checkAddButtonState();
-			});
-			
-			function checkAddButtonState() {
-			    var totalQuantity = 0;
-			    $('#tblOrderedGoods tbody tr').each(function () {
-			        var quantityText = $(this).find('td').eq(6).find('span').text(); // assuming quantity is in the 6th td
-			        totalQuantity += parseInt(quantityText);
-			    });
-			
-			    if (totalQuantity >= 10) {
-			        $('#addRow').prop("disabled", true);
-			    } else {
-			        $('#addRow').prop("disabled", false);
-			    }
-			}
-			
-			function updateTotalPrice() {
-			    var total = getTotalPrice();
-			    var totalPriceFormatted = commafy(total.toFixed(2));
-			    $('#TotalPrice').val(totalPriceFormatted);
-			
-			    var remainingBalance = CreditBalance - total;
-			    $('#RemainCredit').val(commafy(remainingBalance.toFixed(2)));
-			
-			    checkAddButtonState();
-			}
-			
-			function getTotalPrice() {
-			    var total = 0;
-			    $('#tblOrderedGoods tbody tr').each(function () {
-			        var priceText = $(this).find('td.total-price').text();
-			        var price = parseFloat(priceText) || 0;
-			        total += price;
-			    });
-			    return total;
-			}
-			
-			function commafy(num) {
-			    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-			}
+function commafy(num) {
+    num = Math.floor(Number(num) || 0);
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+var element = $('#tblGoods');
+
+element.on("click", ".CHbox", function () {
+    if (!this.checked) return;
+
+    var $row = $(this).closest("tr");
+    var productId = $row.find("td").eq(2).text().trim();
+    var goodsCode = $row.find("td").eq(3).text().trim();
+    var brandName = $row.find("td").eq(4).text().trim();
+    var goodsName = $row.find("td").eq(5).text().trim();
+    var price = parseInt($row.find("td").eq(6).text().replace(/,/g, '').trim(), 10); // قیمت رو کامافای کن بعد int
+
+    if (isNaN(price)) { alert("قیمت کالا نامعتبر است!"); return; }
+    if (!productId) { alert("شناسه محصول نامعتبر است."); return; }
+
+    var alreadyAdded = $('#tblOrderedGoods tbody tr[data-id="' + productId + '"]').length > 0;
+    if (alreadyAdded) {
+        alert("این کالا قبلاً اضافه شده است.");
+        return;
+    }
+
+    var remainingBalance = CreditBalance - getTotalPrice();
+    if (remainingBalance < price) {
+        alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
+        return;
+    }
+
+    var tempRow = $("<tr></tr>").attr("data-id", productId);
+
+    tempRow.append($("<td></td>").text("*").css({ "width": "25px", "background-color": "#E0F6FE", "border": "solid 1px #BED4DC", "text-align": "center" }));
+    tempRow.append($("<td></td>").css({ "width": "120px", "display": "none", "border": "solid 1px #BED4DC" }).text(productId));
+
+    var removeBtn = $("<button/>", { title: "حذف" })
+        .css({
+            cursor: "pointer", backgroundColor: "red", color: "white", border: 0,
+            padding: "5px 0px", borderRadius: "50px", lineHeight: "1.2rem", fontSize: "20px", width: "20px",
+            height: "20px", textAlign: "center"
+        }).text("-").on("click", function () {
+            $(this).closest("tr").remove();
+            updateTotalPrice();
+            checkAddButtonState();
+        });
+    tempRow.append($("<td></td>").append(removeBtn).css({ "width": "80px", "border": "solid 1px #BED4DC" }));
+    tempRow.append($("<td></td>").css({ "width": "100px", "border": "solid 1px #BED4DC" }).text(goodsCode));
+    tempRow.append($("<td></td>").css({ "width": "120px", "border": "solid 1px #BED4DC" }).text(brandName));
+    tempRow.append($("<td></td>").css({ "width": "320px", "border": "solid 1px #BED4DC" }).text(goodsName));
+
+    var quantity = 1;
+    var plusBtn = $("<button/>").text("+").css({
+        "font-weight": "900", "width": "18px", "height": "18px", "fontSize": "12px", "background-color": "#000",
+        "border": "1px solid #fcfcfc", "border-radius": "50%", "color": "#fff", "display": "inline-block", "margin": "0 2px"
+    });
+    var minusBtn = $("<button/>").text("-").css({
+        "font-weight": "900", "width": "18px", "height": "18px", "fontSize": "12px", "background-color": "#000",
+        "border": "1px solid #fcfcfc", "border-radius": "50%", "color": "#fff", "display": "inline-block", "margin": "0 2px"
+    });
+    var quantityDisplay = $("<span></span>").text(quantity).css({
+        "margin": "0 12px", "fontSize": "13px", "display": "inline-block", "min-width": "16px", "text-align": "center"
+    });
+
+    var quantityCell = $("<td></td>").css({
+        "width": "50px", "border": "solid 1px #BED4DC", "text-align": "center", "white-space": "nowrap"
+    }).append(minusBtn).append(quantityDisplay).append(plusBtn);
+
+    tempRow.append(quantityCell);
+
+    // قیمت واحد (فی)
+    tempRow.append($("<td class='price-unit'></td>").css({
+        "width": "100px", "border": "solid 1px #BED4DC", "text-align": "center"
+    }).text(commafy(price)));
+
+    // قیمت کل
+    tempRow.append($("<td class='total-price'></td>").css({
+        "width": "140px", "border": "solid 1px #BED4DC", "text-align": "center"
+    }).text(commafy(price))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
+
+    function updateRowTotal() {
+        var totalPrice = quantity * price;
+        tempRow.find('.total-price').text(commafy(totalPrice));
+        updateTotalPrice();
+        checkAddButtonState();
+    }
+
+    plusBtn.on("click", function () {
+        if (quantity >= 10) {
+            alert("تعداد هر کالا نمی‌تواند بیشتر از 10 باشد.");
+            return;
+        }
+        var currentTotal = getTotalPrice();
+        var nextItemTotal = (quantity + 1) * price;
+        var currentItemTotal = quantity * price;
+        var newTotal = currentTotal - currentItemTotal + nextItemTotal;
+        if (newTotal > CreditBalance) {
+            alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
+            return;
+        }
+        quantity++;
+        quantityDisplay.text(quantity);
+        updateRowTotal();
+    });
+
+    minusBtn.on("click", function () {
+        if (quantity > 1) {
+            quantity--;
+            quantityDisplay.text(quantity);
+            updateRowTotal();
+        }
+    });
+
+    $('#tblOrderedGoods tbody').append(tempRow);
+    $(this).prop("disabled", true);
+    updateTotalPrice();
+    checkAddButtonState();
+});
+
+function checkAddButtonState() {
+    var totalQuantity = 0;
+    $('#tblOrderedGoods tbody tr').each(function () {
+        var quantityText = $(this).find('td').eq(6).find('span').text();
+        totalQuantity += parseInt(quantityText) || 0;
+    });
+    if (totalQuantity >= 10) {
+        $('#addRow').prop("disabled", true);
+    } else {
+        $('#addRow').prop("disabled", false);
+    }
+}
+
+function updateTotalPrice() {
+    var total = getTotalPrice();
+    var Discount = 50; // عدد متغیر اگر داری از سرور بگیر اینجا بزار
+    var finalTotal = Math.floor(total * Discount / 100);
+
+    $('#TotalPrice').val(commafy(finalTotal));
+    var remainingBalance = CreditBalance - finalTotal;
+    $('#RemainCredit').val(commafy(remainingBalance));
+    checkAddButtonState();
+}
+
+function getTotalPrice() {
+    var total = 0;
+    $('#tblOrderedGoods tbody tr').each(function () {
+        var priceText = $(this).find('td.total-price').text().replace(/,/g, '');
+        var price = parseInt(priceText, 10) || 0;
+        total += price;
+    });
+    return total;
+}
+
 
 		}
 		//******************************************************************************************************
@@ -581,7 +428,7 @@ $(function()
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Price);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.LogicalQty);
             element.find("tr.row-template").before(tempRow);
 			myHideLoading();
