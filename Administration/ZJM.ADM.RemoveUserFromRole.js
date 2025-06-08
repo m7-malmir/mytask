@@ -1,4 +1,4 @@
-//#region 
+//#region js.ready
 var $form;
 
 //---------------------------------
@@ -141,5 +141,66 @@ $(function(){
 		};
 	}());
 	$form.init();
+});
+//#endregion
+
+//#region btnPersonnelNOSearch.js
+// تابعی برای بارگذاری داده‌ها
+function loadEmployeeData(PersonnelNO) {
+    UserHelpes.readEmployeeInfo(PersonnelNO, function(list) {
+        // پاک کردن داده‌های قبلی در جدول
+        $("#tblPersonnelNO tbody tr:not(.row-header)").remove();
+        
+        // افزودن داده‌های جدید به جدول
+        list.forEach(function(item) {
+            var newRow = `
+                <tr style="height:20px" class="row-data">
+                    <td style="width:25px;background-color:#E0F6FE;border:solid 1px #BED4DC" align="center">*</td>
+                    <td style="width:100px;display:none;border:solid 1px #BED4DC">${item.ActorId}</td>
+                    <td style="width:250px;border:solid 1px #BED4DC">${item.RoleId}</td>
+                    <td style="width:350px;border:solid 1px #BED4DC">${item.RoleName}</td>
+                    <td style="width:350px;border:solid 1px #BED4DC">${item.Enabled === 'true' ? 'فعال' : 'غیرفعال'}</td>
+                    <td style="width:220px;border:solid 1px #BED4DC"><button class="btnDelete">حذف سمت</button></td>
+                </tr>`;
+            $("#tblPersonnelNO tbody").append(newRow);
+        });
+    }, function(error) {
+        myHideLoading();
+        alert('خطا: ' + error);
+    });
+}
+
+// بارگذاری داده‌ها هنگام کلیک بر روی دکمه جستجو
+$("#btnPersonnelNOSearch").click(function() {
+    var PersonnelNO = $("#txtPersonnelNO").val();
+    loadEmployeeData(PersonnelNO); // فراخوانی تابع بارگذاری داده‌ها
+});
+
+// رویداد کلیک برای دکمه‌های حذف
+$(document).on("click", ".btnDelete", function() {
+    // تأیید حذف
+    var confirmation = confirm("آیا از حذف سمت مطمئن هستید؟");
+    if (confirmation) {
+        var actorId = $(this).closest("tr").find("td").eq(1).text(); 
+        var params = {
+            ActorId: actorId
+        };
+        
+        FormManager.RevokeActorId(params, function(list) {
+            $.alert("حذف سمت کاربر با موفقیت انجام شد.", "", "rtl", function() {
+                hideLoading();
+                
+                // بارگذاری دوباره داده‌ها پس از حذف
+                var PersonnelNO = $("#txtPersonnelNO").val(); // می‌توانید از همین مقدار استفاده کنید
+                loadEmployeeData(PersonnelNO); // فراخوانی تابع بارگذاری داده‌ها
+            });
+        }, function(error) {
+            console.log(error);
+            alert("خطا در ارسال درخواست: " + error);
+        });
+    } else {
+        // اگر کاربر تأیید نکرد، هیچ کاری انجام نمی‌دهیم
+        console.log("حذف سمت لغو شد.");
+    }
 });
 //#endregion
