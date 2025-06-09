@@ -153,16 +153,19 @@ function loadEmployeeData(PersonnelNO) {
         
         // افزودن داده‌های جدید به جدول
         list.forEach(function(item) {
-            var newRow = `
-                <tr style="height:20px" class="row-data">
-                    <td style="width:25px;background-color:#E0F6FE;border:solid 1px #BED4DC" align="center">*</td>
-                    <td style="width:100px;display:none;border:solid 1px #BED4DC">${item.ActorId}</td>
-                    <td style="width:250px;border:solid 1px #BED4DC">${item.RoleId}</td>
-                    <td style="width:350px;border:solid 1px #BED4DC">${item.RoleName}</td>
-                    <td style="width:350px;border:solid 1px #BED4DC">${item.Enabled === 'true' ? 'فعال' : 'غیرفعال'}</td>
-                    <td style="width:220px;border:solid 1px #BED4DC"><button class="btnDelete">حذف سمت</button></td>
-                </tr>`;
-            $("#tblPersonnelNO tbody").append(newRow);
+            // بررسی اینکه آیا Enabled برابر با true است
+            if (item.Enabled === 'true') { // فقط ردیف‌هایی که فعال هستند
+                var newRow = `
+                    <tr style="height:20px" class="row-data">
+                        <td style="width:25px;background-color:#E0F6FE;border:solid 1px #BED4DC" align="center">*</td>
+                        <td style="width:100px;display:none;border:solid 1px #BED4DC">${item.ActorId}</td>
+                        <td style="width:250px;border:solid 1px #BED4DC">${item.RoleId}</td>
+                        <td style="width:350px;border:solid 1px #BED4DC">${item.RoleName}</td>
+                        <td style="width:350px;border:solid 1px #BED4DC">${item.Enabled === 'true' ? 'فعال' : 'غیرفعال'}</td>
+                        <td style="width:220px;border:solid 1px #BED4DC"><button class="btnDelete">حذف سمت</button></td>
+                    </tr>`;
+                $("#tblPersonnelNO tbody").append(newRow);
+            }
         });
     }, function(error) {
         myHideLoading();
