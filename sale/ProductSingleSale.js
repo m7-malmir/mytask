@@ -243,11 +243,13 @@ $(function()
 		//******************************************************************************************************
         function build()
         {   
+			
         }
 		//******************************************************************************************************
 		//این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
         function bindEvents()
         {
+			
 function commafy(num) {
     num = Math.floor(Number(num) || 0);
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -256,6 +258,7 @@ function commafy(num) {
 var element = $('#tblGoods');
 
 element.on("click", ".CHbox", function () {
+	var checkbox = this;
     if (!this.checked) return;
 
     var $row = $(this).closest("tr");
@@ -263,7 +266,7 @@ element.on("click", ".CHbox", function () {
     var goodsCode = $row.find("td").eq(3).text().trim();
     var brandName = $row.find("td").eq(4).text().trim();
     var goodsName = $row.find("td").eq(5).text().trim();
-    var price = parseInt($row.find("td").eq(6).text().replace(/,/g, '').trim(), 10); // قیمت رو کامافای کن بعد int
+    var price = parseInt($row.find("td").eq(6).text().replace(/,/g, '').trim(), 10);
 
     if (isNaN(price)) { alert("قیمت کالا نامعتبر است!"); return; }
     if (!productId) { alert("شناسه محصول نامعتبر است."); return; }
@@ -274,99 +277,174 @@ element.on("click", ".CHbox", function () {
         return;
     }
 
-    var remainingBalance = CreditBalance - getTotalPrice();
-    if (remainingBalance < price) {
-        alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
-        return;
-    }
+    // بررسی اعتبار و تخفیف
+    checkCreditAndDiscount(price, function (proceed) {
+        if (!proceed) {
+	        // ❗ تیک چک‌باکس رو برگردون
+	        setTimeout(function () {
+	            $(checkbox).prop("checked", false);
+	        }, 0);
+	        return;
+	    }
+        var tempRow = $("<tr></tr>").attr("data-id", productId);
+        tempRow.append($("<td></td>").text("*").css({ "width": "25px", "background-color": "#E0F6FE", "border": "solid 1px #BED4DC", "text-align": "center" }));
+        tempRow.append($("<td></td>").css({ "width": "120px", "display": "none", "border": "solid 1px #BED4DC" }).text(productId));
 
-    var tempRow = $("<tr></tr>").attr("data-id", productId);
+		var removeBtn = $("<button/>", { title: "حذف" })
+		    .css({
+		        cursor: "pointer", backgroundColor: "red", color: "white", border: 0,
+		        padding: "5px 0px", borderRadius: "50px", lineHeight: "1.2rem", fontSize: "20px", width: "20px",
+		        height: "20px", textAlign: "center"
+		    }).text("-").on("click", function () {
+		        var $removedRow = $(this).closest("tr");
+		        var removedProductId = $removedRow.attr("data-id");
+		        $('#tblGoods tbody tr').each(function () {
+		            var $row = $(this);
+		            var rowProductId = $row.find("td").eq(2).text().trim();
+		            if (rowProductId === removedProductId) {
+		                $row.find('.CHbox').prop("disabled", false).prop("checked", false); // فعال و بدون تیک
+		            }
+		        });
 
-    tempRow.append($("<td></td>").text("*").css({ "width": "25px", "background-color": "#E0F6FE", "border": "solid 1px #BED4DC", "text-align": "center" }));
-    tempRow.append($("<td></td>").css({ "width": "120px", "display": "none", "border": "solid 1px #BED4DC" }).text(productId));
-
-    var removeBtn = $("<button/>", { title: "حذف" })
-        .css({
-            cursor: "pointer", backgroundColor: "red", color: "white", border: 0,
-            padding: "5px 0px", borderRadius: "50px", lineHeight: "1.2rem", fontSize: "20px", width: "20px",
-            height: "20px", textAlign: "center"
-        }).text("-").on("click", function () {
-            $(this).closest("tr").remove();
-            updateTotalPrice();
-            checkAddButtonState();
-        });
-    tempRow.append($("<td></td>").append(removeBtn).css({ "width": "80px", "border": "solid 1px #BED4DC" }));
-    tempRow.append($("<td></td>").css({ "width": "100px", "border": "solid 1px #BED4DC" }).text(goodsCode));
-    tempRow.append($("<td></td>").css({ "width": "120px", "border": "solid 1px #BED4DC" }).text(brandName));
-    tempRow.append($("<td></td>").css({ "width": "320px", "border": "solid 1px #BED4DC" }).text(goodsName));
-
-    var quantity = 1;
-    var plusBtn = $("<button/>").text("+").css({
-        "font-weight": "900", "width": "18px", "height": "18px", "fontSize": "12px", "background-color": "#000",
-        "border": "1px solid #fcfcfc", "border-radius": "50%", "color": "#fff", "display": "inline-block", "margin": "0 2px"
-    });
-    var minusBtn = $("<button/>").text("-").css({
-        "font-weight": "900", "width": "18px", "height": "18px", "fontSize": "12px", "background-color": "#000",
-        "border": "1px solid #fcfcfc", "border-radius": "50%", "color": "#fff", "display": "inline-block", "margin": "0 2px"
-    });
-    var quantityDisplay = $("<span></span>").text(quantity).css({
-        "margin": "0 12px", "fontSize": "13px", "display": "inline-block", "min-width": "16px", "text-align": "center"
-    });
-
-    var quantityCell = $("<td></td>").css({
-        "width": "50px", "border": "solid 1px #BED4DC", "text-align": "center", "white-space": "nowrap"
-    }).append(minusBtn).append(quantityDisplay).append(plusBtn);
-
-    tempRow.append(quantityCell);
-
-    // قیمت واحد (فی)
-    tempRow.append($("<td class='price-unit'></td>").css({
-        "width": "100px", "border": "solid 1px #BED4DC", "text-align": "center"
-    }).text(commafy(price)));
-
-    // قیمت کل
-    tempRow.append($("<td class='total-price'></td>").css({
-        "width": "140px", "border": "solid 1px #BED4DC", "text-align": "center"
-    }).text(commafy(price))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
-
-    function updateRowTotal() {
-        var totalPrice = quantity * price;
-        tempRow.find('.total-price').text(commafy(totalPrice));
+        $removedRow.remove();
         updateTotalPrice();
         checkAddButtonState();
-    }
-
-    plusBtn.on("click", function () {
-        if (quantity >= 10) {
-            alert("تعداد هر کالا نمی‌تواند بیشتر از 10 باشد.");
-            return;
-        }
-        var currentTotal = getTotalPrice();
-        var nextItemTotal = (quantity + 1) * price;
-        var currentItemTotal = quantity * price;
-        var newTotal = currentTotal - currentItemTotal + nextItemTotal;
-        if (newTotal > CreditBalance) {
-            alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
-            return;
-        }
-        quantity++;
-        quantityDisplay.text(quantity);
-        updateRowTotal();
     });
+        tempRow.append($("<td></td>").append(removeBtn).css({ "width": "80px", "border": "solid 1px #BED4DC" }));
+        tempRow.append($("<td></td>").css({ "width": "100px", "border": "solid 1px #BED4DC" }).text(goodsCode));
+        tempRow.append($("<td></td>").css({ "width": "120px", "border": "solid 1px #BED4DC" }).text(brandName));
+        tempRow.append($("<td></td>").css({ "width": "320px", "border": "solid 1px #BED4DC" }).text(goodsName));
 
-    minusBtn.on("click", function () {
-        if (quantity > 1) {
-            quantity--;
-            quantityDisplay.text(quantity);
-            updateRowTotal();
+        var quantity = 1;
+        var plusBtn = $("<button/>").text("+").css({
+            "font-weight": "900", "width": "18px", "height": "18px", "fontSize": "12px", "background-color": "#000",
+            "border": "1px solid #fcfcfc", "border-radius": "50%", "color": "#fff", "display": "inline-block", "margin": "0 2px"
+        });
+        var minusBtn = $("<button/>").text("-").css({
+            "font-weight": "900", "width": "18px", "height": "18px", "fontSize": "12px", "background-color": "#000",
+            "border": "1px solid #fcfcfc", "border-radius": "50%", "color": "#fff", "display": "inline-block", "margin": "0 2px"
+        });
+        var quantityDisplay = $("<span></span>").text(quantity).css({
+            "margin": "0 12px", "fontSize": "13px", "display": "inline-block", "min-width": "16px", "text-align": "center"
+        });
+
+        var quantityCell = $("<td></td>").css({
+            "width": "50px", "border": "solid 1px #BED4DC", "text-align": "center", "white-space": "nowrap"
+        }).append(minusBtn).append(quantityDisplay).append(plusBtn);
+
+        tempRow.append(quantityCell);
+
+        // قیمت واحد (فی)
+        tempRow.append($("<td class='price-unit'></td>").css({
+            "width": "100px", "border": "solid 1px #BED4DC", "text-align": "center"
+        }).text(commafy(price)));
+
+        // قیمت کل
+        tempRow.append($("<td class='total-price'></td>").css({
+            "width": "140px", "border": "solid 1px #BED4DC", "text-align": "center"
+        }).text(commafy(price))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
+
+        function updateRowTotal() {
+            var totalPrice = quantity * price;
+            tempRow.find('.total-price').text(commafy(totalPrice));
+            updateTotalPrice();
+            checkAddButtonState();
         }
-    });
 
-    $('#tblOrderedGoods tbody').append(tempRow);
-    $(this).prop("disabled", true);
-    updateTotalPrice();
-    checkAddButtonState();
+        plusBtn.on("click", function () {
+            if (quantity >= 10) {
+                alert("تعداد هر کالا نمی تواند بیشتر از 10 باشد.");
+                return;
+            }
+            var currentTotal = getTotalPrice();
+            var nextItemTotal = (quantity + 1) * price;
+            var currentItemTotal = quantity * price;
+            var newTotal = currentTotal - currentItemTotal + nextItemTotal;
+
+            checkCreditAndDiscount(newTotal, function (proceed) {
+                if (!proceed) {
+                    alert("مقدار خرید شما بیشتر از مبلغ باقیمانده است.");
+                    return;
+                }
+                quantity++;
+                quantityDisplay.text(quantity);
+                updateRowTotal();
+            });
+        });
+
+        minusBtn.on("click", function () {
+            if (quantity > 1) {
+                quantity--;
+                quantityDisplay.text(quantity);
+                updateRowTotal();
+            }
+        });
+
+        $('#tblOrderedGoods tbody').append(tempRow);
+        $(this).prop("disabled", true);
+        updateTotalPrice();
+        checkAddButtonState();
+    });
 });
+
+function checkCreditAndDiscount(price, callback) {
+    if (CancelCredit === 'false') {
+        var remainingBalance = CreditBalance - getTotalPrice();
+        if (remainingBalance < price) {
+            var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با 35% تخفیف محاسبه خواهد گردید.");
+            if (confirmation) {
+                var list = {
+                    'CancelCredit': true
+                };
+                list = $.extend(list, { Where: "PersonnelCode = '" + currentusername + "'" });
+
+                FormManager.updatePersonnelCredit(list,
+                    function (status, list) {
+                        $.alert("اعتبار شما با موفقیت به روز شد.", "", "rtl", function () {
+                            CancelCredit = 'true'; // ✅ مقدار JS را به‌روزرسانی کردیم
+                            Discount = 35; // تغییر به 35% تخفیف
+                            updateTotalPrice(); // به‌روزرسانی قیمت‌ها
+                            callback(true); // ادامه محاسبات
+                        });
+                    },
+                    function (error) {
+                        console.log("خطای برگشتی:", error);
+                        $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+                        callback(false); // متوقف کردن ادامه
+                    }
+                );
+            } else {
+                callback(false); // متوقف کردن ادامه
+            }
+        } else {
+            callback(true); // ادامه محاسبات
+        }
+    } else {
+        Discount = 35; // تخفیف 35% در حالت آزاد
+        callback(true); // ادامه محاسبات
+    }
+}
+
+
+function updateCreditBalance(callback) {
+    // فرض کنید این تابع یک درخواست AJAX برای دریافت اعتبار به‌روز شده انجام می‌دهد
+    $.ajax({
+        url: '/getUpdatedCreditBalance', // این URL را با URL مناسب خود تغییر دهید
+        method: 'GET',
+        success: function (data) {
+            if (data.success) {
+                callback(data.newBalance); // مقدار جدید را به callback ارسال کنید
+            } else {
+                console.error("خطا در دریافت اعتبار جدید:", data.message);
+                callback(CreditBalance); // اگر خطایی رخ داد، اعتبار قبلی را برگردانید
+            }
+        },
+        error: function (error) {
+            console.error("خطای AJAX:", error);
+            callback(CreditBalance); // اگر خطایی رخ داد، اعتبار قبلی را برگردانید
+        }
+    });
+}
 
 function checkAddButtonState() {
     var totalQuantity = 0;
@@ -383,14 +461,19 @@ function checkAddButtonState() {
 
 function updateTotalPrice() {
     var total = getTotalPrice();
-    var Discount = 50; // عدد متغیر اگر داری از سرور بگیر اینجا بزار
-    var finalTotal = Math.floor(total * Discount / 100);
-
+    var discountAmount = Math.floor(total * Discount / 100);
+    var finalTotal = total - discountAmount;
     $('#TotalPrice').val(commafy(finalTotal));
-    var remainingBalance = CreditBalance - finalTotal;
-    $('#RemainCredit').val(commafy(remainingBalance));
+    $('#txtDiscount').val(Discount + '%'); // درصد تخفیف
+    if (CancelCredit === 'false') {
+        var remainingBalance = CreditBalance - finalTotal;
+        $('#RemainCredit').val(commafy(remainingBalance));
+    } else {
+        $('#RemainCredit').val('-'); // یا می‌تونی خالی بذاری ""
+    }
     checkAddButtonState();
 }
+
 
 function getTotalPrice() {
     var total = 0;
@@ -401,8 +484,6 @@ function getTotalPrice() {
     });
     return total;
 }
-
-
 		}
 		//******************************************************************************************************
 		//عملیات پر کردن دیتای هر سطر می باشد
