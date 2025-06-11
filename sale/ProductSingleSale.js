@@ -739,28 +739,48 @@ if (jsonArray.length === 0) {
 }
 
 // پارامترها با نام درست
-var params = {
-    UserId: currentUserId,
-    username: currentusername,
-    jsonArray: JSON.stringify(jsonArray),
-    Description: $("#txtDiscription").val(),
-    Ordertype: 1 // اینجا درست شد!
-};
-alert(JSON.stringify(params));
-// ارسال درخواست
-FormManager.RetailPersonnelOrder(params, function (list) {
-    if (list.length > 0) {
-        var res = list[0]["Result"];
-        alert(JSON.stringify(res));
-    } else {
-        alert("هیچ نتیجه‌ای دریافت نشد.");
-    }
-    loadTable();
-}, function (error) {
-	console.log(error);
-   // alert("خطا در ارسال درخواست: " + error);
-});
-
+var sp_params = {
+	    UserId: currentUserId,
+	    username: currentusername,
+	    jsonArray: JSON.stringify(jsonArray),
+	    Description: $("#txtDiscription").val(),
+	    Ordertype: 1 
+		    };
+				//alert(JSON.stringify(sp_params));
+			 FormManager.RetailPersonnelOrder(
+		        sp_params,
+		        function(data){
+		            var $data = $.xmlDOM(data);
+					alert(JSON.stringify(data));
+					/*
+					WorkflowService.RunWorkflow("ZJM.PSE.ProductOrderSingle",
+						'<Content><Id>' + pk + '</Id><IsInTestMode>' + isInTestMode + '</IsInTestMode></Content>',
+						true,
+						function(data) {
+								handleRunWorkflowResponse(data);
+							},
+						function(err) {
+								handleError(err,'WorkflowService.RunWorkflow');
+							}
+					);
+		            
+		            var totalRows = $data.find("col[name='TotalRows']:first").text();
+		
+		            // Parse each row and extract values
+		            var rows = [];
+		            $data.find("datatable > row").each(function () {
+		                var row = {
+		                    RemainedAmount: $(this).find("col[name='RemainedAmount']").text()
+		                };
+		                rows.push(row);
+		            });
+					*/
+					//$("#txtRemainedAmount").val(commafy(rows[0].RemainedAmount));
+		        },
+		        function(e){ 
+		            alert(e);
+		        }
+		    );
 	
 });
 //#endregion btnRegister.js
