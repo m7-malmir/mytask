@@ -147,7 +147,7 @@ $(function(){
 
 //#region btnregister.js
 $("#btnRegister").click(function(){
-
+	
     var personnelCode = $("#txtPersonnelCode").val().trim();
 	var firstName = $("#txtFirstName").val().trim();
     var personnelCredit = $("#txtPersonnelCredit").val().trim();
@@ -169,34 +169,36 @@ $("#btnRegister").click(function(){
         return false;
     }
     //از بین بردن علامت % برای insert در دیتابیس
-    selectedDiscount = selectedDiscount.replace('%', '').trim();
-	
-	var params = {
-	    'UserId': userId,
-	    'PersonnelCode': currentPersonnelNO, 
-	    'AccYear': getCurrentShamsiDate(),
-	    'DiscountPercent': selectedDiscount,
-	    'Credit': rcommafy(personnelCredit),
-	    'RemainCredit': rcommafy(personnelCredit),
-		'CreatedUserId':userId
-	};
-    FormManager.insertPersonnelCredit(params,
-       	function(status, list) { 
-		$.alert("ثبت اعتبار با موفقیت انجام شد.","","rtl",function(){
-			hideLoading();
-			// خالی کردن اینپوت ها پس از ارسال فرم در دیتابیس
-			$("#txtPersonnelCode").val('');
-			$("#txtPersonnelCredit").val('');
-   		 $("#cmbDiscountPercent").prop('selectedIndex', 0);
-			$("#txtFirstName").val('');
-            $("#txtLastName").val('');
-            $("#txtRoleName").val('');
-            $("#txtUnitsName").val('');
-			
-		});
-        }, function(error) { // تابع خطا
-			handleError(error, 'FormManager.insertPersonnelCredit'); 
-       });
+	selectedDiscount = selectedDiscount.replace('%', '').trim();
+	FormManager.readPersonnelCredit({},
+		function(list,status) {
+			//چک کردن اینکه آیا برای کد پرسنلی پرسنل جستجو شده اعتبار تخصیص داده شده است یا نه
+			if (list.some(item => item.PersonnelCode === currentPersonnelNO)) {
+			   $.alert("برای شخص مورد نظر اعتبار تخصیص داده شده است!", "", "rtl");
+			   return false;
+			} else {
+				var params = {
+				    'UserId': userId,
+				    'PersonnelCode': currentPersonnelNO, 
+				    'AccYear': getCurrentShamsiDate(),
+				    'DiscountPercent': selectedDiscount,
+				    'Credit': rcommafy(personnelCredit),
+				    'RemainCredit': rcommafy(personnelCredit),
+					'CreatedUserId':userId
+				};
+			    FormManager.insertPersonnelCredit(params,
+			       function(status, list) { 
+					    $.alert("ثبت اعتبار با موفقیت انجام شد.","","rtl",function(){
+							//رفرش کردن فرم برای جستجو و ثبت مجدد اعتبار پرسنل
+							location.reload();
+						});
+			        }, function(error) { // تابع خطا
+						handleError(error, 'FormManager.insertPersonnelCredit'); 
+			    	}
+				);					
+			}
+		}
+	);
 });
 
 //#endregion    
