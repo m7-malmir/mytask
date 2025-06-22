@@ -17,6 +17,7 @@ var leaveDate;
 var gender;
 //---------------------------------
 var userId;
+
 $(function(){
 	$form = (function()
 	{ 
@@ -37,15 +38,28 @@ $(function(){
 		{
 			//اگر بخواهیم استیل دهی خاصی داشته باشیم در این متد اعمال می شود
 			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
+			
 			$("#txtPersonnelCredit").on("input", function() {
 			    $(this).val(commafy($(this).val().replace(/,/g,"")));
 			});
-
 		}
 		//******************************************************************************************************
 		//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
 		function createControls()
 		{		
+			//-----------------------------------
+			//	Get Test Mode Value
+			//-----------------------------------
+			try {
+				const parentUrl = window.parent?.location?.href;
+				const url = new URL(parentUrl);
+		   	 isInTestMode = url.searchParams.get("icantestmode") === "1";
+			  }
+			  catch (e) {
+			    console.warn("Cannot reach parent document:", e);
+			    isInTestMode = false;
+			  }
+			//-----------------------------------
 		}
 		//******************************************************************************************************
 		// تمام ایونت های مربوط به یک المان یا خود فرم در این متد نوشته می شوند
@@ -118,11 +132,13 @@ $(function(){
 		}
 		//******************************************************************************************************
 		return {
+
 			init: init,
 			getPK: getPK,
 			isInEditMode: isInEditMode,
 			validateForm: validateForm,
-			saveData: saveData
+			saveData: saveData,
+
 		};
 	}());
 	$form.init();
