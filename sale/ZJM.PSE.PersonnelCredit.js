@@ -236,7 +236,7 @@ $("#btnPersonnelSearch").click(function() {
 
 //#region formmanager
 var FormManager = {
-	//******************************************************************************************************
+//******************************************************************************************************
 	insertPersonnelCredit: function(jsonParams, onSuccess, onError)
 	{
 		BS_HR_PersonnelCredit.Insert(jsonParams
@@ -254,7 +254,33 @@ var FormManager = {
 			}, onError
 		);
 	},
-	/*********************************************************************************************************/
+//*****************************************************************************************************
+	readPersonnelCredit: function(jsonParams, onSuccess, onError)
+	{
+	   BS_HR_PersonnelCredit.Read(jsonParams
+	        , function(data)
+	        {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+				
+	            xmlvar.find("row").each(
+	                function()
+	                {
+	                    list.push
+	                    ({
+							PersonnelCode: $(this).find("col[name='PersonnelCode']").text()
+	                    });
+	                }
+	            );
+	            if($.isFunction(onSuccess))
+	            {
+	                onSuccess(list);
+	            
+	            }
+	        }, onError
+	    );
+	},
+	//******************************************************************************************************
 };
 
 //#endregion
