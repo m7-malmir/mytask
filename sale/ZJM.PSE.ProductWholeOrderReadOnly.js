@@ -1,4 +1,5 @@
 //#region ready.js
+
 var $form;
 
 //---------------------------------
@@ -202,4 +203,188 @@ $(function(){
 	$form.init();
 });
 
+//#endregion
+
+//#region formmanager.js
+var FormManager = {
+//******************************************************************************************************
+readPersonnelOrder: function(jsonParams, onSuccess, onError)
+{
+  BS_IS_PersonnelOrder.Read(jsonParams
+       , function(data)
+       {
+           var list = [];
+           var xmlvar = $.xmlDOM(data);
+           xmlvar.find("row").each(
+               function()
+               { 
+                  list.push
+                  ({
+					Id: $(this).find("col[name='Id']").text(),
+	                UserId: $(this).find("col[name='UserId']").text(),
+					PersonnelNo: $(this).find("col[name='PersonnelNo']").text(),
+					OrderAmount: $(this).find("col[name='OrderAmount']").text(),
+				    PercentDiscount: $(this).find("col[name='PercentDiscount']").text(),
+				    OrderNetAmount: $(this).find("col[name='OrderNetAmount']").text(),
+				    RemainCreditBeforOrder: $(this).find("col[name='RemainCreditBeforOrder']").text(),
+				    RemainCreditAfterOrder: $(this).find("col[name='RemainCreditAfterOrder']").text(),
+					Description: $(this).find("col[name='Description']").text()
+                  });
+               }
+           );
+           if($.isFunction(onSuccess))
+           {
+               onSuccess(list);
+           
+           }
+       }, onError
+   );
+},
+/*********************************************************************************************************/
+	ReadPersonnelOrderDetail: function(jsonParams, onSuccess, onError)
+	{
+	  BS_vw_IS_PersonnelOrderDetail.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                   list.push
+	                   ({
+			               OrderId: $(this).find("col[name='OrderId']").text(),
+						   GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+						   GoodsName: $(this).find("col[name='GoodsName']").text(),
+						   Qty: $(this).find("col[name='Qty']").text(),
+						   UnitPrice: $(this).find("col[name='UnitPrice']").text(),
+						   BeforeDiscountGoodsPrice: $(this).find("col[name='BeforeDiscountGoodsPrice']").text(),
+						   AfterDiscountGoodsPrice: $(this).find("col[name='AfterDiscountGoodsPrice']").text(),
+	                   });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+/*********************************************************************************************************/
+
+};
+//#endregion
+
+//#region tblOrderedGoods.js 
+var tblOrderedGoods = null;
+
+$(function()
+{
+    tblOrderedGoods = (function()
+    {
+		//خواندن پارامترهای اصلی جدول
+        var element = null,
+			isDirty = false,
+            rowPrimaryKeyName = "Id",
+            readRows = FormManager.ReadPersonnelOrderDetail;
+		//فراخوانی سازنده جدول
+        init();
+		//******************************************************************************************************
+        function init()
+        {
+            element = $("#tblOrderedGoods");
+            build();
+            bindEvents();
+            load();
+        }
+		//******************************************************************************************************
+        function build()
+        {       
+
+        }
+		//******************************************************************************************************
+		//این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
+        function bindEvents()
+        {
+        }
+		//عملیات پر کردن دیتای هر سطر می باشد
+        function addRow(rowInfo, rowNumber)
+        {
+			var index = 0,
+            tempRow = element.find("tr.row-template").clone();
+            tempRow.show().removeClass("row-template").addClass("row-data");
+            tempRow.data("rowInfo", rowInfo);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.OrderId);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Qty);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.UnitPrice));
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.BeforeDiscountGoodsPrice));
+            tempRow.attr({state: "new"});
+            element.find("tr.row-template").before(tempRow);
+			myHideLoading();
+        }
+		//******************************************************************************************************
+		//حذف یک سطر
+        function removeRow(row)
+        {
+			row_info = row.data("rowInfo");
+			
+			var params={Where: rowPrimaryKeyName + " = " + row_info.Id}
+			
+			deleteRows(params,
+                function(data)
+                {
+					refresh();
+					hideLoading();
+                },
+                function(error)
+                {
+					hideLoading();
+                    alert(error);
+                }
+            );
+        }
+		//******************************************************************************************************
+		//اگر شماره سفارش وجود داشت سفارشات کاربر در جدول نمایش داده میشود
+        function load()
+        {
+			if(!orderId) return;
+			var params = {Where: "OrderId = " + orderId};
+			showLoading();
+            readRows(params,
+                function(list)
+                {
+					if(list.length > 0){
+						for(var i = 0, l = list.length; i < l; i += 1)
+	                    {
+	                        addRow(list[i], i + 1);
+	                    }
+					}
+					myHideLoading();
+                },
+                function(error)
+                {
+					myHideLoading();
+                    alert(error);
+                }
+            );
+        }
+		//******************************************************************************************************
+		//بروز رسانی دیتای جدول
+        function refresh()
+        {
+			element.find("tr.row-data").remove();
+            load();
+        }
+		//******************************************************************************************************
+
+        return {
+            refresh: refresh,
+			load: load
+        };
+    }());
+});
 //#endregion
