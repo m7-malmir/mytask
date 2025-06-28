@@ -20,20 +20,25 @@ var gender;
 var currentActorId;
 var selectedValue;
 //---------------------------------
-var CreditBalance;
 var ProcessStatus;
 var currentUserId;
-var Discount;
+
+var discountPercentBase;
+var discountPercentMax;
+var discountPercentForUser;
+var maxQty= 10;
+var remainCredit;
+var cancelCredit;
+
 $(function(){
 	$form = (function()
 	{ 
 		var pk,
-			isInTestMode = false;
+			inTestMode = false;
 			inEditMode = false,
 			primaryKeyName = "Id",
-			bindingSourceName = "",
-			readBrandName=FormManager.ReadBrandName,
-			ReadPersonnelCredit=FormManager.ReadPersonnelCredit,
+			readBrandName=FormManager.readBrandName,
+			readPersonnelCredit=FormManager.readPersonnelCredit,
 			readEmployeeInfo = UserHelpes.readEmployeeInfo;
 		//******************************************************************************************************	
 		function init()
@@ -49,8 +54,8 @@ $(function(){
 			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
 			var jsonParams = {}; // پارامترهای مورد نیاز برای خواندن داده‌ها
 		    readBrandName(jsonParams, function(brandOptions) {
-		        $('#CmbBrandFilter').html(brandOptions);
-		    	}, function(error) {
+		        $('#cmbBrandFilter').html(brandOptions);
+		    }, function(error) {
 		        console.error("Error fetching brand data:", error);
 		    });
 		}
@@ -58,47 +63,35 @@ $(function(){
 		//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
 		function createControls()
 		{
-			/******************************************************************************/
-	
+			//-----------------------------------
+			//	Get Test Mode Value
+			//-----------------------------------
+			try {
+				const parentUrl = window.parent?.location?.href;
+				const url = new URL(parentUrl);
+		   	 isInTestMode = url.searchParams.get("icantestmode") === "1";
+			  }
+			  catch (e) {
+			    console.warn("Cannot reach parent document:", e);
+			    isInTestMode = false;
+			  }
+			//-----------------------------------
+			
 			showLoading();
 			UserService.GetCurrentUser(true,
 				function(data){
 						hideLoading(); 
-						FormManager.ReadPersonnelCredit({},
-							function(list)
-							{
-								CreditBalance=list[0].RemainCredit;
-								DiscountPercent=list[0].DiscountPercent;
-								LimitDiscountPercent=list[0].LimitDiscountPercent;
-								
-								$("#txtCreditBalance").val(CreditBalance);	
-								
-								if(list[0].CancelCredit=='false'){
-									Discount=DiscountPercent;	
-								}else{
-									Discount=LimitDiscountPercent;
-								}
-								
-							},
-							function(error)
-						    {
-						        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
-						        myHideLoading();
-								return;
-						    }
-						);
 						
 						var xml = $.xmlDOM(data);
-					//alert(JSON.stringify(data));
 						currentUserId = xml.find("user > id").text().trim();
 				        currentusername = xml.find("user > username").text().trim();
 				        currentUserfirstname = xml.find("user > firstname").text().trim();
 				        currentUserlastname = xml.find("user > lastname").text().trim();
 				        currentActorId = xml.find("actor").attr("pk");
+						
 						$("#txtFullName").val(currentUserfirstname+' '+currentUserlastname);
 						$("#txtPersonnelNO").val(currentusername);
-						tblMain.refresh();
-					
+						
 						readEmployeeInfo(currentusername,
 			                function(list)
 			                {
@@ -116,6 +109,47 @@ $(function(){
 										});
 									}
 									currentUserCompanyId = list[0]["CurrentUserCompanyId"];
+									
+									var params = {Where: "PersonnelCode = " + currentusername.toString()};
+									readPersonnelCredit(params,
+										function(list)
+										{
+											if(list.length == 0 ){
+												$.alert("هیچ اعتباری برای شما تعریف نشده است، لطفاً با جنرال سرویس تماس حاصل فرمائید","","rtl",function(){
+													hideLoading();
+										        	closeWindow({OK:true, Result:null});
+												});
+											}
+											
+											remainCredit=list[0].RemainCredit;
+											discountPercentMax=list[0].DiscountPercent;
+											discountPercentBase=list[0].LimitDiscountPercent;
+											cancelCredit=list[0].CancelCredit;
+											$("#txtRemainCredit").val(commafy(remainCredit));
+											$("#txtRemainCreditNew").val(commafy(remainCredit));
+										
+											if(cancelCredit=='false'){
+												discountPercentForUser=discountPercentMax;	
+											}else{
+												discountPercentForUser=discountPercentBase;
+											}
+											
+											$("#txtDiscountPercent").val(discountPercentForUser);
+											$("#txtTotalPrice").val('0');
+											$("#txtTotalPriceWithDiscount").val('0');
+											
+											
+										},
+										function(error)
+									    {
+									        alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+									        myHideLoading();
+											return;
+									    }
+									);
+									
+									tblMain.refresh();
+						
 								}
 								myHideLoading();
 			                },
@@ -132,10 +166,7 @@ $(function(){
 					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
 				}
 			
-			);
-			
-
-						
+			);		
 		}
 		//******************************************************************************************************
 		// تمام ایونت های مربوط به یک المان یا خود فرم در این متد نوشته می شوند
@@ -164,9 +195,9 @@ $(function(){
 		//******************************************************************************************************
 		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
 		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
-		function isInEditMode()
+		function isInTestMode()
 		{
-			return inEditMode;
+			return inTestMode;
 		}
 		//******************************************************************************************************
 		function saveData(callback)
@@ -211,6 +242,7 @@ $(function(){
 			init: init,
 			getPK: getPK,
 			isInEditMode: isInEditMode,
+			isInTestMode: isInTestMode,
 			validateForm: validateForm,
 			saveData: saveData
 		};
