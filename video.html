@@ -1,26 +1,70 @@
-{
-  BS_GoodsCatalogue.Read(jsonParams
-       , function(data)
-       {
-           var list = [];
-           var xmlvar = $.xmlDOM(data);
-           xmlvar.find("row").each(
-               function()
-               { 
-                   list.push
-                   ({
-                 GoodsId: $(this).find("col[name='GoodsId']").text(),
-                 GoodsCode: $(this).find("col[name='GoodsCode']").text(),
-                 UnitName: $(this).find("col[name='UnitName']").text(),
-                 CartonQTY: $(this).find("col[name='CartonQTY']").text()
-                   });
-               }
-           );
-           if($.isFunction(onSuccess))
-           {
-               onSuccess(list);
-           
-           }
-       }, onError
-   );
-},
+$("#btnAddGuest").click(function () {
+    var firstName = $("#txtFirstName").val().trim();
+    var lastName = $("#txtLastName").val().trim();
+    var vip = $("#cmbVIP").val(); // دریافت مقدار VIP
+    var giftpack = $("#cmbGiftpack").val(); // دریافت مقدار پک هدیه
+    var breakfast = $("#cmbBreakfast").val(); // دریافت مقدار صبحانه
+    var lunch = $("#cmbLunch").val(); // دریافت مقدار ناهار
+    var dinner = $("#cmbDinner").val(); // دریافت مقدار شام
+    var parking = $("#cmbParking").val(); // دریافت مقدار پارکینگ
+    var catering = $("#cmbCatering").val(); // دریافت مقدار پذیرایی
+    // بررسی اینکه نام و نام خانوادگی وارد شده باشد
+    if (firstName === "" || lastName === "") {
+        alert("لطفاً نام و نام خانوادگی را وارد کنید.");
+        return;
+    }
+
+	// بررسی تکراری نبودن نام و نام خانوادگی
+	var isDuplicate = false;
+	$("#tblFood tr.row-data").each(function() {
+	    var existingFirstName = $(this).find("td:eq(2)").text().trim(); 
+	    var existingLastName = $(this).find("td:eq(3)").text().trim(); 
+	    
+	    if (existingFirstName === firstName && existingLastName === lastName) {
+	        isDuplicate = true;
+	        return false; 
+	    }
+	});
+	
+	if (isDuplicate) {
+	    alert("این نام و نام خانوادگی قبلاً ثبت شده است.");
+	    return;
+	}
+
+    // محاسبه شماره ردیف جدید
+    var newRowNumber = $("#tblFood tr.row-data").length + 1; 
+
+    // اطلاعات ردیف جدید
+    var rowInfo = {
+        RowNumber: newRowNumber, 
+        FirstName: firstName,
+        LastName: lastName,
+        VIP: vip,
+        Giftpack: giftpack,
+        Breakfast: breakfast,
+        Lunch: lunch,
+        Dinner: dinner,
+		Parking: parking,
+        Catering: catering
+    };
+    
+    tblMain.addRow(rowInfo); // تابع برای اضافه کردن ردیف جدید به جدول
+
+    // پاک کردن مقادیر ورودی‌ها
+    $("#txtFirstName").val('');
+    $("#txtLastName").val('');
+    $("#cmbVIP").val('ندارد'); 
+    $("#cmbGiftpack").val('ندارد'); 
+    $("#cmbBreakfast").val('ندارد'); 
+    $("#cmbLunch").val('ندارد'); 
+    $("#cmbDinner").val('ندارد'); 
+	$("#cmbParking").val('ندارد');
+    $("#cmbCatering").val('ندارد');
+});
+
+
+
+
+
+
+
