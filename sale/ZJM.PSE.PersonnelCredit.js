@@ -299,3 +299,19 @@ $('#txtPersonnelCode').on('input', function() {
     $(this).val(filteredValue);
 });
 //#endregion
+
+
+//#region txtPersonnelCredit.js
+
+$('#txtPersonnelCredit').on('input', function() {
+        var value = $(this).val();
+
+        // استفاده از Regex برای حذف کاراکترهای غیرمجاز (فقط اعداد)
+        var filteredValue = value.replace(/[^0-9]/g, '');
+	    if (filteredValue.length > 14) {
+	       filteredValue = filteredValue.substring(0, 9);
+	    }
+        // بروزرسانی مقدار ورودی
+        $(this).val(filteredValue);
+});
+//#endregion
