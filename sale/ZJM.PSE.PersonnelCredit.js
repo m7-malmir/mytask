@@ -284,3 +284,18 @@ var FormManager = {
 };
 
 //#endregion
+
+//#region txtPersonnelCode.js
+$('#txtPersonnelCode').on('input', function() {
+    // دریافت مقدار فعلی ورودی
+    var value = $(this).val();
+    
+    // استفاده از Regex برای حذف کاراکترهای غیرمجاز و تایپ حداکثر 9 عدد
+    var filteredValue = value.replace(/[^0-9]/g, '');
+    if (filteredValue.length > 9) {
+       filteredValue = filteredValue.substring(0, 9);
+    }
+    // بروزرسانی مقدار ورودی
+    $(this).val(filteredValue);
+});
+//#endregion
