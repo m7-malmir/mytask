@@ -657,33 +657,21 @@ $(function () {
 
 						// بررسی اعتبار باقیمانده
 						var remainingBalance = remainCredit - finalTotal; // اعتبار باقیمانده پس از خرید
-
-
-							//quantity++; // افزایش مقدار کالا
-							//quantityDisplay.text(quantity); // به‌روزرسانی نمایش مقدار
-
-							//var totalPrice = quantity * price;
-							//tempRow.find('.total-price').text(commafy(totalPrice)); // به‌روزرسانی قیمت کل ردیف
-
-							//updateTotalPrice();
-							//$('#txtRemainCredit').val(commafy(0)); // به روزرسانی اعتبار باقیمانده به 0
-							//$('#txtTotalPrice').val(commafy(finalTotal)); // به روزرسانی قیمت کل نهایی
-
 						// اگر اعتبار باقیمانده منفی است
 						if (remainingBalance < 0) {
 							// در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
 							var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با 35% تخفیف محاسبه خواهد گردید.");
 							if (confirmation) {
 								// اگر کاربر تأیید کند، اعتبار را به روز کنیم
-								var list = {
-									'cancelCredit': true
+								var params = {
+									'cancelCredit': 'true'
 								};
-								list = $.extend(list, {
+								// params ------------------------
+								params = $.extend(params, {
 									Where: "PersonnelCode = '" + currentusername + "'"
 								});
-
-								FormManager.updatePersonnelCredit(list,
-									function (status, list) {
+								FormManager.updatePersonnelCredit(params,
+									function (status, params) {
 										$.alert("اعتبار شما با موفقیت به روز شد.", "", "rtl", function () {
 											cancelCredit = 'true'; // ✅ مقدار JS را به‌روزرسانی کردیم
 											discountPercentForUser = 35; // تغییر به 35% تخفیف
@@ -851,46 +839,8 @@ $(function () {
 			}
 
 			// اعتبار باقیمانده
-			remainCreditNew = remainCredit - totalCurrent; // اعتبار باقیمانده قبل از اضافه کردن کالا
-
-			// بررسی اعتبار باقیمانده
-			if (remainCreditNew < 0) {
-				// در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
-				var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با " + discountPercentBase +"% تخفیف محاسبه خواهد گردید.");
-				if (confirmation) {
-					// اگر کاربر تأیید کند، نشانگر لغو استفاده از اعتبار را به روز کنیم
-					let params = {
-						'cancelCredit': true
-					};
-					params = $.extend(params, {
-						Where: "PersonnelCode = '" + currentusername + "'"
-					});
-
-					FormManager.updatePersonnelCredit(params,
-						function (status, list) {
-							$.alert("درخواست شما با موفقیت انجام گردید و از این پس سفارشات شما با تخفیف پایه بصورت نامحدود محاسبه خواهند گردید.", "", "rtl", function () {
-								cancelCredit = 'true';
-								discountPercentForUser = 35; // تغییر به 35% تخفیف
-								hasConfirmedDiscount = true; // وضعیت تأیید کاربر را به‌روزرسانی می‌کنیم
-								$('#txtRemainCreditNew').val(commafy(0)); // به‌روزرسانی اعتبار باقیمانده به 0
-								callback(true); // ادامه محاسبات
-							});
-						},
-						function (error) {
-							console.log("خطای برگشتی:", error);
-							$.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-							callback(false); // متوقف کردن ادامه
-						}
-					);
-				} else {
-					callback(false); // متوقف کردن ادامه
-				}
-				return; // از تابع خارج می‌شویم
-			}
-
-			// اگر اعتبار باقیمانده کافی باشد، اعتبار جدید را محاسبه می‌کنیم
 			var newRemainingBalance = remainCredit - totalWithDiscount; // اعتبار باقیمانده جدید
-
+				
 			if (newRemainingBalance < 0) {
 				// اگر اعتبار باقیمانده جدید هم کافی نیست
 				var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با 35% تخفیف محاسبه خواهد گردید.");
@@ -902,7 +852,8 @@ $(function () {
 					list = $.extend(list, {
 						Where: "PersonnelCode = '" + currentusername + "'"
 					});
-
+					//alert(JSON.stringify(list));
+					
 					FormManager.updatePersonnelCredit(list,
 						function (status, list) {
 							$.alert("اعتبار شما با موفقیت به روز شد.", "", "rtl", function () {
@@ -922,10 +873,12 @@ $(function () {
 				} else {
 					callback(false); // متوقف کردن ادامه
 				}
+			
 			} else {
 				$('#txtRemainCreditNew').val(commafy(newRemainingBalance)); // نمایش اعتبار باقیمانده
 				callback(true); // ادامه محاسبات
 			}
+
 		}
 		//******************************************************************************************************
 		function checkAddButtonState() {
