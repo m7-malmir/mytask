@@ -313,10 +313,13 @@ $(function () {
 								var list = {
 									'cancelCredit': true
 								};
+								// params ------------------------
 								list = $.extend(list, {
 									Where: "PersonnelCode = '" + currentusername + "'"
 								});
-
+								//alert(JSON.stringify(list));
+							/*	
+								0
 								FormManager.updatePersonnelCredit(list,
 									function (status, list) {
 										$.alert("اعتبار شما با موفقیت به روز شد.", "", "rtl", function () {
@@ -334,7 +337,7 @@ $(function () {
 										console.log("خطای برگشتی:", error);
 										$.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
 									}
-								);
+								);*/
 							}
 							return; // از تابع خارج می شویم
 						} else {
@@ -497,11 +500,13 @@ $(function () {
 					let params = {
 						'cancelCredit': true
 					};
+					
 					params = $.extend(params, {
 						Where: "PersonnelCode = '" + currentusername + "'"
 					});
-
-					FormManager.updatePersonnelCredit(params,
+					alert(JSON.stringify(params));
+				
+						FormManager.updatePersonnelCredit(params,
 						function (status, list) {
 							$.alert("درخواست شما با موفقیت انجام گردید و از این پس سفارشات شما با تخفیف پایه بصورت نامحدود محاسبه خواهند گردید.", "", "rtl", function () {
 								cancelCredit = 'true';
@@ -525,7 +530,7 @@ $(function () {
 
 			// اگر اعتبار باقیمانده کافی باشد، اعتبار جدید را محاسبه می‌کنیم
 			var newRemainingBalance = remainCredit - totalWithDiscount; // اعتبار باقیمانده جدید
-
+				/*
 			if (newRemainingBalance < 0) {
 				// اگر اعتبار باقیمانده جدید هم کافی نیست
 				var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با 35% تخفیف محاسبه خواهد گردید.");
@@ -537,7 +542,8 @@ $(function () {
 					list = $.extend(list, {
 						Where: "PersonnelCode = '" + currentusername + "'"
 					});
-
+					alert(JSON.stringify(list));
+					
 					FormManager.updatePersonnelCredit(list,
 						function (status, list) {
 							$.alert("اعتبار شما با موفقیت به روز شد.", "", "rtl", function () {
@@ -557,10 +563,11 @@ $(function () {
 				} else {
 					callback(false); // متوقف کردن ادامه
 				}
+			
 			} else {
 				$('#txtRemainCreditNew').val(commafy(newRemainingBalance)); // نمایش اعتبار باقیمانده
 				callback(true); // ادامه محاسبات
-			}
+			}*/
 		}
 		//******************************************************************************************************
 		function checkAddButtonState() {
