@@ -368,7 +368,7 @@ readPersonnelOrder: function(jsonParams, onSuccess, onError)
 
 
 
-//#region tblGoods.js
+//#region tblOrderedGoods
 var tblOrderedGoods = null;
 
 $(function()
@@ -558,4 +558,48 @@ $(function()
         };
     }());
 });
+//#endregion
+
+//#region btnDecline.js
+$("#btnDecline").click(function(){
+	showLoading();
+    // پارامترها با نام درست
+    var sp_params = {
+        PersonnelOrderId: $form.getPK(),
+		JsonArray: null,
+        Type: 2
+    };
+	
+    FormManager.retailPersonnelOrder(
+        sp_params,
+        function(data) {
+			var hameshParams = {
+		        'Context': 'سفارش لغو شد',
+		        'DocumentId': DocumentId,
+		        'CreatorActorId': CurrentUserActorId,
+		        'InboxId': InboxId
+		    };
+			
+            FormManager.InsertHamesh(hameshParams,
+                function() {
+                    Office.Inbox.setResponse(dialogArguments.WorkItem, 0, "",
+                        function(data) {
+                            closeWindow({
+                                OK: true,
+                                Result: null
+                            });
+                        },
+                        function(err) {
+                            throw Error(err);
+                        }
+                    );
+                }
+            );
+        },
+        function(e) {
+            alert(e.details);
+        }
+    );
+});
+
 //#endregion
