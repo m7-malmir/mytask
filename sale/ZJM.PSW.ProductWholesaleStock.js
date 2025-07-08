@@ -603,3 +603,115 @@ $("#btnDecline").click(function(){
 });
 
 //#endregion
+
+
+//#region btnAccept.js
+//******************************************************************************************************
+$("#btnAccept").click(function(){
+	const table = document.getElementById("tblOrderedGoods");
+	const sp_params = [];
+	
+	// اطمینان از وجود table
+	if (!table) {
+	    console.error("Table with ID 'tblOrderedGoods' not found.");
+	} else {
+	    const PersonnelOrderId = $form.getPK(); // فرض بر این است که این متد در دسترس است و مقدار صحیحی برمی‌گرداند
+	    const Type = 1;
+	
+	    // پیمایش ردیف‌های جدول (از ردیف دوم شروع می‌کنیم تا ردیف هدر را رد کنیم)
+	    for (let i = 1; i < table.rows.length; i++) {
+	        const row = table.rows[i];
+	
+	        // همچنین بررسی می‌کنیم که سلول‌ها وجود دارند تا از خطا جلوگیری کنیم
+	        if (row.cells.length > 6) { // حداقل به 7 سلول نیاز داریم (index 6)
+	            const goodsIdCell = row.cells[2]; // کد محصول در سلول سوم (index 2)
+	            const confirmQtyCell = row.cells[6]; // سلول حاوی span تعداد تایید شده
+	
+	            // اطمینان از اینکه ردیف ها خالی یا نامعتبر نیستند
+	            if (goodsIdCell && confirmQtyCell) {
+	                const goodsId = goodsIdCell.innerText.trim();
+	
+	                // پیدا کردن span حاوی تعداد تایید شده
+	                const qtySpan = confirmQtyCell.querySelector('.qty');
+	                let confirmQty = '0'; // مقدار پیش فرض
+	
+	                if (qtySpan) {
+	                    confirmQty = qtySpan.innerText.trim().replace(/,/g, ''); // مقدار span را استخراج و کاما را حذف می کنیم
+	                }
+	
+	                // بررسی وجود کد محصول و تعداد تایید شده که عددی مثبت است
+	                if (goodsId && confirmQty && !isNaN(parseInt(confirmQty)) && parseInt(confirmQty) > 0) {
+	                    const productDetails = {
+	                        goodsId: goodsId,
+	                        confirmQty: parseInt(confirmQty) // تبدیل به عدد صحیح
+	                    };
+	
+	                    sp_params.push({
+	                        PersonnelOrderId: PersonnelOrderId,
+	                        productDetails: productDetails,
+	                        Type: Type
+	                    });
+	                }
+	            }
+	        }
+	    }
+	   
+	}
+	alert(JSON.stringify(sp_params));
+
+	    FormManager.retailPersonnelOrder(
+        sp_params,
+        function(data) {
+			var hameshParams = {
+		        'Context': 'تایید شد',
+		        'DocumentId': DocumentId,
+		        'CreatorActorId': CurrentUserActorId,
+		        'InboxId': InboxId
+		    };
+			
+            FormManager.InsertHamesh(hameshParams,
+                function() {
+					//---------------------------------------
+					// اگر فرد درخواست دهنده در دفتر مرکزی است
+					//---------------------------------------
+					if(DCId==0){
+						 Office.Inbox.setResponse(dialogArguments.WorkItem, 1, "",
+	                        function(data) {
+	                            closeWindow({
+	                                OK: true,
+	                                Result: null
+	                            });
+	                        },
+	                        function(err) {
+	                            throw Error(err);
+	                        }
+	                    );
+					//------------------------------------
+					// اگر فرد درخواست دهنده در کارخانه است
+					//------------------------------------
+	                }else if(DCId==1){
+						Office.Inbox.setResponse(dialogArguments.WorkItem, 2, "",
+	                        function(data) {
+	                            closeWindow({
+	                                OK: true,
+	                                Result: null
+	                            });
+	                        },
+	                        function(err) {
+	                            throw Error(err);
+	                        }
+	                    );
+					}else{
+						//to do
+					}	
+                }
+            );
+        },
+        function(e) {
+            alert(e.details);
+        }
+    );
+	
+});
+//******************************************************************************************************
+//#endregion btnAccept.js
