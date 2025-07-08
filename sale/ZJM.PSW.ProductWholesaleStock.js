@@ -369,5 +369,193 @@ readPersonnelOrder: function(jsonParams, onSuccess, onError)
 
 
 //#region tblGoods.js
+var tblOrderedGoods = null;
 
+$(function()
+{
+    tblOrderedGoods = (function()
+    {
+		//خواندن پارامترهای اصلی جدول
+        var element = null,
+			isDirty = false,
+            rowPrimaryKeyName = "Id",
+            readRows = FormManager.ReadPersonnelOrderDetail;
+		//فراخوانی سازنده جدول
+        init();
+		//******************************************************************************************************
+        function init()
+        {
+            element = $("#tblOrderedGoods");
+            build();
+            bindEvents();
+            load();
+        }
+		//******************************************************************************************************
+        function build()
+        {       
+
+        }
+		//******************************************************************************************************
+		//این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
+        function bindEvents()
+        {
+			// عملکرد دکمه منفی
+			$(document).on('click', '.btn-negative', function () {
+			    var row = $(this).closest('tr');
+			    var qtyElement = row.find('.qty');
+			    var qty = parseInt(qtyElement.text());
+			    var unitPrice = parseInt(row.find('td:eq(7)').text().replace(/,/g, '')); // قیمت واحد
+			    var priceElement = row.find('td:eq(8)');
+			
+			    if (qty > 0) {
+			        qty--;
+			        var newPrice = qty * unitPrice;
+			        qtyElement.text(qty);
+			        priceElement.text(commafy(newPrice));
+			    }
+			
+			    // محاسبه قیمت کل بعد از کاهش تعداد
+			    let total = 0;
+			    $('#tblOrderedGoods tbody tr.row-data').each(function () {
+			        var priceText = $(this).find('td:eq(8)').text().replace(/,/g, '');
+			        var price = parseInt(priceText, 10) || 0;
+			        total += price;
+			    });
+			
+			    var discountPercent = parseFloat($('#txtDiscountPercent').val().replace('%', '')) || 0;
+			    var discountAmount = Math.floor(total * discountPercent / 100);
+			    var finalTotal = total - discountAmount;
+			
+			    $('#txtTotalPrice').val(commafy(total));
+			    $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+			});
+
+			
+			// عملکرد دکمه مثبت
+			$(document).on('click', '.btn-positive', function () {
+			    var row = $(this).closest('tr');
+			    var qtyElement = row.find('.qty');
+			    var qty = parseInt(qtyElement.text());
+			    var unitPrice = parseInt(row.find('td:eq(7)').text().replace(/,/g, '')); // قیمت واحد
+			    var priceElement = row.find('td:eq(8)');
+			    var maxQty = parseInt(row.data("rowInfo").Qty); // حداکثر مجاز
+			
+			    if (qty < maxQty) {
+			        qty++;
+			        var newPrice = qty * unitPrice;
+			        qtyElement.text(qty);
+			        priceElement.text(commafy(newPrice));
+			    }
+			
+			    // بعد از تغییر، محاسبه قیمت کل و اعمال تخفیف
+			    let total = 0;
+			    $('#tblOrderedGoods tbody tr.row-data').each(function () {
+			        var priceText = $(this).find('td:eq(8)').text().replace(/,/g, '');
+			        var price = parseInt(priceText, 10) || 0;
+			        total += price;
+			    });
+			
+			    var discountPercent = parseFloat($('#txtDiscountPercent').val()) || 0;
+			    var discountAmount = Math.floor(total * discountPercent / 100);
+			    var finalTotal = total - discountAmount;
+			
+			    $('#txtTotalPrice').val(commafy(total));
+			    $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+			});
+
+        }
+		// عملیات پر کردن دیتای هر سطر می باشد
+		/* *********************************************************************************************** */
+		function addRow(rowInfo, rowNumber) {
+		    var index = 0,
+		        tempRow = element.find("tr.row-template").clone();
+		
+		    tempRow.show().removeClass("row-template").addClass("row-data");
+		    tempRow.data("rowInfo", rowInfo);
+		    
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber); // شماره ردیف
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.OrderId); // ID سفارش
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode); // کد محصول
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName); // نام محصول
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName); // نام برند
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Qty); // نام محصول  
+		
+			// مقدار Qty را اضافه می‌کنیم و کلاس qty را به آن اضافه می‌کنیم
+			var qtyCell = tempRow.find("td:eq(" + index++ + ")").empty();
+		
+			qtyCell.append(
+			    $('<span class="btn-negative" title="کاهش تعداد" style="cursor: pointer; color: white; background-color: red; border: none; border-radius: 3px; padding: 0px 5px 0px 5px; margin-right: 5px; font-weight: bold; width: 30px; text-align: center;">-</span>')
+			);
+				qtyCell.append($('<span class="qty" style="margin-right: 5px;"></span>').text(rowInfo.Qty)); // اضافه کردن کلاس qty به عنصر Span و مارجین راست
+			qtyCell.append(
+			    $('<span class="btn-positive" title="افزایش تعداد" style="cursor: pointer; color: white; background-color: green; border: none; border-radius: 3px; padding: 0px 5px 0px 5px; margin-right: 5px; font-weight: bold; width: 30px; text-align: center;">+</span>')
+			);
+		
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.UnitPrice)); // قیمت واحد
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.BeforeDiscountGoodsPrice)); // قیمت قبل از تخفیف
+		
+		    tempRow.attr({ state: "new" });
+		    element.find("tr.row-template").before(tempRow);
+		    myHideLoading();
+		}
+		//******************************************************************************************************
+		//حذف یک سطر
+        function removeRow(row)
+        {
+			row_info = row.data("rowInfo");
+			
+			var params={Where: rowPrimaryKeyName + " = " + row_info.Id}
+			
+			deleteRows(params,
+                function(data)
+                {
+					refresh();
+					hideLoading();
+                },
+                function(error)
+                {
+					hideLoading();
+                    alert(error);
+                }
+            );
+        }
+		//******************************************************************************************************
+		//اگر شماره سفارش وجود داشت سفارشات کاربر در جدول نمایش داده میشود
+        function load()
+        {
+			if(!orderId) return;
+			var params = {Where: "OrderId = " + orderId};
+			showLoading();
+            readRows(params,
+                function(list)
+                {
+					if(list.length > 0){
+						for(var i = 0, l = list.length; i < l; i += 1)
+	                    {
+	                        addRow(list[i], i + 1);
+	                    }
+					}
+					myHideLoading();
+                },
+                function(error)
+                {
+					myHideLoading();
+                    alert(error);
+                }
+            );
+        }
+		//******************************************************************************************************
+		//بروز رسانی دیتای جدول
+        function refresh()
+        {
+			element.find("tr.row-data").remove();
+            load();
+        }
+		//******************************************************************************************************
+        return {
+            refresh: refresh,
+			load: load
+        };
+    }());
+});
 //#endregion
