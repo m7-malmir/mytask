@@ -280,110 +280,211 @@ $(function(){
 
 //#region formmanager.js
 var FormManager = {
+    /*********************************************************************************************************/
+    // دریافت لیست برندها
+    readBrandName: function (jsonParams, onSuccess, onError) {
+        SP_vw_IS_GoodsCatalogue_Brand.Execute(jsonParams,
+            function (data) {
+                var xmlvar = $.xmlDOM(data);
+                var brandOptions = '';
+                brandOptions += '<option value="0">انتخاب نمایید</option>';
 
-	//******************************************************************************************************
-	readEntityGoodsCatalogue: function(jsonParams, onSuccess, onError)
-	{
-	  BS_vw_IS_GoodsCatalogue.Read(jsonParams
-	       , function(data)
-	       {
-	           var list = [];
-	           var xmlvar = $.xmlDOM(data);
-	           xmlvar.find("row").each(
-	               function()
-	               { 
-	                   list.push
-	                   ({
-			                 GoodsId: $(this).find("col[name='GoodsId']").text(),
-			                 GoodsCode: $(this).find("col[name='GoodsCode']").text(),
-			                 GoodsName: $(this).find("col[name='GoodsName']").text(),
-			                 LogicalQty: $(this).find("col[name='LogicalQty']").text(),
-						     Price: $(this).find("col[name='Price']").text(),
-			                 BrandName: $(this).find("col[name='BrandName']").text(),
-						 	CartonQTY: $(this).find("col[name='CartonQTY']").text(),
-			                 UnitName: $(this).find("col[name='UnitName']").text(),
-						     
-	                   });
-	               }
-	           );
-	           if($.isFunction(onSuccess))
-	           {
-	               onSuccess(list);
-	           
-	           }
-	       }, onError
-	   );
-	},
-/*********************************************************************************************************/
-	
-	ReadBrandName: function(jsonParams, onSuccess, onError) {
-	    SP_vw_IS_GoodsCatalogue_Brand.Execute(jsonParams, function(data) {
-	        var xmlvar = $.xmlDOM(data);
-	        var brandOptions = '';
-	
-	        xmlvar.find("row").each(function() {
-	            var BrandRef = $(this).find(">col[name='BrandRef']").text();
-	            var BrandName = $(this).find(">col[name='BrandName']").text();
-	            brandOptions += '<option value="' + BrandRef + '">' + BrandName + '</option>';
-	        });
-	
-	        // اگر onSuccess یک تابع باشد، آن را فراخوانی کنید و گزینه‌ها را به آن بفرستید
-	        if ($.isFunction(onSuccess)) {
-	            onSuccess(brandOptions);
-	        }
-	    }, onError);
-	},
-		//******************************************************************************************************
-	ReadPersonnelCredit: function(jsonParams, onSuccess, onError)
-	{
-	  BS_HRPersonnelCredit.Read(jsonParams
-	       , function(data)
-	       {
-	           var list = [];
-	           var xmlvar = $.xmlDOM(data);
-	           xmlvar.find("row").each(
-	               function()
-	               { 
-	                   list.push
-	                   ({
-			                 Id: $(this).find("col[name='Id']").text(),
-			                 Credit: $(this).find("col[name='Credit']").text(),
-			                 RemainCredit: $(this).find("col[name='RemainCredit']").text(),
-						 	CancelCredit: $(this).find("col[name='CancelCredit']").text(),
-						     DiscountPercent: $(this).find("col[name='DiscountPercent']").text(),
-						 	LimitDiscountPercent: $(this).find("col[name='LimitDiscountPercent']").text()
-	                   });
-	               }
-	           );
-	           if($.isFunction(onSuccess))
-	           {
-	               onSuccess(list);
-	           
-	           }
-	       }, onError
-	   );
-	},
-/*********************************************************************************************************/
-
-    RetailPersonnelOrder: function(jsonParams, onSuccess, onError) 
-	{
-        SP_RetailPersonnelOrder.Execute(jsonParams, function(data) {
-            var list = [];
-            var xmlvar = $.xmlDOM(data);
-            xmlvar.find("row").each(function() {
-                list.push({
-                    Result: $(this).find("col[name='res']").text()
+                xmlvar.find("row").each(function () {
+                    var BrandRef = $(this).find(">col[name='BrandRef']").text();
+                    var BrandName = $(this).find(">col[name='BrandName']").text();
+                    brandOptions += '<option value="' + BrandRef + '">' + BrandName + '</option>';
                 });
-            });
-            if ($.isFunction(onSuccess)) {
-                onSuccess(list);
+
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(brandOptions);
+                }
+            },
+            function (error) {
+                var methodName = "readBrandName";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
             }
-        }, function(error) {
-            if ($.isFunction(onError)) {
-                onError(error);
+        );
+    },
+    //******************************************************************************************************
+    // دریافت اعتبار خرید کاربر جاری
+    readPersonnelCredit: function (jsonParams, onSuccess, onError) {
+        BS_HRPersonnelCredit.Read(jsonParams
+            , function (data) {
+                var list = [];
+                var xmlvar = $.xmlDOM(data);
+                xmlvar.find("row").each(
+                    function () {
+                        list.push
+                            ({
+                                Id: $(this).find("col[name='Id']").text(),
+                                Credit: $(this).find("col[name='Credit']").text(),
+                                RemainCredit: $(this).find("col[name='RemainCredit']").text(),
+                                CancelCredit: $(this).find("col[name='CancelCredit']").text(),
+                                DiscountPercent: $(this).find("col[name='DiscountPercent']").text(),
+                                LimitDiscountPercent: $(this).find("col[name='LimitDiscountPercent']").text()
+                            });
+                    }
+                );
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(list);
+
+                }
+            },
+            function (error) {
+                var methodName = "readPersonnelCredit";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
             }
-        });
-    }
+        );
+    },
+    //******************************************************************************************************
+    // دریافت لیست کالاهای قابل فروش
+    readGoodsCatalogue: function (jsonParams, onSuccess, onError) {
+        BS_vw_IS_GoodsCatalogue.Read(jsonParams,
+            function (data) {
+                var list = [];
+                var xmlvar = $.xmlDOM(data);
+                xmlvar.find("row").each(
+                    function () {
+                        list.push
+                            ({
+                                GoodsId: $(this).find("col[name='GoodsId']").text(),
+                                GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+                                GoodsName: $(this).find("col[name='GoodsName']").text(),
+                                LogicalQty: $(this).find("col[name='LogicalQty']").text(),
+								CartonQTY: $(this).find("col[name='CartonQTY']").text(),
+                                Price: $(this).find("col[name='Price']").text(),
+                                BrandName: $(this).find("col[name='BrandName']").text(),
+								UnitName: $(this).find("col[name='UnitName']").text(),
+                            });
+                    }
+                );
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(list);
+
+                }
+            },
+            function (error) {
+                var methodName = "readEntityGoodsCatalogue";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /*********************************************************************************************************/
+    // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
+    retailPersonnelOrder: function (jsonParams, onSuccess, onError) {
+        SP_RetailPersonnelOrder.Execute(jsonParams,
+            function (data) {
+
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(data, "text/xml");
+
+				const cols = xmlDoc.getElementsByTagName("col");
+				
+				const result = {};
+				for (let i = 0; i < cols.length; i++) {
+				    const name = cols[i].getAttribute("name");
+				    const value = cols[i].textContent;
+				    result[name] = value;
+				}
+				/*
+                var xmlvar = $.xmlDOM(data);
+				alert(JSON.stringify(data));
+                xmlvar.find("row").each(function () {
+                    list.push({
+                        Result: $(this).find("col[name='res']").text()
+                    });
+                });
+				*/
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(result);
+                }
+            },
+            function (error) {
+                var methodName = "retailPersonnelOrder";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /**************************************************************************************************************/
+    updatePersonnelCredit: function (jsonParams, onSuccess, onError) {
+        BS_HRPersonnelCredit.Update(jsonParams,
+            function (data) {
+
+                var dataXml = null;
+                if ($.trim(data) != "") {
+                    dataXml = $.xmlDOM(data);
+                }
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(dataXml);
+                }
+            },
+            function (error) {
+                var methodName = "updatePersonnelCredit";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /**************************************************************************************************************/
 };
 //#endregion formmanager.js
 
@@ -907,3 +1008,6 @@ $(function () {
     }());
 });
 //#endregion
+
+
+//#region 
