@@ -64,7 +64,13 @@ $(function () {
 				let goodsCode = $row.find("td").eq(3).text().trim();
 				let brandName = $row.find("td").eq(4).text().trim();
 				let goodsName = $row.find("td").eq(5).text().trim();
+				
+				let CartonQTY = $row.find("td").eq(6).text().trim();
+				let UnitName = $row.find("td").eq(7).text().trim();
+				//قیمت یک واحد تکی
 				var price = parseInt(rcommafy($row.find("td").eq(8).text()), 10);
+				//قیمت یک بسته کامل
+				var unitPrice = parseInt(rcommafy($row.find("td").eq(9).text()), 10);
 				
 				if (isNaN(price)) {
 					alert("قیمت کالا نامعتبر است!");
@@ -242,6 +248,28 @@ $(function () {
 
 
 					//------------------------------------------------
+					// تعداد در کارتن
+					//------------------------------------------------
+					tempRow.append($("<td class='price-unit'></td>").css({
+						"width": "100px",
+						"border": "solid 1px #BED4DC",
+						"text-align": "center"
+					}).text(commafy(CartonQTY)));
+					//------------------------------------------------
+
+
+					//------------------------------------------------
+					// نام واحد
+					//------------------------------------------------
+					tempRow.append($("<td class='price-unit'></td>").css({
+						"width": "100px",
+						"border": "solid 1px #BED4DC",
+						"text-align": "center"
+					}).text(commafy(UnitName)));
+					//------------------------------------------------
+					
+					
+					//------------------------------------------------
 					// قیمت واحد (فی)
 					//------------------------------------------------
 					tempRow.append($("<td class='price-unit'></td>").css({
@@ -259,7 +287,7 @@ $(function () {
 						"width": "140px",
 						"border": "solid 1px #BED4DC",
 						"text-align": "center"
-					}).text(commafy(price))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
+					}).text(commafy(unitPrice))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
 					//------------------------------------------------
 
 
@@ -268,22 +296,18 @@ $(function () {
 					//------------------------------------------------
 					plusBtn.on("click", function () {
 						
-						if (quantity >= maxQty) {
-							alert("تعداد هر کالا نمی تواند بیشتر از " + maxQty +" باشد.");
-							return;
-						}
 						// قیمت کل فعلی
 						var currentTotal = getTotalPrice();
-
+							
 						// قیمت جدید با افزایش مقدار کالا
-						var nextItemTotal = (quantity + 1) * price; 
-
+						var nextItemTotal = (quantity + 1) * unitPrice; 
+					
 						// قیمت فعلی کالا
-						var currentItemTotal = quantity * price; 
+						var currentItemTotal = quantity * unitPrice; 
 
 						// قیمت کل جدید
 						var newTotal = currentTotal - currentItemTotal + nextItemTotal; 
-
+						//alert(JSON.stringify(newTotal));
 						// محاسبه تخفیف و قیمت نهایی
 						var discountAmount = Math.floor(newTotal * discountPercentForUser / 100);
 
@@ -292,64 +316,56 @@ $(function () {
 
 						// بررسی اعتبار باقیمانده
 						var remainingBalance = remainCredit - finalTotal; // اعتبار باقیمانده پس از خرید
-
-
-							//quantity++; // افزایش مقدار کالا
-							//quantityDisplay.text(quantity); // به‌روزرسانی نمایش مقدار
-
-							//var totalPrice = quantity * price;
-							//tempRow.find('.total-price').text(commafy(totalPrice)); // به‌روزرسانی قیمت کل ردیف
-
-							//updateTotalPrice();
-							//$('#txtRemainCredit').val(commafy(0)); // به روزرسانی اعتبار باقیمانده به 0
-							//$('#txtTotalPrice').val(commafy(finalTotal)); // به روزرسانی قیمت کل نهایی
-
 						// اگر اعتبار باقیمانده منفی است
+							quantity++;
+							quantityDisplay.text(quantity);
+							var totalPrice = quantity * unitPrice;
+							tempRow.find('.total-price').text(commafy(totalPrice));
+							updateTotalPrice();
+							updateRowTotal(); // به‌روزرسانی قیمت کل ردیف
+						checkCreditAndDiscount();		
 						if (remainingBalance < 0) {
 							// در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
 							var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با 35% تخفیف محاسبه خواهد گردید.");
 							if (confirmation) {
 								// اگر کاربر تأیید کند، اعتبار را به روز کنیم
-								var list = {
-									'cancelCredit': true
+								var params = {
+									'CancelCredit': 'true'
 								};
 								// params ------------------------
-								list = $.extend(list, {
-									Where: "PersonnelCode = '" + currentusername + "'"
+								params = $.extend(params, {
+									Where: "PersonnelCode = '" + currentUserName + "'"
 								});
-								//alert(JSON.stringify(list));
-							/*	
-								0
-								FormManager.updatePersonnelCredit(list,
-									function (status, list) {
+								FormManager.updatePersonnelCredit(params,
+									function (status, params) {
 										$.alert("اعتبار شما با موفقیت به روز شد.", "", "rtl", function () {
-											cancelCredit = 'true'; // ✅ مقدار JS را به‌روزرسانی کردیم
-											discountPercentForUser = 35; // تغییر به 35% تخفیف
-											$('#RemainCredit').val(commafy(0)); // به‌روزرسانی اعتبار باقیمانده به 0
-											quantity++; // افزایش مقدار کالا
-											quantityDisplay.text(quantity); // به‌روزرسانی نمایش مقدار
-											updateRowTotal(); // به‌روزرسانی قیمت کل ردیف
-											$('#TotalPrice').val(commafy(finalTotal)); // به‌روزرسانی قیمت کل نهایی
-											$('#txtRemainCredit').val(commafy(0)); // به روزرسانی اعتبار باقیمانده به 0
+											cancelCredit = 'true'; 
+											discountPercentForUser = 35; 
+											$('#RemainCredit').val(commafy(0)); 
+											quantity++; 
+											quantityDisplay.text(quantity); 
+											updateRowTotal(); 
+											$('#TotalPrice').val(commafy(finalTotal));
+											$('#txtRemainCredit').val(commafy(0)); 
 										});
 									},
 									function (error) {
 										console.log("خطای برگشتی:", error);
 										$.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
 									}
-								);*/
+								);
 							}
 							return; // از تابع خارج می شویم
 						} else {
 							// اگر اعتبار کافی است، مقدار را افزایش می‌دهیم
 							quantity++;
 							quantityDisplay.text(quantity);
-							var totalPrice = quantity * price;
+							var totalPrice = quantity * unitPrice;
 							tempRow.find('.total-price').text(commafy(totalPrice));
 							updateTotalPrice();
 							updateRowTotal(); // به‌روزرسانی قیمت کل ردیف
 						}
-
+						
 						// به‌روزرسانی باقی مانده اعتبار
 						$('#RemainCredit').val(commafy(remainingBalance));
 						$('#TotalPrice').val(commafy(finalTotal)); // به‌روزرسانی قیمت کل نهایی
@@ -364,7 +380,7 @@ $(function () {
 						if (quantity > 1) {
 							quantity--;
 							quantityDisplay.text(quantity);
-							let totalPrice = quantity * price;
+							let totalPrice = quantity * unitPrice;
     						tempRow.find('.total-price').text(commafy(totalPrice));
 							updateTotalPrice();
 						}
@@ -396,16 +412,18 @@ $(function () {
 
 			var CHbox = $("<input type='checkbox'  value='" + rowInfo.Id + "'>").addClass('CHbox');
 			tempRow.find("td:eq(" + index++ + ")").append(CHbox);
-
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsId);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.UnitName);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.CartonQTY);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
 			let unitPrice=(rowInfo.CartonQTY)*(rowInfo.Price);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(unitPrice));
-			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
+			
+			
+			
 			element.find("tr.row-template").before(tempRow);
 			myHideLoading();
 		}
@@ -432,7 +450,7 @@ $(function () {
 		function load() {
 			showLoading();
 
-			let params = { WHERE: "BrandRef = '" + selectedBrandValue + "'" }; // فیلتر شده با سان استار
+			let params = { WHERE: "BrandRef = '" + selectedBrandValue + "'" }; 
 			readRows(params,
 				function (list) {
 					if (list.length > 0) {
@@ -484,65 +502,24 @@ $(function () {
 
 			// اگر discountPercentForUser برابر با 35% است، هیچ چک اعتبار را انجام ندهید
 			if (discountPercentForUser == discountPercentBase) {
-				callback(true); // ادامه محاسبات
-				return; // از تابع خارج میشویم
+				callback(true); 
+				return; 
 			}
 
 			// اعتبار باقیمانده
-			remainCreditNew = remainCredit - totalCurrent; // اعتبار باقیمانده قبل از اضافه کردن کالا
-
-			// بررسی اعتبار باقیمانده
-			if (remainCreditNew < 0) {
-				// در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
-				var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با " + discountPercentBase +"% تخفیف محاسبه خواهد گردید.");
-				if (confirmation) {
-					// اگر کاربر تأیید کند، نشانگر لغو استفاده از اعتبار را به روز کنیم
-					let params = {
-						'cancelCredit': true
-					};
-					
-					params = $.extend(params, {
-						Where: "PersonnelCode = '" + currentusername + "'"
-					});
-					alert(JSON.stringify(params));
-				
-						FormManager.updatePersonnelCredit(params,
-						function (status, list) {
-							$.alert("درخواست شما با موفقیت انجام گردید و از این پس سفارشات شما با تخفیف پایه بصورت نامحدود محاسبه خواهند گردید.", "", "rtl", function () {
-								cancelCredit = 'true';
-								discountPercentForUser = 35; // تغییر به 35% تخفیف
-								hasConfirmedDiscount = true; // وضعیت تأیید کاربر را به‌روزرسانی می‌کنیم
-								$('#txtRemainCreditNew').val(commafy(0)); // به‌روزرسانی اعتبار باقیمانده به 0
-								callback(true); // ادامه محاسبات
-							});
-						},
-						function (error) {
-							console.log("خطای برگشتی:", error);
-							$.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-							callback(false); // متوقف کردن ادامه
-						}
-					);
-				} else {
-					callback(false); // متوقف کردن ادامه
-				}
-				return; // از تابع خارج می‌شویم
-			}
-
-			// اگر اعتبار باقیمانده کافی باشد، اعتبار جدید را محاسبه می‌کنیم
 			var newRemainingBalance = remainCredit - totalWithDiscount; // اعتبار باقیمانده جدید
-				/*
+				
 			if (newRemainingBalance < 0) {
 				// اگر اعتبار باقیمانده جدید هم کافی نیست
 				var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با 35% تخفیف محاسبه خواهد گردید.");
 				if (confirmation) {
 					// اگر کاربر تأیید کند، اعتبار را به روز کنیم
 					var list = {
-						'cancelCredit': true
+						'CancelCredit': true
 					};
 					list = $.extend(list, {
-						Where: "PersonnelCode = '" + currentusername + "'"
+						Where: "PersonnelCode = '" + currentUserName + "'"
 					});
-					alert(JSON.stringify(list));
 					
 					FormManager.updatePersonnelCredit(list,
 						function (status, list) {
@@ -561,13 +538,14 @@ $(function () {
 						}
 					);
 				} else {
-					callback(false); // متوقف کردن ادامه
+					callback(false); 
 				}
 			
 			} else {
 				$('#txtRemainCreditNew').val(commafy(newRemainingBalance)); // نمایش اعتبار باقیمانده
 				callback(true); // ادامه محاسبات
-			}*/
+			}
+			
 		}
 		//******************************************************************************************************
 		function checkAddButtonState() {
@@ -576,12 +554,6 @@ $(function () {
 				var quantityText = $(this).find('td').eq(6).find('span').text();
 				totalQuantity += parseInt(quantityText) || 0;
 			});
-
-			if (totalQuantity >= maxQty) {
-				$('#addRow').prop("disabled", true);
-			} else {
-				$('#addRow').prop("disabled", false);
-			}
 		}
 		//******************************************************************************************************
 		function updateTotalPrice() {
@@ -590,12 +562,12 @@ $(function () {
 			var finalTotal = total - discountAmount;
 			$('#txtTotalPrice').val(commafy(total));
 			$('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
-			$('#txtDiscountPercent').val(discountPercentForUser + '%'); // درصد تخفیف
+			$('#txtDiscountPercent').val(discountPercentForUser + '%'); 
 			if (cancelCredit === 'false') {
 				var remainingBalance = remainCredit - finalTotal;
 				$('#txtRemainCreditNew').val(commafy(remainingBalance));
 			} else {
-				$('#txtRemainCreditNew').val('-'); // یا می‌تونی خالی بذاری ""
+				$('#txtRemainCreditNew').val('-'); 
 			}
 			checkAddButtonState();
 		}

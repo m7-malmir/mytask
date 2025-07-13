@@ -4,12 +4,12 @@ var $form;
 //---------------------------------
 // Global Variables For UserInfo
 //---------------------------------
-var currentusername;
+var currentUserName;
 var currentPersonnelNO;
 var currentUserCompanyId;
 var nationalCode;
-var currentUserfirstname;
-var currentUserlastname;
+var currentUserfirstName;
+var currentUserlastName;
 var birthday;
 var email;
 var employmentDate;
@@ -26,7 +26,6 @@ var currentUserId;
 var discountPercentBase;
 var discountPercentMax;
 var discountPercentForUser;
-var maxQty= 10;
 var remainCredit;
 var cancelCredit;
 
@@ -34,7 +33,7 @@ $(function(){
 	$form = (function()
 	{ 
 		var pk,
-			inTestMode = false;
+			inTestMode = false,
 			inEditMode = false,
 			primaryKeyName = "Id",
 			readBrandName=FormManager.readBrandName,
@@ -52,21 +51,38 @@ $(function(){
 		{
 			//اگر بخواهیم استیل دهی خاصی داشته باشیم در این متد اعمال می شود
 			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
-			var jsonParams = {}; // پارامترهای مورد نیاز برای خواندن داده‌ها
+			
+			//-------------------------------------
+			//	پر کردن لیست برندها با کمبوباکس
+			//-------------------------------------
+			var jsonParams = {};
 		    readBrandName(jsonParams, function(brandOptions) {
 		        $('#cmbBrandFilter').html(brandOptions);
 		    }, function(error) {
 		        console.error("Error fetching brand data:", error);
 		    });
+			//-----------------------------------
 		}
 		//******************************************************************************************************
 		//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
 		function createControls()
 		{
 			//-----------------------------------
+			//  چک کردن بازه مجاز برای ثبت محصول
+			//-----------------------------------
+			if(!isAllowedTime()) {
+		        $.alert("بازه مجاز درخواست محصول عمده از شنبه تا سه شنبه ساعت 12 می باشد!","","rtl",function(){
+					hideLoading();
+		        	closeWindow({OK:true, Result:null});
+				});
+				return;				
+			}
+			//-----------------------------------
+			
+			//-----------------------------------
 			//	Get Test Mode Value
 			//-----------------------------------
-			try {
+			  try {
 				const parentUrl = window.parent?.location?.href;
 				const url = new URL(parentUrl);
 		   	 isInTestMode = url.searchParams.get("icantestmode") === "1";
@@ -81,18 +97,16 @@ $(function(){
 			UserService.GetCurrentUser(true,
 				function(data){
 						hideLoading(); 
-						
 						var xml = $.xmlDOM(data);
 						currentUserId = xml.find("user > id").text().trim();
-				        currentusername = xml.find("user > username").text().trim();
-				        currentUserfirstname = xml.find("user > firstname").text().trim();
-				        currentUserlastname = xml.find("user > lastname").text().trim();
+				        currentUserName = xml.find("user > username").text().trim();
+				        currentUserfirstName = xml.find("user > firstname").text().trim();
+				        currentUserlastName = xml.find("user > lastname").text().trim();
 				        currentActorId = xml.find("actor").attr("pk");
+						$("#txtFullName").val(currentUserfirstName+' '+currentUserlastName);
+						$("#txtPersonnelNO").val(currentUserName);
 						
-						$("#txtFullName").val(currentUserfirstname+' '+currentUserlastname);
-						$("#txtPersonnelNO").val(currentusername);
-						
-						readEmployeeInfo(currentusername,
+						readEmployeeInfo(currentUserName,
 			                function(list)
 			                {
 								if(list.length > 1 ){
@@ -102,15 +116,7 @@ $(function(){
 									});
 								}
 								else {
-									if(list[0]["DCId"]!=0){
-										$.alert("این فرآیند فقط برای پرسنل دفتر مرکزی فعال می باشد.","","rtl",function(){
-											hideLoading();
-								        	closeWindow({OK:true, Result:null});
-										});
-									}
-									currentUserCompanyId = list[0]["CurrentUserCompanyId"];
-									
-									var params = {Where: "PersonnelCode = " + currentusername.toString()};
+									var params = {Where: "PersonnelCode = " + currentUserName.toString()};
 									readPersonnelCredit(params,
 										function(list)
 										{
@@ -120,24 +126,28 @@ $(function(){
 										        	closeWindow({OK:true, Result:null});
 												});
 											}
-											
+											//----------------------------
+											//  نمایش مانده اعتبار کاربر
+											//----------------------------
 											remainCredit=list[0].RemainCredit;
 											discountPercentMax=list[0].DiscountPercent;
 											discountPercentBase=list[0].LimitDiscountPercent;
 											cancelCredit=list[0].CancelCredit;
 											$("#txtRemainCredit").val(commafy(remainCredit));
 											$("#txtRemainCreditNew").val(commafy(remainCredit));
-										
+											
+											//------------------------------------------------------
+											//چک کردن مقدار درصد تخفیف فعال برای پرسنل
+											//------------------------------------------------------
 											if(cancelCredit=='false'){
 												discountPercentForUser=discountPercentMax;	
 											}else{
 												discountPercentForUser=discountPercentBase;
 											}
-											
 											$("#txtDiscountPercent").val(discountPercentForUser);
 											$("#txtTotalPrice").val('0');
 											$("#txtTotalPriceWithDiscount").val('0');
-											
+											//------------------------------------------------------
 											
 										},
 										function(error)
@@ -147,9 +157,6 @@ $(function(){
 											return;
 									    }
 									);
-									
-									tblMain.refresh();
-						
 								}
 								myHideLoading();
 			                },
@@ -163,9 +170,8 @@ $(function(){
 					},
 				function(err){
 					hideLoading();
-					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
-				}
-			
+					$ErrorHandling.Erro(err,"خطا در سرویس GetCurrentUser");
+				}	
 			);		
 		}
 		//******************************************************************************************************
@@ -236,6 +242,26 @@ $(function(){
 		//******************************************************************************************************
 		function validateForm(onSuccess, onError)
 		{
+		}
+		//******************************************************************************************************		
+		//شرط لازم برای چک کردن ثبت محصول عمده در بازه مجاز
+		function isAllowedTime() {
+		    const now = new Date();
+		    const day = now.getDay(); // 0:یکشنبه، 1:دوشنبه، ... 6:شنبه
+		    const hour = now.getHours();
+		    const minute = now.getMinutes();
+		    const second = now.getSeconds();
+		    
+		    // اگر شنبه
+		    if(day === 6 || day === 0 || day === 1) {
+		        return true;
+		    }
+		    // اگر سه شنبه تا ساعت 12
+		    if(day === 2 && hour < 12) {
+		        return true;
+		    }
+		    // بازه غیر از ساعت مجاز
+		    return false;
 		}
 		//******************************************************************************************************
 		return {
