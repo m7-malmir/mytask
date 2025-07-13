@@ -548,44 +548,98 @@ $(function()
 
 //#region btnDecline.js
 $("#btnDecline").click(function(){
-	showLoading();
-    // پارامترها با نام درست
     var sp_params = {
         PersonnelOrderId: $form.getPK(),
 		JsonArray: null,
         Type: 2
     };
-	
+	//------------------------------------------------
+	// فراخوانی sp برای بازگردانی مقدار اعتبار کاربر
+	//------------------------------------------------
     FormManager.retailPersonnelOrder(
-        sp_params,
-        function(data) {
-			var hameshParams = {
-		        'Context': 'سفارش لغو شد',
-		        'DocumentId': DocumentId,
-		        'CreatorActorId': CurrentUserActorId,
-		        'InboxId': InboxId
-		    };
-			
-            FormManager.InsertHamesh(hameshParams,
-                function() {
-                    Office.Inbox.setResponse(dialogArguments.WorkItem, 0, "",
-                        function(data) {
-                            closeWindow({
-                                OK: true,
-                                Result: null
-                            });
-                        },
-                        function(err) {
-                            throw Error(err);
-                        }
-                    );
-                }
-            );
-        },
+       sp_params,
+       function(data) {
+		var hameshParams = {
+	        'Context': 'سفارش لغو شد',
+	        'DocumentId': DocumentId,
+	        'CreatorActorId': CurrentUserActorId,
+	        'InboxId': InboxId
+	    };
+			//-----------------------------------------------
+			// فراخوانی sp برای بازگردانی مقدار اعتبار کاربر
+			//-----------------------------------------------
+			var that = $(this);
+			var hameshPopup = $(
+				'<div tabindex="1" style="direction:rtl;" class="ui-form">'+
+			     '<label tabindex="-1" style="text-align:right;" class="ui-form-label">لطفا دلیل مخالفت خود را بنویسید.</label>'+
+			    '</div>'
+			);
+			var commentInput = $("<textarea>", {type: "text"}).addClass("comment-input form-control").css({height:"60px","font-size":"8pt",resize:"none"});
+			hameshPopup.append(commentInput);
+			var res = false;
+			hameshPopup.dialog({
+				buttons: [
+					{
+						text: "ثبت",
+						click: function() {
+							showLoading();
+							
+							if($(this).find('.comment-input').val().trim().length > 0){
+							
+								var hameshDescription = $(this).find('.comment-input').val();
+								var params = {
+									'Context': 'رد شد ('+hameshDescription+')',
+									'DocumentId': DocumentId,
+									'CreatorActorId': CurrentUserActorId,
+									'InboxId': InboxId
+								};
+								FormManager.InsertHamesh(params,
+					                function() {
+					                    Office.Inbox.setResponse(dialogArguments.WorkItem, 0, "",
+					                        function(data) {
+					                            closeWindow({
+					                                OK: true,
+					                                Result: null
+					                            });
+					                        },
+					                        function(err) {
+					                            throw Error(err);
+					                        }
+					                    );
+					                }
+					            );
+								
+							}else{
+								$(this).notify('لطفاً علت رد را وارد نمایید',{position:'top'});
+								myHideLoading();
+							}
+						}
+					},
+					{
+						text: "انصراف",
+						click: function(){
+							$(this).dialog("close");
+						}
+					}
+				],
+				open: function( event, ui ) {
+					res = false;
+				},
+				close: function(e,u) {
+					if( res == true ){	
+					}
+					else{
+						
+					}	
+				}
+			});
+			//--------------------------------------------
+		     },
         function(e) {
             alert(e.details);
         }
     );
+	//--------------------------------------------
 });
 
 //#endregion
