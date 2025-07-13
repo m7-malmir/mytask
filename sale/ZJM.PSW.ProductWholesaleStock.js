@@ -70,6 +70,9 @@ $(function(){
 		//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
 		function createControls()
 		{
+			//--------------------------------------------
+			// خواندن اطلاعات محصولات سفارش داده شده کاربر
+			//--------------------------------------------
 			params = { WHERE: "Id = '" + $form.getPK() + "'" };
 			FormManager.readPersonnelOrder(params,
 				function(list)
@@ -77,10 +80,8 @@ $(function(){
 					orderedPersonnelNO=list[0].PersonnelNo;
 					orderId=list[0].Id;
 					$("#txtDiscountPercent").val(list[0].PercentDiscount);
-					$("#txtRemainCreditNew").val(commafy(list[0].RemainCreditAfterOrder));
 					$("#txtTotalPrice").val(commafy(list[0].OrderAmount));
 					$("#txtTotalPriceWithDiscount").val(commafy(list[0].OrderNetAmount));
-					$("#txtCreditBalance").val('---');
 					$("#txtDiscription").val(list[0].Description);
 					tblOrderedGoods.refresh();	
 				},
@@ -91,17 +92,19 @@ $(function(){
 					return;
 			    }
 			);
+			//--------------------------------------------
 			
 			/******************************************************************************/
 			showLoading();
 			UserService.GetCurrentUser(true,
 				function(data){
 					hideLoading();
-					//خواندن اطلاعات کاربر درخواست دهنده محصولات					
-					readEmployeeInfo(currentusername,
+					//--------------------------------------------
+					//خواندن اطلاعات کاربر درخواست دهنده محصولات	
+					//--------------------------------------------				
+					readEmployeeInfo(orderedPersonnelNO,
 		                function(data)
 		                {
-							
 							var xml = $.xmlDOM(data);
 					        let user = data[0];
 							DCId=user.DCId;
@@ -122,6 +125,7 @@ $(function(){
 		                }
 		            );						
 				},
+				//--------------------------------------------
 				function(err){
 					hideLoading();
 					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
@@ -210,8 +214,6 @@ $(function(){
 	$form.init();
 });
 //#endregion js.ready
-
-
 
 //#region formmanager.js
 var FormManager = {
@@ -365,8 +367,6 @@ readPersonnelOrder: function(jsonParams, onSuccess, onError)
     /*********************************************************************************************************/
 };
 //#endregion formmanager.js
-
-
 
 //#region tblOrderedGoods
 var tblOrderedGoods = null;
@@ -603,7 +603,6 @@ $("#btnDecline").click(function(){
 });
 
 //#endregion
-
 
 //#region btnAccept.js
 //******************************************************************************************************
