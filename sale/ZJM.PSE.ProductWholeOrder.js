@@ -1010,4 +1010,66 @@ $(function () {
 //#endregion
 
 
-//#region 
+//#region btnregisterrequest.js
+$("#btnRegister").click(function(){
+	//---------------------------
+	// جمع آوری داده ها از جدول #tblOrderedGoods
+	//---------------------------
+	const table = document.getElementById("tblOrderedGoods");
+    const rows = table.querySelectorAll("tr");
+    const goodsList = [];
+	var totalQty;
+    rows.forEach((row, index) => {
+        // Skip header and template row
+        if (index === 0 || row.classList.contains("row-template")) return;
+        const cells = row.querySelectorAll("td");
+        if (cells.length < 9) return;
+			var Qty= cells[6].querySelector("span") ? cells[6].querySelector("span").innerText.trim() : '';
+			var cartonQty= cells[8].innerText.trim();
+        const item = {
+            GoodsId: cells[1].innerText.trim(),
+            GoodsCode: cells[3].innerText.trim(),
+            BrandName: cells[4].innerText.trim(),
+            GoodsName: cells[5].innerText.trim(),
+			Qty: Qty*cartonQty,
+            UnitPrice: cells[9].innerText.trim().replace(/,/g, '')
+       };
+       goodsList.push(item);
+	});
+	//---------------------------
+	
+	// بررسی وجود داده
+	if (goodsList.length === 0) {
+	    alert("هیچ داده‌ای برای ارسال وجود ندارد.");
+	    return;
+	}
+
+	// ارسال پارامترها با نام صحیح
+	var sp_params = {
+		UserId: currentUserId,
+		username: currentUserName,
+		jsonArray: JSON.stringify(goodsList),
+		Description: $("#txtDiscription").val()
+	};
+	
+	FormManager.retailPersonnelOrder(
+	    sp_params,
+	    function(data) {
+	        WorkflowService.RunWorkflow("ZJM.PSW.ProdutWholesale",
+	            '<Content><Id>' + data["OrderId"] + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
+	            true,
+	            function(data) {
+	                handleRunWorkflowResponse(data);
+	            },
+	            function(err) {
+					 handleError(err, 'WorkflowService.RunWorkflow');
+	            }
+	        );
+	    },
+	    function(e) {
+	        alert(e.details);
+	    }
+	);
+});
+
+//#endregion
