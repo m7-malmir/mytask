@@ -223,163 +223,130 @@ $(function(){
 
 //#region formmanager.js
 var FormManager = {
-    /*********************************************************************************************************/
-    // دریافت لیست برندها
-    readBrandName: function (jsonParams, onSuccess, onError) {
-        SP_vw_IS_GoodsCatalogue_Brand.Execute(jsonParams,
-            function (data) {
-                var xmlvar = $.xmlDOM(data);
-                var brandOptions = '';
-                brandOptions += '<option value="0">انتخاب نمایید</option>';
+	
 
-                xmlvar.find("row").each(function () {
-                    var BrandRef = $(this).find(">col[name='BrandRef']").text();
-                    var BrandName = $(this).find(">col[name='BrandName']").text();
-                    brandOptions += '<option value="' + BrandRef + '">' + BrandName + '</option>';
-                });
-
-                if ($.isFunction(onSuccess)) {
-                    onSuccess(brandOptions);
-                }
-            },
-            function (error) {
-                var methodName = "readBrandName";
-
-                if ($.isFunction(onError)) {
-                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-                    console.error("Error:", erroMessage);
-                    console.error("Details:", error);
-
-                    onError({
-                        message: erroMessage,
-                        details: error
-                    });
-                } else {
-                    console.error(erroMessage + " (no onError callback provided):", error);
-                }
-            }
-        );
-    },
-    //******************************************************************************************************
-    // دریافت اعتبار خرید کاربر جاری
-    readPersonnelCredit: function (jsonParams, onSuccess, onError) {
-        BS_HRPersonnelCredit.Read(jsonParams
-            , function (data) {
-                var list = [];
-                var xmlvar = $.xmlDOM(data);
-                xmlvar.find("row").each(
-                    function () {
-                        list.push
-                            ({
-                                Id: $(this).find("col[name='Id']").text(),
-                                Credit: $(this).find("col[name='Credit']").text(),
-                                RemainCredit: $(this).find("col[name='RemainCredit']").text(),
-                                CancelCredit: $(this).find("col[name='CancelCredit']").text(),
-                                DiscountPercent: $(this).find("col[name='DiscountPercent']").text(),
-                                LimitDiscountPercent: $(this).find("col[name='LimitDiscountPercent']").text()
-                            });
-                    }
-                );
-                if ($.isFunction(onSuccess)) {
-                    onSuccess(list);
-
-                }
-            },
-            function (error) {
-                var methodName = "readPersonnelCredit";
-
-                if ($.isFunction(onError)) {
-                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-                    console.error("Error:", erroMessage);
-                    console.error("Details:", error);
-
-                    onError({
-                        message: erroMessage,
-                        details: error
-                    });
-                } else {
-                    console.error(erroMessage + " (no onError callback provided):", error);
-                }
-            }
-        );
-    },
-    //******************************************************************************************************
-    // دریافت لیست کالاهای قابل فروش
-    readGoodsCatalogue: function (jsonParams, onSuccess, onError) {
-        BS_vw_IS_GoodsCatalogue.Read(jsonParams,
-            function (data) {
-                var list = [];
-                var xmlvar = $.xmlDOM(data);
-                xmlvar.find("row").each(
-                    function () {
-                        list.push
-                            ({
-                                GoodsId: $(this).find("col[name='GoodsId']").text(),
-                                GoodsCode: $(this).find("col[name='GoodsCode']").text(),
-                                GoodsName: $(this).find("col[name='GoodsName']").text(),
-                                LogicalQty: $(this).find("col[name='LogicalQty']").text(),
-								CartonQTY: $(this).find("col[name='CartonQTY']").text(),
-                                Price: $(this).find("col[name='Price']").text(),
-                                BrandName: $(this).find("col[name='BrandName']").text(),
-								UnitName: $(this).find("col[name='UnitName']").text(),
-                            });
-                    }
-                );
-                if ($.isFunction(onSuccess)) {
-                    onSuccess(list);
-
-                }
-            },
-            function (error) {
-                var methodName = "readEntityGoodsCatalogue";
-
-                if ($.isFunction(onError)) {
-                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-                    console.error("Error:", erroMessage);
-                    console.error("Details:", error);
-
-                    onError({
-                        message: erroMessage,
-                        details: error
-                    });
-                } else {
-                    console.error(erroMessage + " (no onError callback provided):", error);
-                }
-            }
-        );
-    },
-    /*********************************************************************************************************/
-    // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
-    retailPersonnelOrder: function (jsonParams, onSuccess, onError) {
-        SP_RetailPersonnelOrder.Execute(jsonParams,
-            function (data) {
-
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, "text/xml");
-
-				const cols = xmlDoc.getElementsByTagName("col");
-				
-				const result = {};
-				for (let i = 0; i < cols.length; i++) {
-				    const name = cols[i].getAttribute("name");
-				    const value = cols[i].textContent;
-				    result[name] = value;
+//******************************************************************************************************
+readPersonnelOrder: function(jsonParams, onSuccess, onError)
+{
+  BS_IS_PersonnelOrder.Read(jsonParams
+       , function(data)
+       {
+           var list = [];
+           var xmlvar = $.xmlDOM(data);
+           xmlvar.find("row").each(
+               function()
+               { 
+                  list.push
+                  ({
+					Id: $(this).find("col[name='Id']").text(),
+	                UserId: $(this).find("col[name='UserId']").text(),
+					PersonnelNo: $(this).find("col[name='PersonnelNo']").text(),
+					OrderAmount: $(this).find("col[name='OrderAmount']").text(),
+				    PercentDiscount: $(this).find("col[name='PercentDiscount']").text(),
+				    OrderNetAmount: $(this).find("col[name='OrderNetAmount']").text(),
+				    RemainCreditBeforOrder: $(this).find("col[name='RemainCreditBeforOrder']").text(),
+				    RemainCreditAfterOrder: $(this).find("col[name='RemainCreditAfterOrder']").text(),
+					Description: $(this).find("col[name='Description']").text()
+                  });
+               }
+           );
+           if($.isFunction(onSuccess))
+           {
+               onSuccess(list);
+           
+           }
+       }, onError
+   );
+},
+/*********************************************************************************************************/
+	ReadPersonnelOrderDetail: function(jsonParams, onSuccess, onError)
+	{
+	  BS_vw_IS_PersonnelOrderDetail.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                   list.push
+	                   ({
+			               OrderId: $(this).find("col[name='OrderId']").text(),
+						   GoodsId: $(this).find("col[name='GoodsId']").text(),
+						   GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+						   GoodsName: $(this).find("col[name='GoodsName']").text(),
+						   Qty: $(this).find("col[name='Qty']").text(),
+						   CartonQTY: $(this).find("col[name='CartonQTY']").text(),
+						   BrandName: $(this).find("col[name='BrandName']").text(),
+						   UnitPrice: $(this).find("col[name='UnitPrice']").text(),
+						   BeforeDiscountGoodsPrice: $(this).find("col[name='BeforeDiscountGoodsPrice']").text(),
+						   AfterDiscountGoodsPrice: $(this).find("col[name='AfterDiscountGoodsPrice']").text(),
+	                   });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+	//******************************************************************************************************
+	InsertHamesh: function(jsonParams, onSuccess, onError)
+	{
+		SP_HameshInsert.Execute(jsonParams,
+			function(data)
+			{ 
+				var xmlvar = null;
+				var xmlvar = $.xmlDOM(data);
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(200);
 				}
-				//alert(JSON.stringify(data));
-				/*
-                var xmlvar = $.xmlDOM(data);
+			},
+			function(error) {
+				var methodName = "InsertHamesh";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+/*********************************************************************************************************/
+
+    // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
+    retailPersonnelOrder: function(jsonParams, onSuccess, onError) {
+		SP_IS_WholeSalePersonnelOrderRespond.Execute(jsonParams,
+            function(data) {
 				
-                xmlvar.find("row").each(function () {
-                    list.push({
-                        Result: $(this).find("col[name='res']").text()
-                    });
-                });
-				*/
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, "text/xml");
+				
+                const cols = xmlDoc.getElementsByTagName("col");
+
+                const result = {};
+                for (let i = 0; i < cols.length; i++) {
+                    const name = cols[i].getAttribute("name");
+                    const value = cols[i].textContent;
+                    result[name] = value;
+                }
+
                 if ($.isFunction(onSuccess)) {
                     onSuccess(result);
                 }
             },
-            function (error) {
+            function(error) {
                 var methodName = "retailPersonnelOrder";
 
                 if ($.isFunction(onError)) {
@@ -396,455 +363,124 @@ var FormManager = {
                 }
             }
         );
-    },
-    /**************************************************************************************************************/
-    updatePersonnelCredit: function (jsonParams, onSuccess, onError) {
-        BS_HRPersonnelCredit.Update(jsonParams,
-            function (data) {
-
-                var dataXml = null;
-                if ($.trim(data) != "") {
-                    dataXml = $.xmlDOM(data);
-                }
-                if ($.isFunction(onSuccess)) {
-                    onSuccess(dataXml);
-                }
-            },
-            function (error) {
-                var methodName = "updatePersonnelCredit";
-
-                if ($.isFunction(onError)) {
-                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-                    console.error("Error:", erroMessage);
-                    console.error("Details:", error);
-
-                    onError({
-                        message: erroMessage,
-                        details: error
-                    });
-                } else {
-                    console.error(erroMessage + " (no onError callback provided):", error);
-                }
-            }
-        );
-    },
-    /**************************************************************************************************************/
+    }
+    /*********************************************************************************************************/
 };
 //#endregion formmanager.js
 
 //#region tblGoods
-var tblMain = null;
- // متغیر برای ذخیره مقدار انتخاب شده برند
-var selectedBrandValue = '0';
+var tblOrderedGoods = null;
 
-$(function () {
-    tblMain = (function () {
+$(function() {
+    tblOrderedGoods = (function() {
         //خواندن پارامترهای اصلی جدول
         var element = null,
+            isDirty = false,
             rowPrimaryKeyName = "Id",
-            readRows = FormManager.readGoodsCatalogue;
+            readRows = FormManager.ReadPersonnelOrderDetail;
         //فراخوانی سازنده جدول
         init();
         //******************************************************************************************************
         function init() {
-            element = $("#tblGoods");
+            element = $("#tblOrderedGoods");
             build();
             bindEvents();
+            load();
         }
         //******************************************************************************************************
         function build() {
-            //----------------------------------------------------
-            // متد تغییر برند انتخاب شده
-            //----------------------------------------------------
-            $('#cmbBrandFilter').change(function () {
-                selectedBrandValue = $(this).find("option:selected").val();
 
-                if (!selectedBrandValue || selectedBrandValue === 'undefined') {
-                    params = {}; // همه دیتاها
-                } else {
-                    params = { WHERE: "BrandRef = N'" + selectedBrandValue + "'" }; // فیلتر شده
-                }
-                showLoading();
-
-                // پاک کردن ردیف‌های قبلی
-                element.find("tr.row-data").remove();
-
-                readRows(params,
-                    function (list) {
-                        if (list.length > 0) {
-                            for (var i = 0, l = list.length; i < l; i += 1) {
-                                addRow(list[i], i + 1);
-                            }
-                        }
-                        myHideLoading();
-                    },
-                    function (error) {
-                        myHideLoading();
-                        alert(error);
-                    }
-                );
-            });
-            //----------------------------------------------------
-
-
-
-            //----------------------------------------------------
-            // تعریف متد کلیک بر روی چک باکس انتخاب در هر ردیف
-            //----------------------------------------------------
-            element.on("click", ".CHbox", function () {
-                var checkbox = this;
-                if (!this.checked) return;
-
-				let $row = $(this).closest("tr");
-				let goodsId = $row.find("td").eq(2).text().trim();
-				let goodsCode = $row.find("td").eq(3).text().trim();
-				let brandName = $row.find("td").eq(4).text().trim();
-				let goodsName = $row.find("td").eq(5).text().trim();
-				
-				let CartonQTY = $row.find("td").eq(6).text().trim();
-				let UnitName = $row.find("td").eq(7).text().trim();
-				//قیمت یک واحد تکی
-				var price = parseInt(rcommafy($row.find("td").eq(8).text()), 10);
-				//قیمت یک بسته کامل
-				var unitPrice = parseInt(rcommafy($row.find("td").eq(9).text()), 10);
-
-                if (isNaN(price)) {
-                    alert("قیمت کالا نامعتبر است!");
-                    return;
-                }
-
-                if (!goodsId) {
-                    alert("شناسه محصول نامعتبر است");
-                    return;
-                }
-
-                var alreadyAdded = $('#tblOrderedGoods tbody tr[data-id="' + goodsId + '"]').length > 0;
-                if (alreadyAdded) {
-                    alert("این کالا قبلاً به سفارش اضافه شده است");
-                    return;
-                }
-
-                var tempRow = $("<tr></tr>").attr("data-id", goodsId);
-
-                tempRow.append($("<td></td>").text("*").css({
-                    "width": "25px",
-                    "background-color": "#E0F6FE",
-                    "border": "solid 1px #BED4DC",
-                    "text-align": "center"
-                }));
-
-                //------------------------------------------------
-                //	ستون شناسه کالا
-                //------------------------------------------------
-                tempRow.append($("<td></td>").css({
-                    "width": "120px",
-                    "display": "none",
-                    "border": "solid 1px #BED4DC"
-                }).text(goodsId));
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                //	ستون حذف سطر
-                //------------------------------------------------
-                var removeBtn = $("<button/>", {
-                    title: "حذف"
-                })
-                    .css({
-                        cursor: "pointer",
-                        backgroundColor: "red",
-                        color: "white",
-                        border: 0,
-                        padding: "5px 0px",
-                        borderRadius: "50px",
-                        lineHeight: "1.2rem",
-                        fontSize: "20px",
-                        width: "20px",
-                        height: "20px",
-                        textAlign: "center"
-                    }).text("-").on("click", function () {
-                        var $removedRow = $(this).closest("tr");
-
-                        let removedProductId = $removedRow.attr("data-id");
-
-                        $('#tblGoods tbody tr').each(function () {
-                            var $row = $(this);
-                            var rowProductId = $row.find("td").eq(2).text().trim();
-                            if (rowProductId === removedProductId) {
-                                $row.find('.CHbox').prop("disabled", false).prop("checked", false); // فعال و بدون تیک
-                            }
-                        });
-
-                        $removedRow.remove();
-                        updateTotalPrice();
-                    });
-
-                tempRow.append($("<td></td>").append(removeBtn).css({
-                    "width": "80px",
-                    "border": "solid 1px #BED4DC"
-                }));
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                //	ستون کد کالا
-                //------------------------------------------------
-                tempRow.append($("<td></td>").css({
-                    "width": "100px",
-                    "border": "solid 1px #BED4DC"
-                }).text(goodsCode));
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                //	ستون نام برند
-                //------------------------------------------------
-                tempRow.append($("<td></td>").css({
-                    "width": "120px",
-                    "border": "solid 1px #BED4DC"
-                }).text(brandName));
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                //	ستون نام کالا
-                //------------------------------------------------
-                tempRow.append($("<td></td>").css({
-                    "width": "320px",
-                    "border": "solid 1px #BED4DC"
-                }).text(goodsName));
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                //	دکمه افزودن تعداد
-                //------------------------------------------------
-                var plusBtn = $("<button/>").text("+").css({
-                    "font-weight": "900",
-                    "width": "18px",
-                    "height": "18px",
-                    "fontSize": "12px",
-                    "background-color": "#000",
-                    "border": "1px solid #fcfcfc",
-                    "border-radius": "50%",
-                    "color": "#fff",
-                    "display": "inline-block",
-                    "margin": "0 2px"
-                });
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                //	دکمه کاهش تعداد
-                //------------------------------------------------
-                var minusBtn = $("<button/>").text("-").css({
-                    "font-weight": "900",
-                    "width": "18px",
-                    "height": "18px",
-                    "fontSize": "12px",
-                    "background-color": "#000",
-                    "border": "1px solid #fcfcfc",
-                    "border-radius": "50%",
-                    "color": "#fff",
-                    "display": "inline-block",
-                    "margin": "0 2px"
-                });
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                // تعداد و دکمه های افزایش و کاهش آن
-                //------------------------------------------------
-                var quantity = 1;
-                var quantityDisplay = $("<span></span>").text(quantity).css({
-                    "margin": "0 12px",
-                    "fontSize": "13px",
-                    "display": "inline-block",
-                    "min-width": "16px",
-                    "text-align": "center"
-                });
-
-                var quantityCell = $("<td></td>").css({
-                    "width": "50px",
-                    "border": "solid 1px #BED4DC",
-                    "text-align": "center",
-                    "white-space": "nowrap"
-                }).append(minusBtn).append(quantityDisplay).append(plusBtn);
-
-                tempRow.append(quantityCell);
-                //------------------------------------------------
-				
-				//------------------------------------------------
-				// تعداد در کارتن
-				//------------------------------------------------
-				tempRow.append($("<td class='price-unit'></td>").css({
-					"width": "100px",
-					"border": "solid 1px #BED4DC",
-					"text-align": "center"
-				}).text(commafy(CartonQTY)));
-				//------------------------------------------------
-
-
-				//------------------------------------------------
-				// نام واحد
-				//------------------------------------------------
-				tempRow.append($("<td class='price-unit'></td>").css({
-					"width": "100px",
-					"border": "solid 1px #BED4DC",
-					"text-align": "center"
-				}).text(commafy(UnitName)));
-				//------------------------------------------------
-				
-
-                //------------------------------------------------
-                // قیمت واحد (فی)
-                //------------------------------------------------
-                tempRow.append($("<td class='price-unit'></td>").css({
-                    "width": "100px",
-                    "border": "solid 1px #BED4DC",
-                    "text-align": "center"
-                }).text(commafy(price)));
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                // قیمت کل
-                //------------------------------------------------
-                tempRow.append($("<td class='total-price'></td>").css({
-                    "width": "140px",
-                    "border": "solid 1px #BED4DC",
-                    "text-align": "center"
-                }).text(commafy(unitPrice))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                // کلیک دکمه افزایش تعداد
-                //------------------------------------------------
-                plusBtn.on("click", function () {
-                    let currentRow = this.closest('tr');
-                    let cells = currentRow.querySelectorAll("td");
-                    let currentquantity = parseInt(cells[6].querySelector("span").innerText.trim());
-					//alert(JSON.stringify(currentquantity));
-
-                    // قیمت کل فعلی
-                    let currentTotal = parseInt(cells[10].innerText.replace(/,/g, ''));
-					
-                    // قیمت جدید با افزایش مقدار کالا
-                    let itemNewTotal = (currentquantity + 1) * unitPrice;
-
-                    // قیمت فعلی کالا
-                    let itemCurrentTotal = currentquantity * unitPrice;
-
-                    // قیمت کل جدید
-                    let newTotal = currentTotal - itemCurrentTotal + itemNewTotal;
-
-                    //تعداد جدید
-                    cells[6].querySelector("span").innerText = parseInt(currentquantity) + 1;
-
-                    //قیمت کل ردیف
-                    cells[10].innerText = commafy(newTotal);
-
-                    updateTotalPrice();
-                });
-                //------------------------------------------------
-
-
-                //------------------------------------------------
-                // کلیک دکمه کاهش تعداد
-                //------------------------------------------------
-                minusBtn.on("click", function () {
-                    let currentRow = this.closest('tr');
-                    let cells = currentRow.querySelectorAll("td");
-                    let currentquantity = parseInt(cells[6].querySelector("span").innerText.trim());
-
-                    if (currentquantity > 1) {
-                        // قیمت کل فعلی
-                        let currentTotal =  parseInt(cells[10].innerText.replace(/,/g, ''));
-                        
-                        // قیمت جدید با افزایش مقدار کالا
-                        let itemNewTotal = (currentquantity - 1) * unitPrice;
-
-                        // قیمت فعلی کالا
-                        let itemCurrentTotal = currentquantity * unitPrice;
-
-                        // قیمت کل جدید
-                        let newTotal = currentTotal - itemCurrentTotal + itemNewTotal;
-
-                        //تعداد جدید
-                        cells[6].querySelector("span").innerText = parseInt(currentquantity) - 1;
-
-                        //قیمت کل ردیف
-                        cells[10].innerText = commafy(newTotal);
-
-                        updateTotalPrice();
-                    }
-                });
-                //------------------------------------------------
-
-                $('#tblOrderedGoods tbody').append(tempRow);
-                $(this).prop("disabled", true);
-
-                updateTotalPrice();
-            });
         }
         //******************************************************************************************************
         //این متد در زمان ساخت هر سطر بر روی المان ها اعمال می شود
         function bindEvents() {
+            //------------------------------------------------------
+            // عملکرد دکمه منفی
+            //------------------------------------------------------
+            $(document).on('click', '.btn-negative', function() {
+                var row = $(this).closest('tr');
+                updateRowQty(row, false);
+                updateTotals();
+            });
+            //------------------------------------------------------
+
+            //------------------------------------------------------
+            // عملکرد دکمه مثبت
+            //------------------------------------------------------
+            $(document).on('click', '.btn-positive', function() {
+                var row = $(this).closest('tr');
+                updateRowQty(row, true);
+                updateTotals();
+            });
+            //------------------------------------------------------
         }
-        //******************************************************************************************************
-        //عملیات پر کردن دیتای هر سطر می باشد
+
+        /* *********************************************************************************************** */
+        // عملیات پر کردن دیتای هر سطر می باشد
         function addRow(rowInfo, rowNumber) {
-			var index = 0,
-			tempRow = element.find("tr.row-template").clone();
+            var index = 0,
+                tempRow = element.find("tr.row-template").clone();
 
-			tempRow.show().removeClass("row-template").addClass("row-data");
-			tempRow.data("rowInfo", rowInfo);
+            tempRow.show().removeClass("row-template").addClass("row-data");
+            tempRow.data("rowInfo", rowInfo);
 
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber); // شماره ردیف
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsId); // ID سفارش
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode); // کد محصول
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName); // نام محصول
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName); // نام برند
 
-			var CHbox = $("<input type='checkbox'  value='" + rowInfo.Id + "'>").addClass('CHbox');
-			tempRow.find("td:eq(" + index++ + ")").append(CHbox);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsId);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.UnitName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.CartonQTY);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
-			let unitPrice=(rowInfo.CartonQTY)*(rowInfo.Price);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(unitPrice));
-			element.find("tr.row-template").before(tempRow);
-			myHideLoading();
-			
+            var Qty = (rowInfo.Qty) / (rowInfo.CartonQTY);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(Qty); // نام محصول  
+
+            // مقدار Qty را اضافه می کنیم و کلاس qty را به آن اضافه می کنیم
+            var qtyCell = tempRow.find("td:eq(" + index++ + ")").empty();
+            qtyCell.append(
+                $('<span class="btn-negative" title="کاهش تعداد" style="cursor: pointer; color: white; background-color: red; border: none; border-radius: 3px; padding: 0px 5px 0px 5px; margin-right: 5px; font-weight: bold; width: 30px; text-align: center;">-</span>')
+            );
+            qtyCell.append($('<span class="qty" style="margin-right: 5px;"></span>').text(Qty)); // اضافه کردن کلاس qty به عنصر Span و مارجین راست
+            qtyCell.append(
+                $('<span class="btn-positive" title="افزایش تعداد" style="cursor: pointer; color: white; background-color: green; border: none; border-radius: 3px; padding: 0px 5px 0px 5px; margin-right: 5px; font-weight: bold; width: 30px; text-align: center;">+</span>')
+            );
+            tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.UnitPrice)); // قیمت واحد
+            tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.BeforeDiscountGoodsPrice)); // قیمت قبل از تخفیف
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.CartonQTY); // نام برند
+            tempRow.attr({
+                state: "new"
+            });
+            element.find("tr.row-template").before(tempRow);
+            myHideLoading();
         }
         //******************************************************************************************************
         //حذف یک سطر
         function removeRow(row) {
             row_info = row.data("rowInfo");
 
-            var params = { Where: rowPrimaryKeyName + " = " + row_info.Id }
+            var params = {
+                Where: rowPrimaryKeyName + " = " + row_info.Id
+            }
 
             deleteRows(params,
-                function (data) {
+                function(data) {
                     refresh();
                     hideLoading();
                 },
-                function (error) {
+                function(error) {
                     hideLoading();
                     alert(error);
                 }
             );
         }
         //******************************************************************************************************
-        //برگذاری دیتا برای نمایش که در صورت لزوم می توان یک لیست به آن پاس داد
+        //اگر شماره سفارش وجود داشت سفارشات کاربر در جدول نمایش داده میشود
         function load() {
+            if (!orderId) return;
+            var params = {
+                Where: "OrderId = " + orderId
+            };
             showLoading();
-
-            let params = { WHERE: "BrandRef = '" + selectedBrandValue + "'" }; // فیلتر شده با سان استار
-			
             readRows(params,
-                function (list) {
+                function(list) {
                     if (list.length > 0) {
                         for (var i = 0, l = list.length; i < l; i += 1) {
                             addRow(list[i], i + 1);
@@ -852,98 +488,55 @@ $(function () {
                     }
                     myHideLoading();
                 },
-                function (error) {
+                function(error) {
                     myHideLoading();
                     alert(error);
                 }
             );
         }
         //******************************************************************************************************
+        //  محاسبه و آپدیت مقدار جدید در جدول برای دکمه های موجود در ستون تعداد تایید شده
+        function updateRowQty(row, isIncrease) {
+            var qtyElement = row.find('.qty');
+            var qty = parseInt(qtyElement.text());
+            var unitPrice = parseInt(row.find('td:eq(7)').text().replace(/,/g, '')); // قیمت واحد
+            unitPrice = unitPrice * (parseInt(row.data("rowInfo").CartonQTY));
+            var priceElement = row.find('td:eq(8)');
+            var Qty = (parseInt(row.data("rowInfo").Qty)) / (parseInt(row.data("rowInfo").CartonQTY));
+            var maxQty = Qty;
+
+            if (isIncrease && qty < maxQty) {
+                qty++;
+            } else if (!isIncrease && qty > 0) {
+                qty--;
+            }
+            // بروزرسانی مقدار و قیمت سطر
+            qtyElement.text(qty);
+            priceElement.text(commafy(qty * unitPrice));
+        }
+        //******************************************************************************************************
+        // محاسبه مقدار تخفیف و جمع نهایی برای دکمه های موجود در ستون تعداد تایید شده
+        function updateTotals() {
+            let total = 0;
+            $('#tblOrderedGoods tbody tr.row-data').each(function() {
+                var priceText = $(this).find('td:eq(8)').text().replace(/,/g, '');
+                var price = parseInt(priceText, 10) || 0;
+                total += price;
+            });
+            var discountPercent = parseFloat($('#txtDiscountPercent').val().replace('%', '')) || 0;
+            var discountAmount = Math.floor(total * discountPercent / 100);
+            var finalTotal = total - discountAmount;
+
+            $('#txtTotalPrice').val(commafy(total));
+            $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+        }
+        //******************************************************************************************************
         //بروز رسانی دیتای جدول
         function refresh() {
-            //حذف دیتای موجود
             element.find("tr.row-data").remove();
-
-            //بازنشانی دیتای جدول
             load();
         }
         //******************************************************************************************************
-        // محاسبه قیمت کل سفارش بدون تخفیف
-        function getTotalPrice() {
-            let totalPrice = 0;
-            $('#tblOrderedGoods tbody tr').each(function () {
-                var priceText = $(this).find('td.total-price').text().replace(/,/g, '');
-                var price = parseInt(priceText, 10) || 0;
-                totalPrice += price;
-            });
-            return totalPrice;
-        }
-        //******************************************************************************************************
-        function updateTotalPrice() {
-            var total = getTotalPrice();
-            var discountAmount = Math.floor(total * discountPercentForUser / 100);
-            var finalTotal = total - discountAmount;
-           
-            var currentRemainingBalance = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, ''));
-            var remainCredit = 0;
-			
-			if ($('#txtDiscountPercent').val()=="100")
-			{
-				remainCredit = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) - total;
-			}
-			else
-			{
-				remainCredit = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) - finalTotal;
-			}
-
-            // استفاده از اعتبار فعال می باشد و باید اعتبار کنترل شود
-            if (cancelCredit === 'false') {
-					
-                // اگر اعتبار باقیمانده کوچک تر از جمع کل تخفیف دار است
-                if (currentRemainingBalance < finalTotal) {
-                    // در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
-                    var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با " + discountPercentBase + "% تخفیف محاسبه خواهد گردید.");
-                    if (confirmation) {
-                        // اگر کاربر تأیید کند، نشانگر عدم استفاده از اعتبار را به روز کنیم
-                        var list = {
-                            'CancelCredit': true
-                        };
-                        list = $.extend(list, {
-                            Where: "PersonnelCode = '" + currentUserName + "'"
-                        });
-
-                        FormManager.updatePersonnelCredit(list,
-                            function (status, list) {
-                                $.alert("لغو استفاده از مانده اعتبار و محاسبه سفارشات بعدی با قیمت تخفیف پایه اعمال گردید", "", "rtl", function () {
-                                    cancelCredit = 'true';
-                                    discountPercentForUser = discountPercentBase; // تغییر تخفیف به تخفیف پایه
-                                    $("#txtDiscountPercent").val(discountPercentForUser);
-                                });
-                            },
-                            function (error) {
-                                console.log("خطای برگشتی:", error);
-                                $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-                            }
-                        );
-                    }
-                    else {
-						$("#tblOrderedGoods").find("tbody tr:last").remove();
-						updateTotalPrice();
-						refresh();
-                        return;
-                    }
-                }
-
-                $('#txtRemainCreditNew').val(commafy(remainCredit));
-            }
-			
-			$('#txtTotalPrice').val(commafy(total));
-            $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
-            $('#txtDiscountPercent').val(discountPercentForUser + '%'); // درصد تخفیف
-
-        }
-        //******************************************************************************************************
-
         return {
             refresh: refresh,
             load: load
