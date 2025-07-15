@@ -16,7 +16,7 @@ var employmentDate;
 var rankTitle;
 var leaveDate;
 var gender;
-
+var isInTestMode = false;
 var currentActorId;
 var selectedValue;
 //---------------------------------
@@ -33,7 +33,7 @@ $(function(){
 	$form = (function()
 	{ 
 		var pk,
-			inTestMode = false,
+			inTestMode = (typeof isInTestMode !== "undefined" ? isInTestMode : false),
 			inEditMode = false,
 			primaryKeyName = "Id",
 			readBrandName=FormManager.readBrandName,
@@ -63,10 +63,12 @@ $(function(){
 		    });
 			//-----------------------------------
 		}
+
 		//******************************************************************************************************
 		//مقداردهی به المان ها در هر دو حالت ویرایش و ایجاد
 		function createControls()
 		{
+			
 			//-----------------------------------
 			//  چک کردن بازه مجاز برای ثبت محصول
 			//-----------------------------------
@@ -78,21 +80,6 @@ $(function(){
 				return;				
 			}
 			//-----------------------------------
-			
-			//-----------------------------------
-			//	Get Test Mode Value
-			//-----------------------------------
-			  try {
-				const parentUrl = window.parent?.location?.href;
-				const url = new URL(parentUrl);
-		   	 isInTestMode = url.searchParams.get("icantestmode") === "1";
-			  }
-			  catch (e) {
-			    console.warn("Cannot reach parent document:", e);
-			    isInTestMode = false;
-			  }
-			//-----------------------------------
-			
 			showLoading();
 			UserService.GetCurrentUser(true,
 				function(data){
@@ -199,12 +186,18 @@ $(function(){
 			return inEditMode;
 		}
 		//******************************************************************************************************
-		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
-		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
-		function isInTestMode()
-		{
-			return inTestMode;
+		// چک کردن url برای رفتن به حالت تست مود
+		function isInTestMode() {
+		    try {
+		        const parentUrl = window.parent?.location?.href;
+		        const url = new URL(parentUrl);
+		        return url.searchParams.get("icantestmode") === "1";
+		    } catch (e) {
+		        console.warn("Cannot reach parent document:", e);
+		        return false;
+		    }
 		}
+
 		//******************************************************************************************************
 		function saveData(callback)
 		{
@@ -276,7 +269,6 @@ $(function(){
 	$form.init();
 });
 //#endregion js.ready
-
 
 //#region formmanager.js
 var FormManager = {
@@ -422,9 +414,10 @@ var FormManager = {
 				    const value = cols[i].textContent;
 				    result[name] = value;
 				}
+				//alert(JSON.stringify(data));
 				/*
                 var xmlvar = $.xmlDOM(data);
-				alert(JSON.stringify(data));
+				
                 xmlvar.find("row").each(function () {
                     list.push({
                         Result: $(this).find("col[name='res']").text()
@@ -488,8 +481,7 @@ var FormManager = {
 };
 //#endregion formmanager.js
 
-
-//#region tblGoods.js
+//#region tblGoods
 var tblMain = null;
  // متغیر برای ذخیره مقدار انتخاب شده برند
 var selectedBrandValue = '0';
@@ -1009,9 +1001,9 @@ $(function () {
 });
 //#endregion
 
-
 //#region btnregisterrequest.js
 $("#btnRegister").click(function(){
+	
 	//---------------------------
 	// جمع آوری داده ها از جدول #tblOrderedGoods
 	//---------------------------
