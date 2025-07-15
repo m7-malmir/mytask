@@ -272,130 +272,163 @@ $(function(){
 
 //#region formmanager.js
 var FormManager = {
-	
+    /*********************************************************************************************************/
+    // دریافت لیست برندها
+    readBrandName: function (jsonParams, onSuccess, onError) {
+        SP_vw_IS_GoodsCatalogue_Brand.Execute(jsonParams,
+            function (data) {
+                var xmlvar = $.xmlDOM(data);
+                var brandOptions = '';
+                brandOptions += '<option value="0">انتخاب نمایید</option>';
 
-//******************************************************************************************************
-readPersonnelOrder: function(jsonParams, onSuccess, onError)
-{
-  BS_IS_PersonnelOrder.Read(jsonParams
-       , function(data)
-       {
-           var list = [];
-           var xmlvar = $.xmlDOM(data);
-           xmlvar.find("row").each(
-               function()
-               { 
-                  list.push
-                  ({
-					Id: $(this).find("col[name='Id']").text(),
-	                UserId: $(this).find("col[name='UserId']").text(),
-					PersonnelNo: $(this).find("col[name='PersonnelNo']").text(),
-					OrderAmount: $(this).find("col[name='OrderAmount']").text(),
-				    PercentDiscount: $(this).find("col[name='PercentDiscount']").text(),
-				    OrderNetAmount: $(this).find("col[name='OrderNetAmount']").text(),
-				    RemainCreditBeforOrder: $(this).find("col[name='RemainCreditBeforOrder']").text(),
-				    RemainCreditAfterOrder: $(this).find("col[name='RemainCreditAfterOrder']").text(),
-					Description: $(this).find("col[name='Description']").text()
-                  });
-               }
-           );
-           if($.isFunction(onSuccess))
-           {
-               onSuccess(list);
-           
-           }
-       }, onError
-   );
-},
-/*********************************************************************************************************/
-	ReadPersonnelOrderDetail: function(jsonParams, onSuccess, onError)
-	{
-	  BS_vw_IS_PersonnelOrderDetail.Read(jsonParams
-	       , function(data)
-	       {
-	           var list = [];
-	           var xmlvar = $.xmlDOM(data);
-	           xmlvar.find("row").each(
-	               function()
-	               { 
-	                   list.push
-	                   ({
-			               OrderId: $(this).find("col[name='OrderId']").text(),
-						   GoodsId: $(this).find("col[name='GoodsId']").text(),
-						   GoodsCode: $(this).find("col[name='GoodsCode']").text(),
-						   GoodsName: $(this).find("col[name='GoodsName']").text(),
-						   Qty: $(this).find("col[name='Qty']").text(),
-						   CartonQTY: $(this).find("col[name='CartonQTY']").text(),
-						   BrandName: $(this).find("col[name='BrandName']").text(),
-						   UnitPrice: $(this).find("col[name='UnitPrice']").text(),
-						   BeforeDiscountGoodsPrice: $(this).find("col[name='BeforeDiscountGoodsPrice']").text(),
-						   AfterDiscountGoodsPrice: $(this).find("col[name='AfterDiscountGoodsPrice']").text(),
-	                   });
-	               }
-	           );
-	           if($.isFunction(onSuccess))
-	           {
-	               onSuccess(list);
-	           
-	           }
-	       }, onError
-	   );
-	},
-	//******************************************************************************************************
-	InsertHamesh: function(jsonParams, onSuccess, onError)
-	{
-		SP_HameshInsert.Execute(jsonParams,
-			function(data)
-			{ 
-				var xmlvar = null;
-				var xmlvar = $.xmlDOM(data);
-				if($.isFunction(onSuccess))
-				{
-					onSuccess(200);
-				}
-			},
-			function(error) {
-				var methodName = "InsertHamesh";
+                xmlvar.find("row").each(function () {
+                    var BrandRef = $(this).find(">col[name='BrandRef']").text();
+                    var BrandName = $(this).find(">col[name='BrandName']").text();
+                    brandOptions += '<option value="' + BrandRef + '">' + BrandName + '</option>';
+                });
 
-	            if ($.isFunction(onError)) {
-					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
-					console.error("Error:", erroMessage);
-					console.error("Details:", error);
-	                
-	                onError({
-	                    message: erroMessage,
-	                    details: error
-	                });
-	            } else {
-	                console.error(erroMessage+ " (no onError callback provided):", error);
-	            }
-	        }
-		);
-	},
-/*********************************************************************************************************/
-
-    // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
-    retailPersonnelOrder: function(jsonParams, onSuccess, onError) {
-        SP_IS_WholeSalePersonnelOrderRespond.Execute(jsonParams,
-            function(data) {
-				
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(data, "text/xml");
-				
-                const cols = xmlDoc.getElementsByTagName("col");
-
-                const result = {};
-                for (let i = 0; i < cols.length; i++) {
-                    const name = cols[i].getAttribute("name");
-                    const value = cols[i].textContent;
-                    result[name] = value;
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(brandOptions);
                 }
+            },
+            function (error) {
+                var methodName = "readBrandName";
 
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    //******************************************************************************************************
+    // دریافت اعتبار خرید کاربر جاری
+    readPersonnelCredit: function (jsonParams, onSuccess, onError) {
+        BS_HRPersonnelCredit.Read(jsonParams
+            , function (data) {
+                var list = [];
+                var xmlvar = $.xmlDOM(data);
+                xmlvar.find("row").each(
+                    function () {
+                        list.push
+                            ({
+                                Id: $(this).find("col[name='Id']").text(),
+                                Credit: $(this).find("col[name='Credit']").text(),
+                                RemainCredit: $(this).find("col[name='RemainCredit']").text(),
+                                CancelCredit: $(this).find("col[name='CancelCredit']").text(),
+                                DiscountPercent: $(this).find("col[name='DiscountPercent']").text(),
+                                LimitDiscountPercent: $(this).find("col[name='LimitDiscountPercent']").text()
+                            });
+                    }
+                );
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(list);
+
+                }
+            },
+            function (error) {
+                var methodName = "readPersonnelCredit";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    //******************************************************************************************************
+    // دریافت لیست کالاهای قابل فروش
+    readGoodsCatalogue: function (jsonParams, onSuccess, onError) {
+        BS_vw_IS_GoodsCatalogue.Read(jsonParams,
+            function (data) {
+                var list = [];
+                var xmlvar = $.xmlDOM(data);
+                xmlvar.find("row").each(
+                    function () {
+                        list.push
+                            ({
+                                GoodsId: $(this).find("col[name='GoodsId']").text(),
+                                GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+                                GoodsName: $(this).find("col[name='GoodsName']").text(),
+                                LogicalQty: $(this).find("col[name='LogicalQty']").text(),
+								CartonQTY: $(this).find("col[name='CartonQTY']").text(),
+                                Price: $(this).find("col[name='Price']").text(),
+                                BrandName: $(this).find("col[name='BrandName']").text(),
+								UnitName: $(this).find("col[name='UnitName']").text(),
+                            });
+                    }
+                );
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(list);
+
+                }
+            },
+            function (error) {
+                var methodName = "readEntityGoodsCatalogue";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /*********************************************************************************************************/
+    // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
+    retailPersonnelOrder: function (jsonParams, onSuccess, onError) {
+        SP_RetailPersonnelOrder.Execute(jsonParams,
+            function (data) {
+
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(data, "text/xml");
+
+				const cols = xmlDoc.getElementsByTagName("col");
+				
+				const result = {};
+				for (let i = 0; i < cols.length; i++) {
+				    const name = cols[i].getAttribute("name");
+				    const value = cols[i].textContent;
+				    result[name] = value;
+				}
+				//alert(JSON.stringify(data));
+				/*
+                var xmlvar = $.xmlDOM(data);
+				
+                xmlvar.find("row").each(function () {
+                    list.push({
+                        Result: $(this).find("col[name='res']").text()
+                    });
+                });
+				*/
                 if ($.isFunction(onSuccess)) {
                     onSuccess(result);
                 }
             },
-            function(error) {
+            function (error) {
                 var methodName = "retailPersonnelOrder";
 
                 if ($.isFunction(onError)) {
@@ -412,8 +445,39 @@ readPersonnelOrder: function(jsonParams, onSuccess, onError)
                 }
             }
         );
-    }
-    /*********************************************************************************************************/
+    },
+    /**************************************************************************************************************/
+    updatePersonnelCredit: function (jsonParams, onSuccess, onError) {
+        BS_HRPersonnelCredit.Update(jsonParams,
+            function (data) {
+
+                var dataXml = null;
+                if ($.trim(data) != "") {
+                    dataXml = $.xmlDOM(data);
+                }
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(dataXml);
+                }
+            },
+            function (error) {
+                var methodName = "updatePersonnelCredit";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /**************************************************************************************************************/
 };
 //#endregion formmanager.js
 
