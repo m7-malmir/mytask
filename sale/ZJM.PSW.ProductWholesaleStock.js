@@ -368,7 +368,7 @@ readPersonnelOrder: function(jsonParams, onSuccess, onError)
 };
 //#endregion formmanager.js
 
-//#region tblGoods
+//#region tblOrderedGoods
 var tblOrderedGoods = null;
 
 $(function() {
@@ -546,138 +546,152 @@ $(function() {
 //#endregion
 
 //#region btnDecline.js
-$("#btnDecline").click(function(){
+$("#btnDecline").click(function() {
     var sp_params = {
         PersonnelOrderId: $form.getPK(),
-		JsonArray: null,
+        JsonArray: null,
         Type: 2
     };
-	//------------------------------------------------
-	// فراخوانی sp برای بازگردانی مقدار اعتبار کاربر
-	//------------------------------------------------
+    //------------------------------------------------
+    // فراخوانی sp برای بازگردانی مقدار اعتبار کاربر
+    //------------------------------------------------
     FormManager.retailPersonnelOrder(
-       sp_params,
-       function(data) {
-		var hameshParams = {
-	        'Context': 'سفارش لغو شد',
-	        'DocumentId': DocumentId,
-	        'CreatorActorId': CurrentUserActorId,
-	        'InboxId': InboxId
-	    };
-			//-----------------------------------------------
-			// فراخوانی sp برای بازگردانی مقدار اعتبار کاربر
-			//-----------------------------------------------
-			var that = $(this);
-			var hameshPopup = $(
-				'<div tabindex="1" style="direction:rtl;" class="ui-form">'+
-			     '<label tabindex="-1" style="text-align:right;" class="ui-form-label">لطفا دلیل مخالفت خود را بنویسید.</label>'+
-			    '</div>'
-			);
-			var commentInput = $("<textarea>", {type: "text"}).addClass("comment-input form-control").css({height:"60px","font-size":"8pt",resize:"none"});
-			hameshPopup.append(commentInput);
-			var res = false;
-			hameshPopup.dialog({
-				buttons: [
-					{
-						text: "ثبت",
-						click: function() {
-							showLoading();
-							
-							if($(this).find('.comment-input').val().trim().length > 0){
-							
-								var hameshDescription = $(this).find('.comment-input').val();
-								var params = {
-									'Context': 'رد شد ('+hameshDescription+')',
-									'DocumentId': DocumentId,
-									'CreatorActorId': CurrentUserActorId,
-									'InboxId': InboxId
-								};
-								FormManager.InsertHamesh(params,
-					                function() {
-					                    Office.Inbox.setResponse(dialogArguments.WorkItem, 0, "",
-					                        function(data) {
-					                            closeWindow({
-					                                OK: true,
-					                                Result: null
-					                            });
-					                        },
-					                        function(err) {
-					                            throw Error(err);
-					                        }
-					                    );
-					                }
-					            );
-								
-							}else{
-								$(this).notify('لطفاً علت رد را وارد نمایید',{position:'top'});
-								myHideLoading();
-							}
-						}
-					},
-					{
-						text: "انصراف",
-						click: function(){
-							$(this).dialog("close");
-						}
-					}
-				],
-				open: function( event, ui ) {
-					res = false;
-				},
-				close: function(e,u) {
-					if( res == true ){	
-					}
-					else{
-						
-					}	
-				}
-			});
-			//--------------------------------------------
-		     },
+        sp_params,
+        function(data) {
+            var hameshParams = {
+                'Context': 'سفارش لغو شد',
+                'DocumentId': DocumentId,
+                'CreatorActorId': CurrentUserActorId,
+                'InboxId': InboxId
+            };
+            //-----------------------------------------------
+            // ثبت توضیحات برای رد درخواست عمده محصول
+            //-----------------------------------------------
+            var that = $(this);
+            var hameshPopup = $(
+                '<div tabindex="1" style="direction:rtl;" class="ui-form">' +
+                '<label tabindex="-1" style="text-align:right;" class="ui-form-label">لطفا دلیل مخالفت خود را بنویسید.</label>' +
+                '</div>'
+            );
+            var commentInput = $("<textarea>", {
+                type: "text"
+            }).addClass("comment-input form-control").css({
+                height: "60px",
+                "font-size": "8pt",
+                resize: "none"
+            });
+            hameshPopup.append(commentInput);
+            var res = false;
+            hameshPopup.dialog({
+                buttons: [{
+                        text: "ثبت",
+                        click: function() {
+                            showLoading();
+
+                            if ($(this).find('.comment-input').val().trim().length > 0) {
+
+                                var hameshDescription = $(this).find('.comment-input').val();
+                                var params = {
+                                    'Context': 'رد شد (' + hameshDescription + ')',
+                                    'DocumentId': DocumentId,
+                                    'CreatorActorId': CurrentUserActorId,
+                                    'InboxId': InboxId
+                                };
+                                FormManager.InsertHamesh(params,
+                                    function() {
+                                        Office.Inbox.setResponse(dialogArguments.WorkItem, 0, "",
+                                            function(data) {
+                                                closeWindow({
+                                                    OK: true,
+                                                    Result: null
+                                                });
+                                            },
+                                            function(err) {
+                                                throw Error(err);
+                                            }
+                                        );
+                                    }
+                                );
+
+                            } else {
+                                $(this).notify('لطفاً علت رد را وارد نمایید', {
+                                    position: 'top'
+                                });
+                                myHideLoading();
+                            }
+                        }
+                    },
+                    {
+                        text: "انصراف",
+                        click: function() {
+                            $(this).dialog("close");
+                        }
+                    }
+                ],
+                open: function(event, ui) {
+                    res = false;
+                },
+                close: function(e, u) {
+                    if (res == true) {} else {
+
+                    }
+                }
+            });
+            //--------------------------------------------
+        },
         function(e) {
             alert(e.details);
         }
     );
-	//--------------------------------------------
+    //--------------------------------------------
 });
-
 //#endregion
 
 //#region btnAccept.js
 $("#btnAccept").click(function(){
-	const table = document.getElementById("tblOrderedGoods");
-	const items = [];
-	
+	// دیتا مورد نیاز sp
 	const PersonnelOrderId = $form.getPK();
-	const Type = 1;
-	//--------------------------------------------
-	// خواندن دیتا جدول tblOrderedGoods
-	//--------------------------------------------
-	for (let i = 1; i < table.rows.length; i++) {
-	    const row = table.rows[i];
-	    if (row.classList.contains('row-data')) {
-	        const goodsIdCell = row.cells[1];
-	        const confirmQtyCell = row.cells[6];
-	        const cartonQtyCell = row.cells[9];
+    const Type = 1;
 	
-	        if (goodsIdCell && confirmQtyCell && cartonQtyCell) {
-	            const goodsId = goodsIdCell.innerText.trim();
-	            const qtySpan = confirmQtyCell.querySelector('.qty');
-	            let confirmQty = qtySpan ? qtySpan.innerText.trim().replace(/,/g, '') : "0";
-	            confirmQty = parseInt(confirmQty) || 0;
-	            let cartonQty = cartonQtyCell.innerText.trim().replace(/,/g, '');
-	            cartonQty = parseInt(cartonQty) || 0;
-	            const totalQty = confirmQty * cartonQty;
-	
-	            if (goodsId) {
-	                items.push({
-	                    goodsId: goodsId,
-	                    confirmQty: totalQty
-	                });
-	            }
-	        }
-	    }
-	}
+	//--------------------------------------------
+	//چک کردن جدول سفارش و کم کردن تعداد و محاسبه قیمت
+	//--------------------------------------------
+    const table = document.getElementById("tblOrderedGoods");
+    const items = [];
+    let totalQty = 0; 
+    for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        if (row.classList.contains('row-data')) {
+            const goodsIdCell = row.cells[1];
+            const confirmQtyCell = row.cells[6];
+            const cartonQtyCell = row.cells[9];
+			//جلوگیری از دیتا نامعتبر 
+            if (goodsIdCell && confirmQtyCell && cartonQtyCell) {
+                const goodsId = goodsIdCell.innerText.trim();
+                const qtySpan = confirmQtyCell.querySelector('.qty');
+                let confirmQty = qtySpan ? qtySpan.innerText.trim().replace(/,/g, '') : "0";
+                confirmQty = parseInt(confirmQty) || 0;
+                let cartonQty = cartonQtyCell.innerText.trim().replace(/,/g, '');
+                cartonQty = parseInt(cartonQty) || 0;
+                const totalRowQty = confirmQty * cartonQty;
+
+                // اضافه کردن به آیتم لیست
+                if (goodsId) {
+                    items.push({
+                        goodsId: goodsId,
+                        confirmQty: totalRowQty
+                    });
+                }
+                // جمع کل مقادیر تایید شده 
+                totalQty += confirmQty;
+            }
+        }
+    }
+	// اگر تمامی ردیف محصولات 0 بود، پیام هشدار داده میشود
+    if (totalQty === 0) {
+        $.alert('امکان تایید مقادیر صفر برای محصولات سفارش داده شده وجود ندارد!',"","rtl");
+        return;
+    }
 	//--------------------------------------------
 	
 	//اگر کاربر در کارخانه یا دفتر مرکزی مستقر نیست
@@ -694,6 +708,7 @@ $("#btnAccept").click(function(){
 	    JsonArray: JSON.stringify(items), 
 	    Type: Type
 	};
+
 	//--------------------------------------------
 	// فراخوانی sp برای ثبت تغییر تعداد تایید شده
 	//--------------------------------------------
@@ -731,6 +746,8 @@ $("#btnAccept").click(function(){
             alert(e.details);
         }
     );
+	//--------------------------------------------
 });
+
 
 //#endregion btnAccept.js
