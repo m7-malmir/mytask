@@ -233,6 +233,151 @@ $(function(){
 });
 //#endregion  ready.js
 
+//#region formmanager.js
+var FormManager = {
+//******************************************************************************************************
+readPersonnelOrder: function(jsonParams, onSuccess, onError)
+{
+  BS_IS_PersonnelOrder.Read(jsonParams
+       , function(data)
+       {
+           var list = [];
+           var xmlvar = $.xmlDOM(data);
+           xmlvar.find("row").each(
+               function()
+               { 
+                  list.push
+                  ({
+					Id: $(this).find("col[name='Id']").text(),
+	                UserId: $(this).find("col[name='UserId']").text(),
+					PersonnelNo: $(this).find("col[name='PersonnelNo']").text(),
+					OrderAmount: $(this).find("col[name='OrderAmount']").text(),
+				    PercentDiscount: $(this).find("col[name='PercentDiscount']").text(),
+				    OrderNetAmount: $(this).find("col[name='OrderNetAmount']").text(),
+				    RemainCreditBeforOrder: $(this).find("col[name='RemainCreditBeforOrder']").text(),
+				    RemainCreditAfterOrder: $(this).find("col[name='RemainCreditAfterOrder']").text(),
+					Description: $(this).find("col[name='Description']").text()
+                  });
+               }
+           );
+           if($.isFunction(onSuccess))
+           {
+               onSuccess(list);
+           
+           }
+       }, onError
+   );
+},
+/*********************************************************************************************************/
+	ReadPersonnelOrderDetail: function(jsonParams, onSuccess, onError)
+	{
+	  BS_vw_IS_PersonnelOrderDetail.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                   list.push
+	                   ({ 
+			               OrderId: $(this).find("col[name='OrderId']").text(),
+						   GoodsCode: $(this).find("col[name='GoodsCode']").text(),
+						   GoodsName: $(this).find("col[name='GoodsName']").text(),
+						   ConfirmedQty: $(this).find("col[name='ConfirmedQty']").text(),
+						   CartonQTY: $(this).find("col[name='CartonQTY']").text(),
+						   BrandName: $(this).find("col[name='BrandName']").text(),
+						   UnitName: $(this).find("col[name='UnitName']").text(),
+						   UnitPrice: $(this).find("col[name='UnitPrice']").text(),
+						   BeforeDiscountGoodsPrice: $(this).find("col[name='BeforeDiscountGoodsPrice']").text(),
+						   AfterDiscountGoodsPrice: $(this).find("col[name='AfterDiscountGoodsPrice']").text(),
+	                   });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+/*********************************************************************************************************/
+
+
+    // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
+    retailPersonnelOrder: function(jsonParams, onSuccess, onError) {
+        SP_IS_WholeSalePersonnelOrderRespond.Execute(jsonParams,
+            function(data) {
+
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, "text/xml");
+
+                const cols = xmlDoc.getElementsByTagName("col");
+
+                const result = {};
+                for (let i = 0; i < cols.length; i++) {
+                    const name = cols[i].getAttribute("name");
+                    const value = cols[i].textContent;
+                    result[name] = value;
+                }
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(result);
+                }
+            },
+            function(error) {
+                var methodName = "retailPersonnelOrder";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /*********************************************************************************************************/
+	InsertHamesh: function(jsonParams, onSuccess, onError)
+	{
+		SP_HameshInsert.Execute(jsonParams,
+			function(data)
+			{ 
+				var xmlvar = null;
+				var xmlvar = $.xmlDOM(data);
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(200);
+				}
+			},
+			function(error) {
+				var methodName = "InsertHamesh";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+/*********************************************************************************************************/
+};
+//#endregion formmanager.js
+
 //#region tblOrderedGoodsDelivery.js
 var tblOrderedGoodsDelivery = null;
 
