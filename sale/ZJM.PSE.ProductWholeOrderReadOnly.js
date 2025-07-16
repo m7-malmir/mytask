@@ -17,7 +17,7 @@ var employmentDate;
 var rankTitle;
 var leaveDate;
 var gender;
-
+var isInTestMode = false; 
 //---------------------------------
 var orderedPersonnelNO;
 var orderId;
@@ -25,7 +25,7 @@ $(function(){
 	$form = (function()
 	{ 
 		var pk,
-			isInTestMode = false;
+			inTestMode = (typeof isInTestMode !== "undefined" ? isInTestMode : false),
 			inEditMode = false,
 			primaryKeyName = "Id",
 			bindingSourceName = "",
@@ -147,11 +147,16 @@ $(function(){
 			return inEditMode;
 		}
 		//******************************************************************************************************
-		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
-		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
-		function isInEditMode()
-		{
-			return inEditMode;
+		// چک کردن url برای رفتن به حالت تست مود
+		function isInTestMode() {
+		    try {
+		        const parentUrl = window.parent?.location?.href;
+		        const url = new URL(parentUrl);
+		        return url.searchParams.get("icantestmode") === "1";
+		    } catch (e) {
+		        console.warn("Cannot reach parent document:", e);
+		        return false;
+		    }
 		}
 		//******************************************************************************************************
 		function saveData(callback)
@@ -257,6 +262,8 @@ readPersonnelOrder: function(jsonParams, onSuccess, onError)
 						   GoodsCode: $(this).find("col[name='GoodsCode']").text(),
 						   GoodsName: $(this).find("col[name='GoodsName']").text(),
 						   Qty: $(this).find("col[name='Qty']").text(),
+						   CartonQTY: $(this).find("col[name='CartonQTY']").text(),
+						   ConfirmedQty: $(this).find("col[name='ConfirmedQty']").text(),
 						   UnitPrice: $(this).find("col[name='UnitPrice']").text(),
 						   BeforeDiscountGoodsPrice: $(this).find("col[name='BeforeDiscountGoodsPrice']").text(),
 						   AfterDiscountGoodsPrice: $(this).find("col[name='AfterDiscountGoodsPrice']").text(),
@@ -319,7 +326,10 @@ $(function()
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.OrderId);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Qty);
+			var Qty=(rowInfo.Qty)/(rowInfo.CartonQTY);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(Qty); // نام محصول  
+			var ConfirmedQty=(rowInfo.ConfirmedQty)/(rowInfo.CartonQTY);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(ConfirmedQty);
 			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.UnitPrice));
 			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.BeforeDiscountGoodsPrice));
             tempRow.attr({state: "new"});
@@ -388,3 +398,9 @@ $(function()
     }());
 });
 //#endregion
+
+//#region btnClose.js
+$("#btnClose").click(function(){
+	closeWindow({ OK: true, Result: null });
+});
+//#endregion btnClose.js
