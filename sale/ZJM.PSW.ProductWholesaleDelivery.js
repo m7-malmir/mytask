@@ -472,4 +472,3 @@ $("#btnAccept").click(function() {
 });
 //*******************************************************
 //#endregion btnAccept.js
-
