@@ -133,3 +133,136 @@ $(function(){
 });
 //#endregion ready.js
 
+//#region tblCostRequest.js
+var tblCostRequest = null;
+var mainList;
+
+$(function () {
+    tblCostRequest = (function () {
+        // ================ Variables ===============
+		  var element = null,
+	            isDirty = false,
+	            rowPrimaryKeyName = "Id",
+	            readRows = FormManager.readCostRequest;
+		        // Start the table setup
+		        init();
+        // ================== Init ==================
+        function init() {
+			element = $("#tblCostRequest");
+            build();        // build the structure
+            bindEvents();   // setup event handlers
+            load();         // load data into the table
+        }
+        // ================= Build ==================
+        function build() {
+           //element = $("#tblCostRequest"); // get the table element
+        }
+        // =============== Bind Events ===============
+        function bindEvents() {
+			
+			//-------------------------------
+			//--- گرفتن ایدی درخواست هزینه در صورتی که یک ردیف باید انتخاب شود
+			//-------------------------------
+			$("#tblCostRequest").on("click", "input[type=checkbox][name=CostRequestId]", function() {
+			    var $this = $(this);
+			    $("#tblCostRequest input[type=checkbox][name=CostRequestId]").not($this).prop("checked", false);
+			    selectedContractId = $this.is(":checked") ? $this.val() : null;
+			});
+			//-------------------------------
+			
+			/*
+			$("#").on("click",,function(){
+				WorkflowService.RunWorkflow("ZJM.PSW.ProdutWholesale",
+	            '<Content><Id>' + data["OrderId"] + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
+	            true,
+	            function(data) {
+	                handleRunWorkflowResponse(data);
+	            },
+	            function(err) {
+					 handleError(err, 'WorkflowService.RunWorkflow');
+	            }
+	        );
+			});
+			*/
+        }
+		// ================= Add Row =================
+		// This function adds a new row to the table using data from the server
+		function addRow(rowInfo) {
+		    // Clone the template row
+		    var tempRow = element.children("tbody").children("tr.row-template").clone();
+
+		    // Prepare the row
+		    tempRow
+		        .show()
+		        .removeClass("row-template")
+		        .addClass("row-data")
+		        .data("rowInfo", rowInfo); // Store row data in the DOM
+		
+		    // Get all <td> elements once
+		    var tds = tempRow.children("td");
+		
+		    // Fill table cells
+			let tbCheckbox = `<input type='checkbox' id='id' name='CostRequestId' class="pointer" value=${rowInfo.Id}>`;
+		    tds.eq(0).html(tbCheckbox); 			    // tbCheckbox		
+		    tds.eq(1).text(rowInfo.Id);             	// ID
+		    tds.eq(2).text(rowInfo.CostRequestNo);     	// CostRequest No 
+		    tds.eq(3).text(miladiDateToShamsi(rowInfo.CreatedDate.split(' ')[0]));       	// CreatedDate
+		    tds.eq(4).text(rowInfo.CostReuqestTitle);           	// CostReuqestTitle
+		    tds.eq(5).text(rowInfo.RejectStatus ? "فعال" : "غیرفعال");
+		    tds.eq(6).text(rowInfo.ProcessStatus);  
+			tds.eq(7).text(rowInfo.CostRequestNo);   	// CostRequest No
+			tds.eq(8).html(`<button id=${rowInfo.Id} href="#">ارسال درخواست</button>`);   // Proccess
+		
+		    // Add the row before the template
+		    element.children("tbody").children("tr.row-template").before(tempRow);
+		
+		    // Hide loading spinner
+		    myHideLoading();
+		}
+
+		// ================== Load ==================
+		// This function loads data and fills the table
+		function load() {
+			if (!currentUserId){return;} 
+            var params = {
+                Where: "CreatorUserId = " + currentUserId
+            };
+		    readRows(params,
+		        function (list) {
+
+		            if (Array.isArray(list) && list.length > 0) {
+		                list.forEach(function (row, index) {
+		                    addRow(row, index + 1); // Pass row and row number
+		                });
+		            } else {
+		                console.warn('No data received.');
+		            }
+		
+		            myHideLoading(); // Only once, in success
+		        },
+		        function (error) {
+		            myHideLoading(); // On error
+		            alert(error || "خطایی رخ داده است");
+		        }
+		    );
+		}
+
+        // ================= Refresh =================
+        // This function clears the table and loads fresh data
+        function refresh() {
+            element.find("tr.row-data").remove();
+            load();
+        }
+
+        // =============== Return ===============
+        // Return public methods
+        return {
+            refresh: refresh,
+            load: load,
+            readRows: readRows
+        };
+    }());
+});
+
+//#endregion tblCostRequest.js
+
