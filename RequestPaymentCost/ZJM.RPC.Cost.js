@@ -266,3 +266,28 @@ $(function () {
 
 //#endregion tblCostRequest.js
 
+//#region rpcCostRequest_Delete-btn.js
+$("#rpcCostRequest_Delete").click(function() {
+	if (selectedContractId === null || selectedContractId === undefined || selectedContractId === "") {
+	    $.alert("لطفا ابتدا سطر مورد نیاز برای حذف را انتخاب کنید!", "", "rtl");
+	    return;
+	}
+    // تعریف متغیر params با let یا var (بهتره let)
+    let params = { Where: "Id = " + selectedContractId };
+	alert(JSON.stringify(params));
+    FormManager.deleteCostRequest(
+        params,
+        function(status, list) { 
+            $.alert("حذف درخواست هزینه با موفقیت انجام شد.", "", "rtl", function() {
+                hideLoading();
+                tblCostRequest.refresh();
+            });  	 	 
+        },
+        function(error) { 
+            console.log("خطای برگشتی:", error);
+            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+        }
+    );
+});
+
+//#endregion rpcCostRequest_Delete-btn.js
