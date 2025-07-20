@@ -291,3 +291,16 @@ $("#rpcCostRequest_Delete").click(function() {
 });
 
 //#endregion rpcCostRequest_Delete-btn.js
+
+//#region rpcCostRequest_Add_btn.js
+$("#rpcCostRequest_Add").click(function(){
+	$.showModalForm({registerKey:"ZJM.RPC.CostDetailInsert", params:{}} 
+	    , function(retVal)
+	    {
+	        if (retVal.Result) {
+	            tblCostRequest.refresh();
+	        }
+	    }
+	);
+});
+//#endregion rpcCostRequest_Add_btn.js
