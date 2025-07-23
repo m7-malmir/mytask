@@ -187,21 +187,7 @@ $(function () {
 			    selectedContractId = $this.is(":checked") ? $this.val() : null;
 			});
 			//-------------------------------
-			
-			/*
-			$("#").on("click",,function(){
-				WorkflowService.RunWorkflow("ZJM.PSW.ProdutWholesale",
-	            '<Content><Id>' + data["OrderId"] + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
-	            true,
-	            function(data) {
-	                handleRunWorkflowResponse(data);
-	            },
-	            function(err) {
-					 handleError(err, 'WorkflowService.RunWorkflow');
-	            }
-	        );
-			});
-			*/
+
         }
 		// ================= Add Row =================
 		// This function adds a new row to the table using data from the server
@@ -215,25 +201,28 @@ $(function () {
 		        .removeClass("row-template")
 		        .addClass("row-data")
 		        .data("rowInfo", rowInfo); // Store row data in the DOM
-		
 		    // Get all <td> elements once
 		    var tds = tempRow.children("td");
-		
 		    // Fill table cells
-			let tbCheckbox = `<input type='checkbox' id='id' name='CostRequestId' class="pointer" value=${rowInfo.Id}>`;
+			let tbCheckbox = '';
+			if (rowInfo.ProcessStatus == 1) {
+			    tbCheckbox = `<input type='checkbox' id='id${rowInfo.CostRequestId}' name='CostRequestId' class="pointer" value="${rowInfo.CostRequestId}">`;
+			}
 		    tds.eq(0).html(tbCheckbox); 			    // tbCheckbox		
-		    tds.eq(1).text(rowInfo.Id);             	// ID
+		    tds.eq(1).text(rowInfo.CostRequestId);             	// ID
 		    tds.eq(2).text(rowInfo.CostRequestNo);     	// CostRequest No 
 		    tds.eq(3).text(miladiDateToShamsi(rowInfo.CreatedDate.split(' ')[0]));       	// CreatedDate
 		    tds.eq(4).text(rowInfo.CostReuqestTitle);           	// CostReuqestTitle
-		    tds.eq(5).text(rowInfo.RejectStatus ? "فعال" : "غیرفعال");
-		    tds.eq(6).text(rowInfo.ProcessStatus);  
-			tds.eq(7).text(rowInfo.CostRequestNo);   	// CostRequest No
-			tds.eq(8).html(`<button id=${rowInfo.Id} href="#">ارسال درخواست</button>`);   // Proccess
-		
+		    tds.eq(5).text(rowInfo.RejectStatusTitle ? "رد شده" : "در جریان");
+		    tds.eq(6).text(rowInfo.ProcessTitle);  
+			tds.eq(7).text(rowInfo.InnerRegNumber);   	// CostRequest No
+			if(rowInfo.ProcessStatus==1){
+				tds.eq(8).html(`<button id=${rowInfo.CostRequestId} href="#">ارسال درخواست</button>`);  // Proccess
+			}else{
+				tds.eq(8).html(`<span>ارسال شده</span>`);  // Proccess
+			}
 		    // Add the row before the template
 		    element.children("tbody").children("tr.row-template").before(tempRow);
-		
 		    // Hide loading spinner
 		    myHideLoading();
 		}
@@ -241,28 +230,59 @@ $(function () {
 		// ================== Load ==================
 		// This function loads data and fills the table
 		function load() {
+			//-------------------------------------
+			// جستجو بر اساس شماره مدرک و نام پرونده
+			//-------------------------------------
 			if (!currentUserId){return;} 
-            var params = {
-                Where: "CreatorUserId = " + currentUserId
-            };
-		    readRows(params,
-		        function (list) {
+			let params; 
+			let searchValue = $("#txtSearchValue").val().trim(); // مقدار سرچ با trim
+			
+			if (searchValue !== "") {
+			    let $selectedSearchField = $("#cmbSearchField option:selected");
+			    let type = $selectedSearchField.data("type"); // نوع فیلد: number یا string
+			    let searchField = $selectedSearchField.val(); // نام ستون
+			
+			    // شرط WHERE بر اساس نوع فیلد
+			    switch (type) {
+			        case "string":
+			            params = {
+			                Where: `CreatorUserId = ${currentUserId} AND ${searchField} LIKE N'%${searchValue}%'`
+			            };
+			            break;
+			        case "number":
+			        case "int":
+			        default:
+			            params = {
+			                Where: `CreatorUserId = ${currentUserId} AND ${searchField} = ${searchValue}`
+			            };
+			            break;
+			    }
+			} else {
+			    // وقتی سرچ خالیه، فقط فیلتر بر اساس CreatorUserId
+			    params = {
+			        Where: `CreatorUserId = ${currentUserId}`
+			    };
+			}
+			// فراخوانی اصلی داده ها
+			readRows(
+			    params,
+			    function (list) {
+			        if (Array.isArray(list) && list.length > 0) {
+			            list.forEach(function (row, index) {
+			                addRow(row, index + 1);
+			            });
+			        } else {
+			            console.warn('No data received.');
+			        }
+			        myHideLoading(); // موفقیت
+			    },
+			    function (error) {
+			        myHideLoading(); // خطا
+			        alert(error || "خطایی رخ داده است");
+			    }
+			);
 
-		            if (Array.isArray(list) && list.length > 0) {
-		                list.forEach(function (row, index) {
-		                    addRow(row, index + 1); // Pass row and row number
-		                });
-		            } else {
-		                console.warn('No data received.');
-		            }
-		
-		            myHideLoading(); // Only once, in success
-		        },
-		        function (error) {
-		            myHideLoading(); // On error
-		            alert(error || "خطایی رخ داده است");
-		        }
-		    );
+			//-------------------------------------
 		}
 
         // ================= Refresh =================
