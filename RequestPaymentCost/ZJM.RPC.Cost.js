@@ -1,6 +1,8 @@
 //#region ready.js
 // Create a variable to hold our form module
+// Create a variable to hold our form module
 var $form;
+var isInTestMode = false;
 var currentUserId;
 var primaryKeyName = "Id";
 var selectedContractId = null;
@@ -70,7 +72,7 @@ $(function(){
 			return inEditMode;
 		}
 		//******************************************************************************************************
-		//چک کردن url برای رفتن به حالت تست مود
+		// چک کردن url برای رفتن به حالت تست مود
 		function isInTestMode() {
 		    try {
 		        const parentUrl = window.parent?.location?.href;
@@ -81,6 +83,7 @@ $(function(){
 		        return false;
 		    }
 		}
+
 		//******************************************************************************************************
 		function saveData(callback)
 		{
@@ -103,6 +106,22 @@ $(function(){
 		        }
 			);
 		}
+		//******************************************************************************************************
+		$("#tblCostRequest").on("click", "button", function () {
+		    var requestId = this.id;
+				WorkflowService.RunWorkflow(
+				    "ZJM.RPC.RequestPaymentCost",
+				    '<Content><Id>' + requestId + '</Id><IsInTestMode>' + isInTestMode() + '</IsInTestMode></Content>',
+				    true,
+				    function (data) {
+				        handleRunWorkflowResponse(data);
+				    },
+				    function (err) {
+				        handleError(err, 'WorkflowService.RunWorkflow');
+						console.log('دیتای کامل خطا:', err);
+				    }
+				);
+		});
 		//******************************************************************************************************
 		function insertData(callback) {		    
 		}
@@ -130,8 +149,7 @@ $(function(){
 		};
 	}());
 	$form.init();
-});
-//#endregion ready.js
+});//#endregion ready.js
 
 //#region tblCostRequest.js
 var tblCostRequest = null;
