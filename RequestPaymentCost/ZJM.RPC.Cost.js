@@ -1,12 +1,11 @@
 //#region ready.js
-// Create a variable to hold our form module
-// Create a variable to hold our form module
-var $form;
-var isInTestMode = false;
-var currentUserId;
-var primaryKeyName = "Id";
-var selectedContractId = null;
-$(function(){
+
+	var $form;
+	var isInTestMode = false;
+	var currentUserId;
+	var primaryKeyName = "Id";
+	var selectedContractId = null;
+	$(function(){
 	$form = (function()
 	{ 
 		var pk,
@@ -149,7 +148,8 @@ $(function(){
 		};
 	}());
 	$form.init();
-});//#endregion ready.js
+});
+//#endregion ready.js
 
 //#region tblCostRequest.js
 var tblCostRequest = null;
@@ -322,3 +322,88 @@ $("#rpcCostRequest_Add").click(function(){
 	);
 });
 //#endregion rpcCostRequest_Add_btn.js
+
+
+//#region formmanager.js
+const FormManager = {
+    //******************************************************************************************************
+    // دریافت لیست کالاهای قابل فروش
+    readCostRequest: function (jsonParams, onSuccess, onError) {
+        BS_CR_CostRequest.Read(jsonParams,
+            function (data) {
+                var list = [];
+                var xmlvar = $.xmlDOM(data);
+                xmlvar.find("row").each(
+                    function () {
+                        list.push
+                            ({
+                                CostRequestId: $(this).find("col[name='CostRequestId']").text(),
+                                CostRequestNo: $(this).find("col[name='CostRequestNo']").text(),
+                                CreatedDate: $(this).find("col[name='CreatedDate']").text(),
+                                CreatorUserId: $(this).find("col[name='CreatorUserId']").text(),
+								ProcessStatus: $(this).find("col[name='ProcessStatus']").text(),
+								RejectStatusTitle: $(this).find("col[name='RejectStatusTitle']").text(),
+                                ProcessTitle: $(this).find("col[name='ProcessTitle']").text(),
+								InnerRegNumber: $(this).find("col[name='InnerRegNumber']").text(),
+                                CostReuqestTitle: $(this).find("col[name='CostReuqestTitle']").text()
+                            });
+                    }
+                );
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(list);
+
+                }
+            },
+            function (error) {
+                var methodName = "readEntityGoodsCatalogue";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /*********************************************************************************************************/
+	deleteCostRequest: function(jsonParams, onSuccess, onError)
+	 {
+	 	 BS_CR_CostRequest.Delete(jsonParams, 
+	 	 	 function(data)
+	 	 	 {
+	 	 	 	 var dataXml = null;
+	 	 	 	 if($.trim(data) != "")
+	 	 	 	 {
+	 	 	 	 	 dataXml = $.xmlDOM(data);
+	 	 	 	 }
+	 	 	 	 if($.isFunction(onSuccess))
+	 	 	 	 {
+	 	 	 	 	 onSuccess(dataXml);
+	 	 	 	 }
+	 	 	 },
+	 	 	 function(error) {
+	 	 	 	   var methodName = "deleteCostRequest";	 
+	 	             if ($.isFunction(onError)) {
+	 	 	 	 	 	 var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+	 	 	 	 	 	 console.error("Error:", erroMessage);
+	 	 	 	 	 	 console.error("Details:", error);
+	 	                 
+	 	                 onError({
+	 	                     message: erroMessage,
+	 	                     details: error
+	 	                 });
+	 	             } else {
+	 	                 console.error(erroMessage+ " (no onError callback provided):", error);
+	 	             }
+	 	         }
+	 	 );
+	 }
+};
+//#endregion formmanager
