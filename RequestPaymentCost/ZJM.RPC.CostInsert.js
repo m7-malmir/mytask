@@ -121,6 +121,82 @@ $("#btnRegister").click(function() {
 
 //#endregion btnRegister.js
 
-//#region 
+//#region formmanager.js
+var FormManager = {
+	    //******************************************************************************************************
+    // دریافت لیست کالاهای قابل فروش
+    readCostRequest: function (jsonParams, onSuccess, onError) {
+        BS_CR_CostRequest.Read(jsonParams,
+            function (data) {
+                var list = [];
+                var xmlvar = $.xmlDOM(data);
+                xmlvar.find("row").each(
+                    function () {
+                        list.push
+                            ({
+                                CostRequestNo: $(this).find("col[name='CostRequestNo']").text()
+                            });
+                    }
+                );
+                if ($.isFunction(onSuccess)) {
+                    onSuccess(list);
+                }
+            },
+            function (error) {
+                var methodName = "readEntityGoodsCatalogue";
+
+                if ($.isFunction(onError)) {
+                    var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                    console.error("Error:", erroMessage);
+                    console.error("Details:", error);
+
+                    onError({
+                        message: erroMessage,
+                        details: error
+                    });
+                } else {
+                    console.error(erroMessage + " (no onError callback provided):", error);
+                }
+            }
+        );
+    },
+    /*********************************************************************************************************/
+	// ==================== insertEntity ====================
+	insertCostRequest: function(jsonParams, onSuccess, onError)
+	{
+		BS_CR_CostRequest.Insert(jsonParams,
+			function(data)
+			{
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			},
+			function(error) {
+				var methodName = "insertContract";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	}
+    // ================================================
+
+};
 
 //#endregion
