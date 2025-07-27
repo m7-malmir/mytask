@@ -53,3 +53,74 @@ $(function () {
 });
 //#endregion ready.js
 
+//#region btnRegister.js 
+$("#btnRegister").click(function() {
+	//----------------------------
+    // -- تابع تولید شماره جدید --
+	//----------------------------
+    function getNextCostRequestNo(list) {
+        if (!Array.isArray(list) || list.length === 0) {
+            return "CR100001";
+        }
+        let maxNum = 100000;
+        list.forEach(item => {
+            let value = item.CostRequestNo;
+            let num = 0;
+            if (typeof value === "string" && value.startsWith("CR")) {
+                num = parseInt(value.replace("CR", ""), 10);
+            } else {
+                num = parseInt(value, 10);
+            }
+            if (!isNaN(num) && num > maxNum) {
+                maxNum = num;
+            }
+        });
+        const nextNum = maxNum + 1;
+        return "CR" + nextNum.toString().padStart(6, "0");
+    }
+	//----------------------------
+	
+    // -- کنترل خالی بودن عنوان --
+    let requestTitle = $('#txtRequestTitle').val().trim();
+    if (requestTitle == "") {
+        $.alert("لطفا عنوان پرونده هزینه را وارد کنید", "توجه", "rtl");
+        return;
+    }
+	
+	//-----------------------------------
+    // -- خواندن لیست و ثبت رکورد جدید --
+	//-----------------------------------
+	    FormManager.readCostRequest({}, function(list, status) {
+	        let nextCR = getNextCostRequestNo(list);   // ساختن شماره جدید
+	        let insertParams = {
+	            CostRequestNo: nextCR,
+	            CreatorUserId: currentUserId,
+	            CostReuqestTitle: requestTitle
+	    };
+        FormManager.insertCostRequest(insertParams,
+            function(dataXml) {
+                myHideLoading();
+
+                pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+                $("#lblCostRequestID").text(pk);
+                $.alert(
+                    `درخواست شما با موفقیت ذخیره شد`,
+                    "ذخیره شد",
+                    "rtl"
+                );
+                $('#btnRegister').prop('disabled', true);
+            },
+            function(err) {
+                myHideLoading();
+                alert(err);
+            }
+        );
+    });
+	//-----------------------------------
+});
+
+//#endregion btnRegister.js
+
+//#region 
+
+//#endregion
