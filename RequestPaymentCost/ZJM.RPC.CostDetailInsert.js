@@ -405,5 +405,161 @@ $("#btnRegister").on("click", function (e) {
 //#endregion btnregister.js
 
 
-//#region 
+//#region helper.common.js
+// ==================== changeDialogTitle ====================
+// This function changes the title of the dialog box (parent window)
+// It takes a new title and two callbacks (onSuccess, onError)
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        // Access the parent window
+        // Get the iframe that is running this code
+        // Go up to the dialog box that contains the iframe
+        // Find the span element that has the dialog title
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        // Check if the title span exists
+        if ($titleSpan.length > 0) {
+            $titleSpan.text(title); // Set the new title
+
+            // If success callback is a function, call it
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            // If title span is not found, call onError or show warning
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
+        }
+    } catch (e) {
+        // If something goes wrong (like cross-origin error)
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+
+// ==================== allowOnlyNumbers =====================
+// This function allows only number keys in an input field
+function allowOnlyNumbersComma(e, $input) {
+    const key = e.which;
+
+    // اجازه کلیدهای کنترلی (Ctrl+C, Ctrl+V و ...)
+    if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88].includes(key)) return;
+
+    // اجازه کلیدهای خاص: backspace, tab, enter, delete, arrow keys
+    if ([8, 9, 13, 46].includes(key) || (key >= 37 && key <= 40)) return;
+
+    // فقط اعداد از بالا یا numpad
+    if ((key >= 48 && key <= 57 && !e.shiftKey) || (key >= 96 && key <= 105)) {
+        setTimeout(() => {
+            const el = $input[0];
+            const originalValue = el.value;
+            const cursorPosition = el.selectionStart;
+
+            // حذف تمام کاماها
+            const raw = originalValue.replace(/,/g, '');
+
+            // جلوگیری از NaN یا مقدار خالی
+            if (isNaN(raw) || raw === "") return;
+
+            // فرمت با کاما
+            const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+            // محاسبه موقعیت جدید مکان‌نما
+            const diff = formatted.length - originalValue.length;
+            const newCursorPosition = cursorPosition + diff;
+
+            // مقدار جدید و مکان‌نما
+            $input.val(formatted);
+            el.setSelectionRange(newCursorPosition, newCursorPosition);
+        }, 0);
+        return;
+    }
+
+    // جلوگیری از سایر کلیدها
+    e.preventDefault();
+}
+//***********************************************************************************
+//***************************showLoading*********************************************
+function showLoading() {
+    let $box = $('#loadingBoxTweaked');
+    if (!$box.length) {
+        $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+        // spinner css
+        let $style = $('#loadingSpinnerStyle');
+        if (!$style.length) {
+            $style = $(`
+                <style id="loadingSpinnerStyle">
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                </style>
+            `);
+            $('head').append($style);
+        }
+        $('body').append($box);
+    } else {
+        $box.show();
+    }
+    setTimeout(function() {
+        $box.fadeOut(150);
+    }, 2000);
+}
+//***************************showLoading*********************************************
+// ==================== changeDialogTitle ====================
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        // Check if the title span exists
+        if ($titleSpan.length > 0) {
+
+            $titleSpan.text(title); 
+
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
+        }
+    } catch (e) {
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+
+
 //#endregion
