@@ -208,12 +208,42 @@ $(function () {
 
 
 
-            params =  {};
-						FormManager.readEntityFoodReservationّ(params,
-							function(list,status) {
 
-            }
+						FormManager.readEntityFoodReservationّ(,
+							function(list,status) {
+                  
+              }
             );
+
+
+
+$('#cmbCostRequestTypeId').prepend('<option value="">انتخاب کنید</option>');
+$('#cmbCostRequestTypeDetailId').prepend('<option value="">انتخاب کنید</option>');
+$('#cmbCostRequestTypeSubDetail').prepend('<option value="">انتخاب کنید</option>');
+
+
+
+انتخاب نوع و جزییات و ریز هزینه 
+
+dpCostDate->
+----------
+1cmbCostRequestTypeId->
+2cmbCostRequestTypeDetailId->
+3cmbCostRequestTypeSubDetail->
+
+------------------
+cmbOriginProvinceId
+cmbOriginCityId
+dpStartDate
+txtStartKM  txtEndKM
+cmbDestinationProvinceId
+cmbDestinationCityId
+bpEndDate
+
+------------------
+txtRequestCostPrice->
+txtDiscription->
+
 
 
 
