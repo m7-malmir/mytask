@@ -1,7 +1,7 @@
 //#region ready.js
 let $form;
 let CurrentUserId;
-var params;
+var globalCostRequestID = null;
 
 $(function () {
     $form = (function () {
@@ -9,7 +9,10 @@ $(function () {
             primaryKeyName = "Id";
 
         // ======== Helpers =====
-        // اضافه کردن گزینه "انتخاب کنید" اگر وجود نداشت
+        /**
+         * اگر گزینه "انتخاب کنید" در ابتدای سلکت نبود، اضافه کن
+         * @param {object} $sel - سلکت جی‌کوئری
+         */
         function addPlaceholder($sel) {
             if (
                 $sel.length &&
@@ -20,14 +23,18 @@ $(function () {
             }
         }
 
-        // فعال کردن MutationObserver برای هر سلکتور
+        /**
+         * استفاده از MutationObserver برای اضافه کردن placeholder
+         * تا زمانی که آپشن‌ها در سلکت لود شوند
+         * @param {string} selector - سلکتور سلکت
+         */
         function observeAndAddPlaceholder(selector) {
             var $sel = $(selector);
-            if (!$sel.length) return;
+            if (!$sel.length) return; // اگر سلکت وجود نداشت برگرد
             var observer = new MutationObserver(function () {
                 if ($sel.find("option").length > 0) {
                     addPlaceholder($sel);
-                    observer.disconnect();
+                    observer.disconnect(); // فقط یکبار اجرا
                 }
             });
             observer.observe($sel[0], { childList: true });
@@ -37,17 +44,23 @@ $(function () {
         function init() {
             build();
             createControls();
+			showLoading();
         }
 
         // ======== Build =======
         function build() {
+            // مقداردهی اولیه پارامترها
             params = window.dialogArguments || window.arguments;
+            $(document).ready(function() {
+                globalCostRequestID = params?.costRequestID;
+            });
+
             changeDialogTitle("ثبت جزییات اعلام هزینه");
         }
 
         // ===== CreateControls ====
         function createControls() {
-            // لیست همه سلکتورهایی که نیاز به placeholder دارن
+            // لیست سلکتورهایی که نیاز به placeholder دارند
             var selectIds = [
                 "#cmbCostRequestTypeId",
                 "#cmbCostRequestTypeDetailId",
@@ -57,85 +70,74 @@ $(function () {
                 "#cmbDestinationProvinceId",
                 "#cmbDestinationCityId"
             ];
-            // اعمال MutationObserver برای همه سلکتورها
-            selectIds.forEach(observeAndAddPlaceholder);
 
-			// اختصاص id به optionهای سلکت دیتیل بعد از لود شدن
-			var $detail = $("#cmbCostRequestTypeDetailId");
-			if ($detail.length) {
-			    var observerDetail = new MutationObserver(function () {
-			        var idx = 1;
-			        $detail.find("option").each(function () {
-			            if ($(this).val() !== "") { // فقط به optionهای دیتابیس id بده
-			                $(this).attr("id", idx++);
-			            }
-			        });
-			        observerDetail.disconnect();
-			    });
-			    observerDetail.observe($detail[0], { childList: true });
-			}
+            /***********-- وابستگی بین نوع هزینه و جزییات آن --*************/
+            // وقتی "نوع هزینه" تغییر کرد فقط جزییات مرتبط را نشان بده
+            $("#cmbCostRequestTypeId").change(function() {
+                var selectedType = $(this).val();
+                // پنهان‌کردن همه‌ی آپشن‌ها و نمایش placeholder
+                $("#cmbCostRequestTypeDetailId option").hide();
+                $("#cmbCostRequestTypeDetailId option[value='']").show(); // فقط گزینه "انتخاب کنید"
+                // فقط گزینه‌هایی که value آن با نوع انتخاب‌شده برابر است را نشان بده
+                $("#cmbCostRequestTypeDetailId option[value='" + selectedType + "']").show();
+                $("#cmbCostRequestTypeDetailId").val("");
 
-            // ------------------ رویدادهای وابسته ------------------
-            // استان و شهر پویا
+                // ریست و مخفی‌سازی sub detail
+                $("#cmbCostRequestTypeSubDetail").val("");
+                $("#cmbCostRequestTypeSubDetail option").hide();
+                $("#cmbCostRequestTypeSubDetail option[value='']").show();
+            });
+
+            // وقتی یک جزییات انتخاب شد، فقط زیرجزییات مرتبط را نمایش بده
+            $("#cmbCostRequestTypeDetailId").change(function() {
+                var selectedDetail = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
+                $("#cmbCostRequestTypeSubDetail option").hide();
+                $("#cmbCostRequestTypeSubDetail option[value='']").show();
+                $("#cmbCostRequestTypeSubDetail option[value='" + selectedDetail + "']").show();
+                $("#cmbCostRequestTypeSubDetail").val("");
+            });
+            /***********-- پایان وابستگی نوع/جزییات/زیرجزییات --*************/
+			
+			
+            /***********-- استان و شهر پویا --*************/
+            /**
+             * انتخاب استان باعث فیلتر شهر می‌شود
+             * @param {string} provinceSelector - سلکتور استان
+             * @param {string} citySelector - سلکتور شهر
+             */
             function handleProvinceChange(provinceSelector, citySelector) {
                 $(provinceSelector).on('change', function () {
                     var selectedProvince = $(this).val();
                     var $citySelect = $(citySelector);
+                    // پنهان‌کردن همه آپشن‌ها
                     $citySelect.find('option').hide();
+                    // فقط آپشنی که value برابر کد استان دارد را نشان بده
                     $citySelect.find('option').filter(function () {
                         return $(this).val() === selectedProvince;
                     }).show();
+                    // اولین آپشن نمایش داده شده را انتخاب کن
                     var firstVisible = $citySelect.find('option:visible:first').val();
                     $citySelect.val(firstVisible);
                 });
             }
 
-            // رشته هزینه دوم و سوم بر اساس مقدار اولی فیلتر میشن
-            $("#cmbCostRequestTypeDetailId option, #cmbCostRequestTypeSubDetail option").hide();
-
-            $("#cmbCostRequestTypeId").on('change', function () {
-                var selectedVal = $(this).val();
-                $("#cmbCostRequestTypeDetailId option").each(function () {
-                    $(this).toggle($(this).val() === selectedVal);
-                });
-                $("#cmbCostRequestTypeDetailId").val('');
-                $("#cmbCostRequestTypeSubDetail option").hide();
-                $("#cmbCostRequestTypeSubDetail").val('');
-            });
-
-			$("#cmbCostRequestTypeDetailId").on('change', function () {
-			    var selectedDetailId = $("#cmbCostRequestTypeDetailId option:selected").attr("id"); // این id هست، نه value!
-			    var $subDetail = $("#cmbCostRequestTypeSubDetail");
-			
-			    // اول هر بار همه‌ی آپشن‌ها به جز placeholder رو hide کن
-			    $subDetail.find('option').not('[value=""]').hide();
-			
-			    // فقط اگر 4 یا 5 بود 
-			    if (selectedDetailId === "4" || selectedDetailId === "5") {
-			        // اونایی که value = 4 یا value = 5 دارن رو نشون بده
-			        $subDetail.find('option[value="' + selectedDetailId + '"]').show();
-			    }
-			
-			    // اگر گزینه فعلی subDetail دیگه قابل انتخاب نبود، مقدارش رو خالی کن
-			    if ($subDetail.find('option:selected:visible').length === 0) {
-			        $subDetail.val('');
-			    }
-			});
-
-
-
-
+            // مقداردهی اولیه وابستگی نوع هزینه و جزییات
             $("#cmbCostRequestTypeId").trigger('change');
 
-            // استان/شهر مبدا و مقصد واکنش‌گرا
+            // رویداد وابستگی استان/شهر مبدا و مقصد
             handleProvinceChange('#cmbOriginProvinceId', '#cmbOriginCityId');
             handleProvinceChange('#cmbDestinationProvinceId', '#cmbDestinationCityId');
 
-            // سرویس کاربر فعلی
+            /***********-- دریافت کاربر فعلی --*************/
+            // اعمال MutationObserver برای همه سلکتورها جهت اضافه کردن "انتخاب کنید"
+            selectIds.forEach(observeAndAddPlaceholder);
+
+
+            // گرفتن کاربر جاری برای ذخیره یا عملیات وابسته
             UserService.GetCurrentUser(
                 true,
                 function (data) {
-                    showLoading();
+                    
                     const xml = $.xmlDOM(data);
                     CurrentUserId = xml.find("user > id").text().trim();
                 },
@@ -153,8 +155,10 @@ $(function () {
         };
     })();
 
+    // آغاز فرآیند مقداردهی اولیه صفحه
     $form.init();
 });
+
 
 //#endregion ready.js
 
