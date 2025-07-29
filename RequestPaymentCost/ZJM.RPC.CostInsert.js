@@ -13,16 +13,32 @@ $(function () {
 		primaryKeyName = "Id";
         // ==================== Init =====================
         function init() {
+
             build();
 			createControls();
         }
 
         // ==================== Build ====================
-        function build() {
-            // Set specific styling
-            $("body").css({overflow: "hidden"}).attr({scroll: "no"});
+		function build() {
+		    $("body").css({overflow: "hidden"}).attr({scroll: "no"});
+		    changeDialogTitle("مشاهده و ثبت اعلام هزینه");
+		    var params = window.dialogArguments || window.arguments;
+		
+		    if (params && params.CostRequestNo) {
+		        // فقط وقتی مقدار وجود داره مقداردهی بشه
+		        if (params.CostRequestNo) $("#txtCostRequestNo").val(params.CostRequestNo);
+		        if (params.CostRequestId)  $("#lblCostRequestID").text(params.CostRequestId);
+		        if (params.Title) {
+		            $("#txtRequestTitle").val(params.Title);
+		            $("#txtRequestTitle").prop('disabled', true);
+		        }
+		        $('#btnRegister').prop('disabled', true);
+		    } else {
+		        // اگر پارامز نیومده می‌تونی مقدار پیشفرض بدی یا فرم رو آماده حالت ایجاد جدید کنی
+		        // یا اصلاً هیچ کاری نکن و let it be
+		    }
+		}
 
-        }
 
         // ==================== createControls ====================
         function createControls() {
@@ -41,7 +57,7 @@ $(function () {
 				}	
 			);
         }
-
+	
         // ==================== Return ====================
         return {
             init: init
