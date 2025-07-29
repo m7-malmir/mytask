@@ -153,13 +153,11 @@
 
 //#region tblCostRequest.js
 var tblCostRequest = null;
-var mainList;
 
 $(function () {
     tblCostRequest = (function () {
         // ================ Variables ===============
 		  var element = null,
-	            isDirty = false,
 	            rowPrimaryKeyName = "Id",
 	            readRows = FormManager.readCostRequest;
 		        // Start the table setup
@@ -181,7 +179,7 @@ $(function () {
 			//-------------------------------
 			//--- گرفتن ایدی درخواست هزینه در صورتی که یک ردیف باید انتخاب شود
 			//-------------------------------
-			$("#tblCostRequest").on("click", "input[type=checkbox][name=CostRequestId]", function() {
+			$("#tblCostRequest").on("click", "input[type=radio][name=CostRequestId]", function() {
 			    var $this = $(this);
 			    $("#tblCostRequest input[type=checkbox][name=CostRequestId]").not($this).prop("checked", false);
 			    selectedContractId = $this.is(":checked") ? $this.val() : null;
@@ -206,18 +204,23 @@ $(function () {
 		    // Fill table cells
 			let tbCheckbox = '';
 			if (rowInfo.ProcessStatus == 1) {
-			    tbCheckbox = `<input type='checkbox' id='id${rowInfo.CostRequestId}' name='CostRequestId' class="pointer" value="${rowInfo.CostRequestId}">`;
+			    tbCheckbox = `<input type='radio' id='id${rowInfo.CostRequestId}' name='CostRequestId' class="pointer" value="${rowInfo.CostRequestId}">`;
 			}
 		    tds.eq(0).html(tbCheckbox); 			    // tbCheckbox		
-		    tds.eq(1).text(rowInfo.CostRequestId);             	// ID
-		    tds.eq(2).text(rowInfo.CostRequestNo);     	// CostRequest No 
+		    tds.eq(1).text(rowInfo.CostRequestId);   // ID
+			if(rowInfo.ProcessStatus==1){
+			tds.eq(2).html(`<a class="details-link" style="text-decoration: underline;" id=${rowInfo.CostRequestNo} href="#">${rowInfo.CostRequestNo}</a>`);
+		    }else{
+				tds.eq(2).html(`<span>${rowInfo.CostRequestNo}</span>`);  // Proccess
+			}
+			
 		    tds.eq(3).text(miladiDateToShamsi(rowInfo.CreatedDate.split(' ')[0]));       	// CreatedDate
 		    tds.eq(4).text(rowInfo.CostReuqestTitle);           	// CostReuqestTitle
 		    tds.eq(5).text(rowInfo.RejectStatusTitle ? "رد شده" : "در جریان");
 		    tds.eq(6).text(rowInfo.ProcessTitle);  
 			tds.eq(7).text(rowInfo.InnerRegNumber);   	// CostRequest No
 			if(rowInfo.ProcessStatus==1){
-				tds.eq(8).html(`<button id=${rowInfo.CostRequestId} href="#">ارسال درخواست</button>`);  // Proccess
+				tds.eq(8).html(`<a class="workflow-link" style="text-decoration: underline;" id=${rowInfo.CostRequestId} href="#">ارسال درخواست</a>`);  // Proccess
 			}else{
 				tds.eq(8).html(`<span>ارسال شده</span>`);  // Proccess
 			}
