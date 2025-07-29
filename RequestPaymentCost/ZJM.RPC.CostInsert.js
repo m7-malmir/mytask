@@ -200,3 +200,131 @@ var FormManager = {
 };
 
 //#endregion
+
+
+//#region tblCostRequestDetails.js
+var tblCostRequestDetails = null;
+var mainList;
+
+$(function () {
+    tblCostRequestDetails = (function () {
+        // ================ Variables ===============
+		  var element = null,
+	            isDirty = false,
+	            rowPrimaryKeyName = "Id",
+	            readRows = FormManager.readCostRequestDetail;
+		        // Start the table setup
+		        init();
+        // ================== Init ==================
+        function init() {
+			element = $("#tblCostRequestDetails");
+            build();        // build the structure
+            bindEvents();   // setup event handlers
+            load();         // load data into the table
+        }
+        // ================= Build ==================
+        function build() {
+           //element = $("#tblCostRequestDetails"); // get the table element
+        }
+        // =============== Bind Events ===============
+        function bindEvents() {
+			
+			//-------------------------------
+			//--- گرفتن ایدی درخواست هزینه در صورتی که یک ردیف باید انتخاب شود
+			//-------------------------------
+			$("#tblCostRequestDetails").on("click", "input[type=radio][name=RequestCostId]", function() {
+			    var $this = $(this);
+			    $("#tblCostRequestDetails input[type=checkbox][name=CostRequestId]").not($this).prop("checked", false);
+			    selectedContractId = $this.is(":checked") ? $this.val() : null;
+			});
+			//-------------------------------
+
+        }
+		// ================= Add Row =================
+		// This function adds a new row to the table using data from the server
+		function addRow(rowInfo) {
+		    // Clone the template row
+		    var tempRow = element.children("tbody").children("tr.row-template").clone();
+		    // Prepare the row
+		    tempRow
+		        .show()
+		        .removeClass("row-template")
+		        .addClass("row-data")
+		        .data("rowInfo", rowInfo); // Store row data in the DOM
+		    // Get all <td> elements once
+		    var tds = tempRow.children("td");
+		    // Fill table cells
+			let tbCheckbox = '';
+			 tbCheckbox = `<input type='radio' id='id${rowInfo.Id}' name="RequestCostId"  class="pointer" >`;
+		    tds.eq(0).html(tbCheckbox); 		
+		    tds.eq(1).text(rowInfo.Id);             	
+		    tds.eq(2).text(rowInfo.RequestCostId);     	
+		    var p = rowInfo.CostDate.split('/'),
+			sh = miladi_be_shamsi(+p[2], +p[0], +p[1]),
+			f  = n => n < 10 ? '0'+n : n;
+			tds.eq(3).text(`${sh[0]}/${f(sh[1])}/${f(sh[2])}`);
+
+		    tds.eq(4).text(rowInfo.CostRequestTypeName);           	
+		    tds.eq(5).text(rowInfo.CostRequestTypeDetailName);
+		    tds.eq(6).text(commafy(rowInfo.RequestCostPrice));  
+			tds.eq(7).text(commafy(rowInfo.ConfirmCostPrice));   
+		    // Add the row before the template
+		    element.children("tbody").children("tr.row-template").before(tempRow);
+		    // Hide loading spinner
+		    myHideLoading();
+		}
+
+		// ================== Load ==================
+		// This function loads data and fills the table
+		function load() {
+		var requestCostId = $("#lblCostRequestID").text().trim();
+		
+		// فقط وقتی عدد بود اجرا کن
+		if (requestCostId !== "" && !isNaN(requestCostId)) {
+		    var params = {
+		        Where: `RequestCostId = ${requestCostId}`
+		    };
+		
+		    readRows(
+		        params,
+		        function (list) {
+		            if (Array.isArray(list) && list.length > 0) {
+		                list.forEach(function (row, index) {
+		                    addRow(row, index + 1);
+		                });
+		            } else {
+		                console.warn('No data received.');
+		            }
+		            myHideLoading(); // موفقیت
+		        },
+		        function (error) {
+		            myHideLoading(); // خطا
+		            alert(error || "خطایی رخ داده است");
+		        }
+		    );
+		} else {
+		    // وقتی مقدار یا خالی یا غیرعددی بود هیچکاری نمی‌کنیم
+		    // (برای دیباگ می‌تونی لاگ بذاری)
+		    // console.warn('CostRequestID is not a valid number:', requestCostId);
+		}
+
+		}
+
+        // ================= Refresh =================
+        // This function clears the table and loads fresh data
+        function refresh() {
+            element.find("tr.row-data").remove();
+            load();
+        }
+
+        // =============== Return ===============
+        // Return public methods
+        return {
+            refresh: refresh,
+            load: load,
+            readRows: readRows
+        };
+    }());
+});
+
+//#endregion

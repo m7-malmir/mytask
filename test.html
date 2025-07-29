@@ -251,3 +251,218 @@ txtDiscription->
 
 
 
+$("#btnRegister").click(function() {
+
+    // تابع تولید شماره جدید
+    function getNextCostRequestNo(list) {
+        const startNum = 100001;
+        if (!Array.isArray(list) || list.length === 0) {
+            return "CR" + startNum;
+        }
+        let maxNum = startNum - 1;
+        list.forEach(item => {
+            let value = item.CostRequestNo;
+            let num = 0;
+            if (typeof value === "string" && value.startsWith("CR")) {
+                num = parseInt(value.replace("CR", ""), 10);
+            } else {
+                num = parseInt(value, 10);
+            }
+            if (!isNaN(num) && num > maxNum) {
+                maxNum = num;
+            }
+        });
+        const nextNum = maxNum + 1;
+        return "CR" + nextNum.toString().padStart(6, "0");
+    }
+    
+    // کنترل خالی بودن عنوان
+    let requestTitle = $('#txtRequestTitle').val().trim();
+    if (requestTitle == "") {
+        $.alert("لطفا عنوان پرونده هزینه را وارد کنید", "توجه", "rtl");
+        return;
+    }
+    
+    // خواندن لیست و ثبت رکورد جدید
+    FormManager.readCostRequest({}, function(list, status) {
+        let nextCR = getNextCostRequestNo(list);   // ساختن شماره جدید
+        let insertParams = {
+            CostRequestNo: nextCR,
+            CreatorUserId: currentUserId,
+            CostRequestTitle: requestTitle  // تایپو تصحیح شد
+
+        };
+        FormManager.insertCostRequest(insertParams,
+            function(dataXml) {
+                myHideLoading();
+
+                let pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+                $("#lblCostRequestID").text(pk);
+
+                $.alert(
+                    `درخواست شما با موفقیت ذخیره شد`,
+                    "ذخیره شد",
+                    "rtl"
+                );
+                $('#btnRegister').prop('disabled', true);
+                $("#txtCostRequestNo").val(nextCR);
+            },
+            function(err) {
+                myHideLoading();
+                alert(err);
+            }
+        );
+    });
+});
+
+
+
+
+
+
+//////////////////////////////////////////////////////
+let $form;
+let CurrentUserId;
+var globalCostRequestID = null;
+
+$(function () {
+    $form = (function () {
+        var inEditMode = false,
+            primaryKeyName = "Id";
+
+        // ======== Helpers =====
+        // اضافه کردن گزینه "انتخاب کنید" اگر وجود نداشت
+        function addPlaceholder($sel) {
+            if (
+                $sel.length &&
+                (!($sel.find("option:first").text().trim() === "انتخاب کنید") || $sel.find("option:first").val() !== "")
+            ) {
+                $sel.prepend('<option value="" selected disabled hidden>انتخاب کنید</option>');
+                $sel[0].selectedIndex = 0;
+            }
+        }
+
+        // فعال کردن MutationObserver برای هر سلکتور
+        function observeAndAddPlaceholder(selector) {
+            var $sel = $(selector);
+            if (!$sel.length) return;
+            var observer = new MutationObserver(function () {
+                if ($sel.find("option").length > 0) {
+                    addPlaceholder($sel);
+                    observer.disconnect();
+                }
+            });
+            observer.observe($sel[0], { childList: true });
+        }
+
+        // ======== Init ========
+        function init() {
+            build();
+            createControls();
+        }
+
+        // ======== Build =======
+        function build() {
+            params = window.dialogArguments || window.arguments;
+				$(document).ready(function() {
+			    globalCostRequestID = params.costRequestID;
+			});
+
+            changeDialogTitle("ثبت جزییات اعلام هزینه");
+        }
+
+        // ===== CreateControls ====
+        function createControls() {
+            // لیست همه سلکتورهایی که نیاز به placeholder دارن
+            var selectIds = [
+                "#cmbCostRequestTypeId",
+                "#cmbCostRequestTypeDetailId",
+                "#cmbCostRequestTypeSubDetail",
+                "#cmbOriginProvinceId",
+                "#cmbOriginCityId",
+                "#cmbDestinationProvinceId",
+                "#cmbDestinationCityId"
+            ];
+			
+			//**************************************************************
+			
+			// وقتی Type عوض شد
+			$("#cmbCostRequestTypeId").change(function() {
+			    var selectedType = $(this).val();
+			    $("#cmbCostRequestTypeDetailId option").hide();
+			    $("#cmbCostRequestTypeDetailId option[value='']").show(); // placeholder
+			    $("#cmbCostRequestTypeDetailId option[value='" + selectedType + "']").show();
+			    $("#cmbCostRequestTypeDetailId").val("");
+			    // ریست و مخفی SubDetail
+			    $("#cmbCostRequestTypeSubDetail").val("");
+			    $("#cmbCostRequestTypeSubDetail option").hide();
+			    $("#cmbCostRequestTypeSubDetail option[value='']").show();
+			});
+			
+			// وقتی Detail عوض شد
+			$("#cmbCostRequestTypeDetailId").change(function() {
+			    var selectedDetail = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
+			    $("#cmbCostRequestTypeSubDetail option").hide();
+			    $("#cmbCostRequestTypeSubDetail option[value='']").show();
+			    $("#cmbCostRequestTypeSubDetail option[value='" + selectedDetail + "']").show();
+			    $("#cmbCostRequestTypeSubDetail").val("");
+			});
+
+			//*************************************************************
+            // اعمال MutationObserver برای همه سلکتورها
+            selectIds.forEach(observeAndAddPlaceholder);
+
+
+            // ------------------ رویدادهای وابسته ------------------
+            // استان و شهر پویا
+            function handleProvinceChange(provinceSelector, citySelector) {
+                $(provinceSelector).on('change', function () {
+                    var selectedProvince = $(this).val();
+                    var $citySelect = $(citySelector);
+                    $citySelect.find('option').hide();
+                    $citySelect.find('option').filter(function () {
+                        return $(this).val() === selectedProvince;
+                    }).show();
+                    var firstVisible = $citySelect.find('option:visible:first').val();
+                    $citySelect.val(firstVisible);
+                });
+            }
+
+
+
+
+            $("#cmbCostRequestTypeId").trigger('change');
+
+            // استان/شهر مبدا و مقصد واکنش‌گرا
+            handleProvinceChange('#cmbOriginProvinceId', '#cmbOriginCityId');
+            handleProvinceChange('#cmbDestinationProvinceId', '#cmbDestinationCityId');
+
+            // سرویس کاربر فعلی
+            UserService.GetCurrentUser(
+                true,
+                function (data) {
+                    showLoading();
+                    const xml = $.xmlDOM(data);
+                    CurrentUserId = xml.find("user > id").text().trim();
+                },
+                function (err) {
+                    console.log('Error callback fired');
+                    hideLoading();
+                    $ErrorHandling.Erro(err, "خطا در سرویس getCurrentActor");
+                }
+            );
+        }
+
+        // ======= Return Object ======
+        return {
+            init: init
+        };
+    })();
+
+    $form.init();
+});
+
+Error On UserHelpes.readEmployeeInfo, [object Object]->Invalid column name 'EnabledActor'.
+
+Form.+?rg=ZJM.PSE.PersonnelCredit&popupIndex=1&rv=-1:146 Details: Error Code : 46152
+Error Message : 
