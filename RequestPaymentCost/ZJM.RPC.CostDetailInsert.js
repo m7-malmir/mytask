@@ -235,8 +235,7 @@ function isFormValid() {
 
     // چک فیلدهای پایه
     if (!costDate) {
-		alert(JSON.stringify('لطفا تاریخ را وارد کنید!'));
-        $("#dpCostDate").focus();
+		$.alert('لطفا تاریخ را وارد کنید!', '', 'rtl');
         return false;
     }
     if (!costRequestTypeId) {
@@ -249,13 +248,14 @@ function isFormValid() {
         $("#cmbCostRequestTypeDetailId").focus();
         return false;
     }
+	var requestCostPrice = rcommafy($("#txtRequestCostPrice").val());
     if (!requestCostPrice || isNaN(requestCostPrice) || Number(requestCostPrice) <= 0) {
         $.alert('لطفا مبلغ هزینه را صحیح وارد کنید!', '', 'rtl');
         $("#txtRequestCostPrice").focus();
         return false;
     }
 
-    // فقط وقتی ایاب‌وذهاب یا اقامت انتخابه
+    // فقط وقتی ایاب وذهاب یا اقامت انتخابه
     if (costRequestTypeId === "1" || costRequestTypeId === "2") {
         if (!$("#cmbOriginProvinceId").val()) {
             $.alert('لطفا استان مبدا را انتخاب کنید!', '', 'rtl');
@@ -268,8 +268,7 @@ function isFormValid() {
             return false;
         }
         if (!$("#dpStartDate").attr("data-gdate")) {
-			alert(JSON.stringify('لطفا تاریخ شروع را وارد کنید!'));
-            $("#dpStartDate").focus();
+			alert('لطفا تاریخ شروع را وارد کنید!','', 'rtl');
             return false;
         }
         if (!$("#cmbDestinationProvinceId").val()) {
@@ -283,46 +282,76 @@ function isFormValid() {
             return false;
         }
         if (!$("#bpEndDate").attr("data-gdate")) {
-			alert(JSON.stringify('لطفا تاریخ پایان را وارد کنید!'));
-            $("#bpEndDate").focus();
+			$.alert('لطفا تاریخ پایان را وارد کنید!', '', 'rtl');
             return false;
         }
     }
 
     // فقط وقتی ایاب و ذهاب و جزئیاتش 4 یا 5 باشه کیلومتر چک میشه
+
     if (costRequestTypeId === "1" && (costRequestTypeDetailId === "4" || costRequestTypeDetailId === "5")) {
         if (!$("#cmbCostRequestTypeSubDetail").val()) {
             $.alert('لطفا زیرجزئیات نوع هزینه را انتخاب کنید!', '', 'rtl');
             $("#cmbCostRequestTypeSubDetail").focus();
             return false;
         }
-        if (!$("#txtStartKM").val() || isNaN($("#txtStartKM").val()) || Number($("#txtStartKM").val()) < 0) {
+		let startKM = rcommafy($("#txtStartKM").val());
+        if (!startKM || isNaN(startKM) || Number(startKM) < 0) {
             $.alert('لطفا کیلومتر شروع را صحیح وارد کنید!', '', 'rtl');
             $("#txtStartKM").focus();
             return false;
         }
-        if (!$("#txtEndKM").val() || isNaN($("#txtEndKM").val()) || Number($("#txtEndKM").val()) < 0) {
+		let endKM = rcommafy($("#txtEndKM").val());
+        if (!endKM || isNaN(endKM) || Number(endKM) < 0) {
             $.alert('لطفا کیلومتر پایان را صحیح وارد کنید!', '', 'rtl');
             $("#txtEndKM").focus();
             return false;
         }
+		// اگر کیلومتر شروع بزرگتر از پایان باید خطا میدهد
+		if (startKM && endKM && startKM > endKM) {
+		    $.alert('کیلومتر شروع نباید از کیلومتر پایان بیشتر باشد!', '', 'rtl');
+		    $("#txtStartKM, #txtEndKM").addClass('error');
+		    $("#txtStartKM").focus();
+		    return false; // جلو ادامه یا ثبت رو بگیر
+		} 
     }
-	//تاریخ پایان نباید کوچکتر از تاریخ شروع باشد
+	if (costRequestTypeId === "1" || costRequestTypeId === "2") {
+	    var startStr = $("#dpStartDate").attr("data-gdate");
+	    var endStr = $("#bpEndDate").attr("data-gdate");
 	
-    if (costRequestTypeId === "1" || costRequestTypeId === "2") {
-        var startStr = $("#dpStartDate").attr("data-gdate");
-        var endStr = $("#bpEndDate").attr("data-gdate");
-        var startDate = parseGDate(startStr);
-        var endDate = parseGDate(endStr);
-        if (startDate && endDate) {
-            if (endDate < startDate) {
-                $.alert('تاریخ پایان نباید کمتر از تاریخ شروع باشد!', '', 'rtl');
-                $("#bpEndDate").focus();
-                return false;
-            }
-        }
-    }
-
+	    // شرط جدید: اگر تاریخ پایان انتخاب شد اما تاریخ شروع خالی بود
+	    if ((!startStr || startStr === "") && endStr && endStr !== "") {
+	        $.alert('ابتدا تاریخ شروع را انتخاب کنید!', '', 'rtl');
+	        return false;
+	    }
+	
+	    var startDate = parseGDate(startStr);
+	    var endDate = parseGDate(endStr);
+	
+	    // تاریخ امروز (سال-ماه-روز) بدون ساعت
+	    var today = new Date();
+	    today.setHours(0,0,0,0);
+	
+	    // اگر تاریخ شروع انتخاب شده و از امروز بعدتر بود
+	    if (startDate && startDate > today) {
+	        $.alert('تاریخ شروع نباید بزرگتر از امروز باشد!', '', 'rtl');
+	        return false;
+	    }
+	
+	    // اگر تاریخ پایان انتخاب شده و از امروز بعدتر بود
+	    if (endDate && endDate > today) {
+	        $.alert('تاریخ پایان نباید بزرگتر از امروز باشد!', '', 'rtl');
+	        return false;
+	    }
+	
+	    // تاریخ پایان نباید کوچکتر از تاریخ شروع باشد
+	    if (startDate && endDate) {
+	        if (endDate < startDate) {
+	            $.alert('تاریخ پایان نباید کمتر از تاریخ شروع باشد!', '', 'rtl');
+	            return false;
+	        }
+	    }
+	}
     return true;
 }
 
@@ -331,38 +360,26 @@ $("#btnRegister").on("click", function (e) {
         e.preventDefault();
         return false;
     }
-    alert(JSON.stringify('ok'));
-});
-
-
-
-
-
-
-/*
-    //showLoading();
-	
     // Create a variables
-    // let insertCostRequestDetail = FormManager.insertCostRequest;
-	let requestCostId = $.trim($("#lblCostRequestID").text());
+    let insertCostRequestDetail = FormManager.insertCostRequest;
 	let costDate = $("#dpCostDate").data("gdate");
 	let costRequestTypeId = $("#cmbCostRequestTypeId").val();
-	let costRequestTypeDetailId = $("#cmbCostRequestTypeDetailId").val();
-	let costRequestTypeSubDetail = $("#cmbCostRequestTypeSubDetail").val();
+	let costRequestTypeDetailId = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
+	let costRequestTypeSubDetail = $("#cmbCostRequestTypeSubDetail option:selected").attr("id");
 	let originProvinceId = $("#cmbOriginProvinceId").val();
-	let originCityId = $("#cmbOriginCityId").val();
+	let originCityId = $("#cmbOriginCityId option:selected").attr("id");
 	let startDate = $("#dpStartDate").data("gdate");
-	let startKM = $("#txtStartKM").val();
+	let startKM = rcommafy($("#txtStartKM").val());
 	let destinationProvinceId = $("#cmbDestinationProvinceId").val();
-	let destinationCityId = $("#cmbDestinationCityId").val();
+	let destinationCityId = $("#cmbDestinationCityId option:selected").attr("id");
 	let endDate = $("#bpEndDate").data("gdate");
-	let endKM = $("#txtEndtKM").val();
-	let requestCostPrice = $("#txtRequestCostPrice").val();
+	let endKM = rcommafy($("#txtEndKM").val());
+	let requestCostPrice = rcommafy($("#txtRequestCostPrice").val());
 	let description = $("#txtDiscription").val();
 
 
         const insertParams = {
-            RequestCostId:              requestCostId,					// شماره درخواست ثبت شده
+            RequestCostId:              globalCostRequestID,					// شماره درخواست ثبت شده
             CostDate:                   costDate,					  // تاریخ هزینه 
             CostRequestTypeId:          costRequestTypeId,				// شناسه برند پروژه
             CostRequestTypeDetailId:    costRequestTypeDetailId,				 // شناسه نوع پروژه
@@ -376,29 +393,40 @@ $("#btnRegister").on("click", function (e) {
             Description: 			   description,		// هزینه ابزار
             RequestCostPrice:      	 requestCostPrice,			 // شناسه برند مرکز هزینه
             StartKM:   				 startKM,		  // هزینه منابع انسانی
-            EndKM:       			   endKM,			  // سایر هزینه
+            EndKM:       			   endKM			  // سایر هزینه
         };
-		alert(JSON.stringify(insertParams));
-	
-	
-	
-        // Insert new CostRequest
-    /*    insertCostRequestDetail(insertParams,
+		// فیلتر کردن مقادیر خالی (null, '', undefined)
+		Object.keys(insertParams).forEach(key => {
+		    // اگر مقدار فیلد خالی، undefined یا null بود، حذفش کن
+		    if (insertParams[key] === undefined || insertParams[key] === null || insertParams[key] === '') {
+		        delete insertParams[key];
+		    }
+		});
+	console.log(insertParams);
+	/*
+	       insertCostRequestDetail(insertParams,
             function(dataXml){
                 hideLoading();
-
-                // Show alert
-                const customeFullName = $("#txtCustContractNo").val();
-                $.alert("پروژه مشتری با موفقیت ذخیره گردید. ","ذخیره شد", "rtl");
+                $.alert(
+				    "درخواست شما با موفقیت ذخیره گردید.",
+				    "ذخیره شد",
+				    "rtl",
+				    function() {
+				        closeWindow({ OK: true, Result: null });
+				    }
+				);
             },
             function(error) {
                 hideLoading();
 				$.alert(`ذخیره سازی با خطا مواجه شده است.\n ${error}`, "توجه", "rtl");
                 console.error(error);
             }
-        );
+        );*/
+});	
+        // Insert new CostRequest
+
 	
-	*/
+	
 
 
 
