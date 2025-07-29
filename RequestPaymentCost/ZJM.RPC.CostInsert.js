@@ -75,10 +75,11 @@ $("#btnRegister").click(function() {
     // -- تابع تولید شماره جدید --
 	//----------------------------
     function getNextCostRequestNo(list) {
+        const startNum = 100001;
         if (!Array.isArray(list) || list.length === 0) {
-            return "CR100001";
+            return "CR" + startNum;
         }
-        let maxNum = 100000;
+        let maxNum = startNum - 1;
         list.forEach(item => {
             let value = item.CostRequestNo;
             let num = 0;
@@ -94,9 +95,8 @@ $("#btnRegister").click(function() {
         const nextNum = maxNum + 1;
         return "CR" + nextNum.toString().padStart(6, "0");
     }
-	//----------------------------
-	
-    // -- کنترل خالی بودن عنوان --
+    
+    // کنترل خالی بودن عنوان
     let requestTitle = $('#txtRequestTitle').val().trim();
     if (requestTitle == "") {
         $.alert("لطفا عنوان پرونده هزینه را وارد کنید", "توجه", "rtl");
@@ -113,6 +113,7 @@ $("#btnRegister").click(function() {
 	            CreatorUserId: currentUserId,
 	            CostReuqestTitle: requestTitle
 	    };
+			
         FormManager.insertCostRequest(insertParams,
             function(dataXml) {
                 myHideLoading();
@@ -120,7 +121,7 @@ $("#btnRegister").click(function() {
                 pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
                 $("#lblCostRequestID").text(pk);
                 $.alert(
-                    `درخواست شما با موفقیت ذخیره شد`,
+                    `درخواست اعلام هزینه شما با موفقیت ایجاد شد، لطفا جزییات درخواست را تکمیل نمایید`,
                     "ذخیره شد",
                     "rtl"
                 );
