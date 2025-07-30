@@ -1,18 +1,17 @@
 //#region ready.js
 let $form;
 let CurrentUserId;
-var globalCostRequestID = null;
-
+var costRequestID = null;
+var isInTestMode = false;
+var primaryKeyName = "Id";
 $(function () {
     $form = (function () {
-        var inEditMode = false,
-            primaryKeyName = "Id";
+		var pk,
+		inEditMode = false,
+		primaryKeyName = "Id";
 
         // ======== Helpers =====
-        /**
-         * اگر گزینه "انتخاب کنید" در ابتدای سلکت نبود، اضافه کن
-         * @param {object} $sel - سلکت جی‌کوئری
-         */
+        // اگر گزینه "انتخاب کنید" در ابتدای سلکت نبود، اضافه کن
         function addPlaceholder($sel) {
             if (
                 $sel.length &&
@@ -23,11 +22,7 @@ $(function () {
             }
         }
 
-        /**
-         * استفاده از MutationObserver برای اضافه کردن placeholder
-         * تا زمانی که آپشن‌ها در سلکت لود شوند
-         * @param {string} selector - سلکتور سلکت
-         */
+        // استفاده از MutationObserver برای اضافه کردن placeholder تا زمانی که آپشن‌ها در سلکت لود شوند
         function observeAndAddPlaceholder(selector) {
             var $sel = $(selector);
             if (!$sel.length) return; // اگر سلکت وجود نداشت برگرد
@@ -52,9 +47,8 @@ $(function () {
             // مقداردهی اولیه پارامترها
             params = window.dialogArguments || window.arguments;
             $(document).ready(function() {
-                globalCostRequestID = params?.costRequestID;
+                costRequestID = params?.costRequestID;
             });
-
             changeDialogTitle("ثبت جزییات اعلام هزینه");
         }
 
@@ -70,7 +64,9 @@ $(function () {
                 "#cmbDestinationProvinceId",
                 "#cmbDestinationCityId"
             ];
-
+			// اعمال MutationObserver برای همه سلکتورها جهت اضافه کردن "انتخاب کنید"
+            selectIds.forEach(observeAndAddPlaceholder);
+			
             /***********-- وابستگی بین نوع هزینه و جزییات آن --*************/
             // وقتی "نوع هزینه" تغییر کرد فقط جزییات مرتبط را نشان بده
             $("#cmbCostRequestTypeId").change(function() {
@@ -96,15 +92,8 @@ $(function () {
                 $("#cmbCostRequestTypeSubDetail option[value='" + selectedDetail + "']").show();
                 $("#cmbCostRequestTypeSubDetail").val("");
             });
-            /***********-- پایان وابستگی نوع/جزییات/زیرجزییات --*************/
 			
-			
-            /***********-- استان و شهر پویا --*************/
-            /**
-             * انتخاب استان باعث فیلتر شهر می‌شود
-             * @param {string} provinceSelector - سلکتور استان
-             * @param {string} citySelector - سلکتور شهر
-             */
+            //انتخاب استان باعث فیلتر شهر می‌شود
             function handleProvinceChange(provinceSelector, citySelector) {
                 $(provinceSelector).on('change', function () {
                     var selectedProvince = $(this).val();
@@ -127,12 +116,7 @@ $(function () {
             // رویداد وابستگی استان/شهر مبدا و مقصد
             handleProvinceChange('#cmbOriginProvinceId', '#cmbOriginCityId');
             handleProvinceChange('#cmbDestinationProvinceId', '#cmbDestinationCityId');
-
-            /***********-- دریافت کاربر فعلی --*************/
-            // اعمال MutationObserver برای همه سلکتورها جهت اضافه کردن "انتخاب کنید"
-            selectIds.forEach(observeAndAddPlaceholder);
-
-
+			
             // گرفتن کاربر جاری برای ذخیره یا عملیات وابسته
             UserService.GetCurrentUser(
                 true,
@@ -164,85 +148,85 @@ $(function () {
 
 
 //#region btnregister.js
+//------------------------------------------
+// تبدیل رشته تاریخ به شی تاریخ
+//------------------------------------------
 function parseGDate(str) {
-    if(!str) return null;
+    if (!str) return null;
     var parts = str.includes('/') ? str.split('/') : str.split('-');
-    if(parts.length !== 3) return null;
-    var year = parseInt(parts[0]);
-    var month = parseInt(parts[1]);
-    var day = parseInt(parts[2]);
-    return new Date(year, month-1, day);
+    if (parts.length !== 3) return null;
+    var year = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10);
+    var day = parseInt(parts[2], 10);
+    return new Date(year, month - 1, day);
 }
+//------------------------------------------
+
+//------------------------------------------
+// ثابت های سلکتور برای فیلدها
+//------------------------------------------
+const commonFields = [
+    "#cmbOriginProvinceId",
+    "#cmbOriginCityId",
+    "#dpStartDate",
+    "#cmbDestinationProvinceId",
+    "#cmbDestinationCityId",
+    "#bpEndDate",
+    "#cmbCostRequestTypeSubDetail"
+];
+const kmFields = [ "#txtStartKM", "#txtEndKM" ];
+//------------------------------------------
+
+//------------------------------------------
+// تنظیم وضعیت فیلدها بر اساس نوع درخواست
+//------------------------------------------
 function handleTypeFieldsState() {
-    var costRequestTypeId = $("#cmbCostRequestTypeId").val();
-    var costRequestTypeDetailId = $("#cmbCostRequestTypeDetailId").find("option:selected").attr("id");
+    const typeId = $("#cmbCostRequestTypeId").val();
+    const detailId = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
 
-    // فیلدهایی که برای خوراک و سایر باید disable بشن
-    var commonFields = [
-        "#cmbOriginProvinceId",
-        "#cmbOriginCityId",
-        "#dpStartDate",
-        "#cmbDestinationProvinceId",
-        "#cmbDestinationCityId",
-        "#bpEndDate",
-		"#cmbCostRequestTypeSubDetail"
-    ];
-    // فیلدهای کیلومتر
-    var kmFields = [ "#txtStartKM", "#txtEndKM" ];
-
-    // خوراک یا سایر، همه غیرفعال و خالی (هم کیلومتر و هم بقیه)
-    if (costRequestTypeId === "3" || costRequestTypeId === "4") {
-        [...commonFields, ...kmFields].forEach(function(sel){
+    // اگر "خوراک" یا "سایر": همه غیرفعال و خالی
+    if (typeId === "3" || typeId === "4") {
+        [...commonFields, ...kmFields].forEach(sel => {
             $(sel).val("").prop("disabled", true);
             if ($(sel).attr("data-gdate") !== undefined)
                 $(sel).attr("data-gdate", "");
         });
+        return;
     }
-    // ایاب و ذهاب یا اقامت (بجز کیلومتر)
-    else if (costRequestTypeId === "1" || costRequestTypeId === "2") {
-        commonFields.forEach(function(sel){
-            $(sel).prop("disabled", false);
-        });
-        // فقط حالت "ایاب و ذهاب" و "جزئیات=4یا5" کیلومتر فعال
-        if (costRequestTypeId === "1" && (costRequestTypeDetailId === "4" || costRequestTypeDetailId === "5")) {
-            kmFields.forEach(function(sel){
-                $(sel).prop("disabled", false);
-            });
+    // اگر "ایاب و ذهاب" یا "اقامت"
+    if (typeId === "1" || typeId === "2") {
+        commonFields.forEach(sel => $(sel).prop("disabled", false));
+        // فقط اگر جزئیات درسته، کیلومتر فعال
+        if (typeId === "1" && (detailId === "4" || detailId === "5")) {
+            kmFields.forEach(sel => $(sel).prop("disabled", false));
         } else {
-            // غیرفعال و پاک کن
-            kmFields.forEach(function(sel){
-                $(sel).val("").prop("disabled", true);
-            });
+            kmFields.forEach(sel => $(sel).val("").prop("disabled", true));
         }
-    } else {
-        // پیش‌فرض همه رو فعال کن
-        [...commonFields, ...kmFields].forEach(function(sel){
-            $(sel).prop("disabled", false);
-        });
+        return;
     }
+    // بقیه موارد: همه فعال
+    [...commonFields, ...kmFields].forEach(sel => $(sel).prop("disabled", false));
 }
+//------------------------------------------
 
-// رویدادها:
-$("#cmbCostRequestTypeId").on("change", handleTypeFieldsState);
-$("#cmbCostRequestTypeDetailId").on("change", handleTypeFieldsState);
-$(document).ready(function() {
-    handleTypeFieldsState();
-});
+//------------------------------------------
+// رویداد تغییر نوع درخواست
+//------------------------------------------
+$("#cmbCostRequestTypeId, #cmbCostRequestTypeDetailId").on("change", handleTypeFieldsState);
+$(handleTypeFieldsState);
+//------------------------------------------
 
-// بقیه کد اعتبارسنجی همون قبلی بمونه ...
-
+//------------------------------------------
+// اعتبارسنجی فرم
+//------------------------------------------
 function isFormValid() {
-    var costDate = $("#dpCostDate").attr("data-gdate");
-    var costRequestTypeId = $("#cmbCostRequestTypeId").val();
-    var costRequestTypeDetailId = $("#cmbCostRequestTypeDetailId").find("option:selected").attr("id");
-    var requestCostPrice = $("#txtRequestCostPrice").val();
+    const costDate = $("#dpCostDate").attr("data-gdate");
+    const typeId = $("#cmbCostRequestTypeId").val();
+    const detailId = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
+    const priceVal = rcommafy($("#txtRequestCostPrice").val());
 
-    // چک فیلدهای پایه
-    if (!costDate) {
-		$.alert('لطفا تاریخ را وارد کنید!', '', 'rtl');
-        return false;
-    }
-    if (!costRequestTypeId) {
+    if (!costDate) return $.alert('لطفا تاریخ را وارد کنید!', '', 'rtl'), false;
+    if (!typeId) {
         $.alert('لطفا نوع هزینه را انتخاب کنید!', '', 'rtl');
         $("#cmbCostRequestTypeId").focus();
         return false;
@@ -252,192 +236,113 @@ function isFormValid() {
         $("#cmbCostRequestTypeDetailId").focus();
         return false;
     }
-	var requestCostPrice = rcommafy($("#txtRequestCostPrice").val());
-    if (!requestCostPrice || isNaN(requestCostPrice) || Number(requestCostPrice) <= 0) {
+    if (!priceVal || isNaN(priceVal) || Number(priceVal) <= 0) {
         $.alert('لطفا مبلغ هزینه را صحیح وارد کنید!', '', 'rtl');
         $("#txtRequestCostPrice").focus();
         return false;
     }
 
-    // فقط وقتی ایاب وذهاب یا اقامت انتخابه
-    if (costRequestTypeId === "1" || costRequestTypeId === "2") {
-        if (!$("#cmbOriginProvinceId").val()) {
-            $.alert('لطفا استان مبدا را انتخاب کنید!', '', 'rtl');
-            $("#cmbOriginProvinceId").focus();
-            return false;
-        }
-        if (!$("#cmbOriginCityId").val()) {
-            $.alert('لطفا شهر مبدا را انتخاب کنید!', '', 'rtl');
-            $("#cmbOriginCityId").focus();
-            return false;
-        }
-        if (!$("#dpStartDate").attr("data-gdate")) {
-			alert('لطفا تاریخ شروع را وارد کنید!','', 'rtl');
-            return false;
-        }
-        if (!$("#cmbDestinationProvinceId").val()) {
-            $.alert('لطفا استان مقصد را انتخاب کنید!', '', 'rtl');
-            $("#cmbDestinationProvinceId").focus();
-            return false;
-        }
-        if (!$("#cmbDestinationCityId").val()) {
-            $.alert('لطفا شهر مقصد را انتخاب کنید!', '', 'rtl');
-            $("#cmbDestinationCityId").focus();
-            return false;
-        }
-        if (!$("#bpEndDate").attr("data-gdate")) {
-			$.alert('لطفا تاریخ پایان را وارد کنید!', '', 'rtl');
+    // چک فیلدهای تکمیلی برای برخی نوع هزینه
+    if (typeId === "1" || typeId === "2") {
+        if (!$("#cmbOriginProvinceId").val()) return $.alert('لطفا استان مبدا را انتخاب کنید!', '', 'rtl'), $("#cmbOriginProvinceId").focus(), false;
+        if (!$("#cmbOriginCityId").val()) return $.alert('لطفا شهر مبدا را انتخاب کنید!', '', 'rtl'), $("#cmbOriginCityId").focus(), false;
+        if (!$("#dpStartDate").attr("data-gdate")) return $.alert('لطفا تاریخ شروع را وارد کنید!', '', 'rtl'), false;
+        if (!$("#cmbDestinationProvinceId").val()) return $.alert('لطفا استان مقصد را انتخاب کنید!', '', 'rtl'), $("#cmbDestinationProvinceId").focus(), false;
+        if (!$("#cmbDestinationCityId").val()) return $.alert('لطفا شهر مقصد را انتخاب کنید!', '', 'rtl'), $("#cmbDestinationCityId").focus(), false;
+        if (!$("#bpEndDate").attr("data-gdate")) return $.alert('لطفا تاریخ پایان را وارد کنید!', '', 'rtl'), false;
+    }
+
+    // اعتبارسنجی جزئیات و کیلومتر
+    if (typeId === "1" && (detailId === "4" || detailId === "5")) {
+        if (!$("#cmbCostRequestTypeSubDetail").val()) return $.alert('لطفا زیرجزئیات نوع هزینه را انتخاب کنید!', '', 'rtl'), $("#cmbCostRequestTypeSubDetail").focus(), false;
+        const startKM = rcommafy($("#txtStartKM").val());
+        const endKM = rcommafy($("#txtEndKM").val());
+        if (!startKM || isNaN(startKM) || Number(startKM) < 0) return $.alert('لطفا کیلومتر شروع را صحیح وارد کنید!', '', 'rtl'), $("#txtStartKM").focus(), false;
+        if (!endKM || isNaN(endKM) || Number(endKM) < 0) return $.alert('لطفا کیلومتر پایان را صحیح وارد کنید!', '', 'rtl'), $("#txtEndKM").focus(), false;
+        if (startKM > endKM) {
+            $.alert('کیلومتر شروع نباید از کیلومتر پایان بیشتر باشد!', '', 'rtl');
+            $("#txtStartKM, #txtEndKM").addClass('error').first().focus();
             return false;
         }
     }
 
-    // فقط وقتی ایاب و ذهاب و جزئیاتش 4 یا 5 باشه کیلومتر چک میشه
-
-    if (costRequestTypeId === "1" && (costRequestTypeDetailId === "4" || costRequestTypeDetailId === "5")) {
-        if (!$("#cmbCostRequestTypeSubDetail").val()) {
-            $.alert('لطفا زیرجزئیات نوع هزینه را انتخاب کنید!', '', 'rtl');
-            $("#cmbCostRequestTypeSubDetail").focus();
+    // کنترل تاریخ ها: شروع، پایان، امروز
+    if (typeId === "1" || typeId === "2") {
+        const startStr = $("#dpStartDate").attr("data-gdate");
+        const endStr = $("#bpEndDate").attr("data-gdate");
+        if ((!startStr || startStr === "") && endStr && endStr !== "") {
+            $.alert('ابتدا تاریخ شروع را انتخاب کنید!', '', 'rtl');
             return false;
         }
-		let startKM = rcommafy($("#txtStartKM").val());
-        if (!startKM || isNaN(startKM) || Number(startKM) < 0) {
-            $.alert('لطفا کیلومتر شروع را صحیح وارد کنید!', '', 'rtl');
-            $("#txtStartKM").focus();
-            return false;
-        }
-		let endKM = rcommafy($("#txtEndKM").val());
-        if (!endKM || isNaN(endKM) || Number(endKM) < 0) {
-            $.alert('لطفا کیلومتر پایان را صحیح وارد کنید!', '', 'rtl');
-            $("#txtEndKM").focus();
-            return false;
-        }
-		// اگر کیلومتر شروع بزرگتر از پایان باید خطا میدهد
-		if (startKM && endKM && startKM > endKM) {
-		    $.alert('کیلومتر شروع نباید از کیلومتر پایان بیشتر باشد!', '', 'rtl');
-		    $("#txtStartKM, #txtEndKM").addClass('error');
-		    $("#txtStartKM").focus();
-		    return false; // جلو ادامه یا ثبت رو بگیر
-		} 
+        const startDate = parseGDate(startStr);
+        const endDate = parseGDate(endStr);
+        const today = new Date(); today.setHours(0,0,0,0);
+        if (startDate && startDate > today) return $.alert('تاریخ شروع نباید بزرگتر از امروز باشد!', '', 'rtl'), false;
+        if (endDate && endDate > today) return $.alert('تاریخ پایان نباید بزرگتر از امروز باشد!', '', 'rtl'), false;
+        if (startDate && endDate && endDate < startDate) return $.alert('تاریخ پایان نباید کمتر از تاریخ شروع باشد!', '', 'rtl'), false;
     }
-	if (costRequestTypeId === "1" || costRequestTypeId === "2") {
-	    var startStr = $("#dpStartDate").attr("data-gdate");
-	    var endStr = $("#bpEndDate").attr("data-gdate");
-	
-	    // شرط جدید: اگر تاریخ پایان انتخاب شد اما تاریخ شروع خالی بود
-	    if ((!startStr || startStr === "") && endStr && endStr !== "") {
-	        $.alert('ابتدا تاریخ شروع را انتخاب کنید!', '', 'rtl');
-	        return false;
-	    }
-	
-	    var startDate = parseGDate(startStr);
-	    var endDate = parseGDate(endStr);
-	
-	    // تاریخ امروز (سال-ماه-روز) بدون ساعت
-	    var today = new Date();
-	    today.setHours(0,0,0,0);
-	
-	    // اگر تاریخ شروع انتخاب شده و از امروز بعدتر بود
-	    if (startDate && startDate > today) {
-	        $.alert('تاریخ شروع نباید بزرگتر از امروز باشد!', '', 'rtl');
-	        return false;
-	    }
-	
-	    // اگر تاریخ پایان انتخاب شده و از امروز بعدتر بود
-	    if (endDate && endDate > today) {
-	        $.alert('تاریخ پایان نباید بزرگتر از امروز باشد!', '', 'rtl');
-	        return false;
-	    }
-	
-	    // تاریخ پایان نباید کوچکتر از تاریخ شروع باشد
-	    if (startDate && endDate) {
-	        if (endDate < startDate) {
-	            $.alert('تاریخ پایان نباید کمتر از تاریخ شروع باشد!', '', 'rtl');
-	            return false;
-	        }
-	    }
-	}
     return true;
 }
-
+//------------------------------------------
+// ثبت فرم با اکشن کلیک
 $("#btnRegister").on("click", function (e) {
     if (!isFormValid()) {
         e.preventDefault();
         return false;
     }
 	//------------------------------------------
-    // گرفتن درست دیتا از سلکتور و اینپوت های فرم
+    // گرفتن اطلاعات (میتونی یه آرایه یوزفل سلکتورها درست کنی و با یک loop فیلتر کنی)
 	//------------------------------------------
-    let insertCostRequestDetail = FormManager.insertCostRequest;
-	let costDate = $("#dpCostDate").data("gdate");
-	let costRequestTypeId = $("#cmbCostRequestTypeId").val();
-	let costRequestTypeDetailId = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
-	let costRequestTypeSubDetail = $("#cmbCostRequestTypeSubDetail option:selected").attr("id");
-	let originProvinceId = $("#cmbOriginProvinceId").val();
-	let originCityId = $("#cmbOriginCityId option:selected").attr("id");
-	let startDate = $("#dpStartDate").data("gdate");
-	let startKM = rcommafy($("#txtStartKM").val());
-	let destinationProvinceId = $("#cmbDestinationProvinceId").val();
-	let destinationCityId = $("#cmbDestinationCityId option:selected").attr("id");
-	let endDate = $("#bpEndDate").data("gdate");
-	let endKM = rcommafy($("#txtEndKM").val());
-	let requestCostPrice = rcommafy($("#txtRequestCostPrice").val());
-	let description = $("#txtDiscription").val();
+    const insertParams = {
+        RequestCostId: costRequestID,
+        CostDate: $("#dpCostDate").data("gdate"),
+        CostRequestTypeId: $("#cmbCostRequestTypeId").val(),
+        CostRequestTypeDetailId: $("#cmbCostRequestTypeDetailId option:selected").attr("id"),
+        CostRequestTypeSubDetail: $("#cmbCostRequestTypeSubDetail option:selected").attr("id"),
+        OriginProvinceId: $("#cmbOriginProvinceId").val(),
+        OriginCityId: $("#cmbOriginCityId option:selected").attr("id"),
+        DestinationProvinceId: $("#cmbDestinationProvinceId").val(),
+        DestinationCityId: $("#cmbDestinationCityId option:selected").attr("id"),
+        StartDate: $("#dpStartDate").data("gdate"),
+        EndDate: $("#bpEndDate").data("gdate"),
+        Description: $("#txtDiscription").val(),
+        RequestCostPrice: rcommafy($("#txtRequestCostPrice").val()),
+        StartKM: rcommafy($("#txtStartKM").val()),
+        EndKM: rcommafy($("#txtEndKM").val())
+    };
 	//------------------------------------------
-
-        const insertParams = {
-            RequestCostId:              costRequestID,					// شماره درخواست ثبت شده
-            CostDate:                   costDate,					  // تاریخ هزینه 
-            CostRequestTypeId:          costRequestTypeId,				// شناسه برند پروژه
-            CostRequestTypeDetailId:    costRequestTypeDetailId,				 // شناسه نوع پروژه
-            CostRequestTypeSubDetail:   costRequestTypeSubDetail,			  // تاریخ شروع
-            OriginProvinceId:           originProvinceId,				// تاریخ پایان
-            OriginCityId:          	 originCityId,			 	// وضعیت قراداد
-            DestinationProvinceId:      destinationProvinceId,			  // شناسه موضوع پروژه
-            DestinationCityId:		  destinationCityId,	   // ابعاد پروژه
-            StartDate:   			   startDate,	      // شناسه ابزار پروژه
-            EndDate:					endDate,	   // تعداد ابزار
-            Description: 			   description,		// هزینه ابزار
-            RequestCostPrice:      	 requestCostPrice,			 // شناسه برند مرکز هزینه
-            StartKM:   				 startKM,		  // هزینه منابع انسانی
-            EndKM:       			   endKM			  // سایر هزینه
-        };
-	
-		// فیلتر کردن مقادیر خالی (null, '', undefined)
-		Object.keys(insertParams).forEach(key => {
-		    // اگر مقدار فیلد خالی، undefined یا null بود، حذفش کن
-		    if (insertParams[key] === undefined || insertParams[key] === null || insertParams[key] === '') {
-		        delete insertParams[key];
-		    }
-		});
 	
 	//------------------------------------------
-	//  افزودن جزییات درخواست هزینه در دیتابیس
+    // فیلتر: حذف فیلدهای خالی
+    Object.keys(insertParams).forEach(key => {
+        if (insertParams[key] === undefined || insertParams[key] === null || insertParams[key] === '')
+            delete insertParams[key];
+    });
 	//------------------------------------------
-	       insertCostRequestDetail(insertParams,
-            function(dataXml){
-                hideLoading();
-                $.alert(
-				    "درخواست شما با موفقیت ذخیره گردید.",
-				    "ذخیره شد",
-				    "rtl",
-				    function() {
-						
-				        closeWindow({ OK: true, Result: costRequestID });
-				    }
-				);
-            },
-            function(error) {
-                hideLoading();
-				$.alert(`ذخیره سازی با خطا مواجه شده است.\n ${error}`, "توجه", "rtl");
-                console.error(error);
-            }
-        );
+	
 	//------------------------------------------
-});	
-        // Insert new CostRequest
-
-	
-	
+    // ثبت اطلاعات
+	//------------------------------------------
+    FormManager.insertCostRequest(insertParams,
+        function (dataXml) {
+            hideLoading();
+            $.alert(
+                "درخواست شما با موفقیت ذخیره گردید.",
+                "ذخیره شد",
+                "rtl",
+                function () {
+                    closeWindow({ OK: true, Result: costRequestID });
+                }
+            );
+        },
+        function (error) {
+            hideLoading();
+            $.alert(`ذخیره سازی با خطا مواجه شده است.\n ${error}`, "توجه", "rtl");
+            console.error(error);
+        }
+    );
+	//------------------------------------------
+});
 
 
 
@@ -600,6 +505,7 @@ function changeDialogTitle (title, onSuccess, onError) {
     }
 }
 //#endregion
+
 
 //#region 
 //#endregion
