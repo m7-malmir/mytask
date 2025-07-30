@@ -4,11 +4,12 @@ let CurrentUserId;
 var costRequestID = null;
 var isInTestMode = false;
 var primaryKeyName = "Id";
+
 $(function () {
     $form = (function () {
-		var pk,
-		inEditMode = false,
-		primaryKeyName = "Id";
+        var pk,
+            inEditMode = false,
+            primaryKeyName = "Id";
 
         // ======== Helpers =====
         // اگر گزینه "انتخاب کنید" در ابتدای سلکت نبود، اضافه کن
@@ -39,14 +40,14 @@ $(function () {
         function init() {
             build();
             createControls();
-			showLoading();
+            showLoading();
         }
 
         // ======== Build =======
         function build() {
             // مقداردهی اولیه پارامترها
             params = window.dialogArguments || window.arguments;
-            $(document).ready(function() {
+            $(document).ready(function () {
                 costRequestID = params?.costRequestID;
             });
             changeDialogTitle("ثبت جزییات اعلام هزینه");
@@ -64,20 +65,18 @@ $(function () {
                 "#cmbDestinationProvinceId",
                 "#cmbDestinationCityId"
             ];
-			// اعمال MutationObserver برای همه سلکتورها جهت اضافه کردن "انتخاب کنید"
+
+            // اعمال MutationObserver برای همه سلکتورها جهت اضافه کردن "انتخاب کنید"
             selectIds.forEach(observeAndAddPlaceholder);
-			
+
             /***********-- وابستگی بین نوع هزینه و جزییات آن --*************/
             // وقتی "نوع هزینه" تغییر کرد فقط جزییات مرتبط را نشان بده
-            $("#cmbCostRequestTypeId").change(function() {
+            $("#cmbCostRequestTypeId").change(function () {
                 var selectedType = $(this).val();
-                // پنهان‌کردن همه‌ی آپشن‌ها و نمایش placeholder
                 $("#cmbCostRequestTypeDetailId option").hide();
                 $("#cmbCostRequestTypeDetailId option[value='']").show(); // فقط گزینه "انتخاب کنید"
-                // فقط گزینه‌هایی که value آن با نوع انتخاب‌شده برابر است را نشان بده
                 $("#cmbCostRequestTypeDetailId option[value='" + selectedType + "']").show();
                 $("#cmbCostRequestTypeDetailId").val("");
-
                 // ریست و مخفی‌سازی sub detail
                 $("#cmbCostRequestTypeSubDetail").val("");
                 $("#cmbCostRequestTypeSubDetail option").hide();
@@ -85,26 +84,23 @@ $(function () {
             });
 
             // وقتی یک جزییات انتخاب شد، فقط زیرجزییات مرتبط را نمایش بده
-            $("#cmbCostRequestTypeDetailId").change(function() {
+            $("#cmbCostRequestTypeDetailId").change(function () {
                 var selectedDetail = $("#cmbCostRequestTypeDetailId option:selected").attr("id");
                 $("#cmbCostRequestTypeSubDetail option").hide();
                 $("#cmbCostRequestTypeSubDetail option[value='']").show();
                 $("#cmbCostRequestTypeSubDetail option[value='" + selectedDetail + "']").show();
                 $("#cmbCostRequestTypeSubDetail").val("");
             });
-			
+
             //انتخاب استان باعث فیلتر شهر می‌شود
             function handleProvinceChange(provinceSelector, citySelector) {
                 $(provinceSelector).on('change', function () {
                     var selectedProvince = $(this).val();
                     var $citySelect = $(citySelector);
-                    // پنهان‌کردن همه آپشن‌ها
                     $citySelect.find('option').hide();
-                    // فقط آپشنی که value برابر کد استان دارد را نشان بده
                     $citySelect.find('option').filter(function () {
                         return $(this).val() === selectedProvince;
                     }).show();
-                    // اولین آپشن نمایش داده شده را انتخاب کن
                     var firstVisible = $citySelect.find('option:visible:first').val();
                     $citySelect.val(firstVisible);
                 });
@@ -116,12 +112,11 @@ $(function () {
             // رویداد وابستگی استان/شهر مبدا و مقصد
             handleProvinceChange('#cmbOriginProvinceId', '#cmbOriginCityId');
             handleProvinceChange('#cmbDestinationProvinceId', '#cmbDestinationCityId');
-			
+
             // گرفتن کاربر جاری برای ذخیره یا عملیات وابسته
             UserService.GetCurrentUser(
                 true,
                 function (data) {
-                    
                     const xml = $.xmlDOM(data);
                     CurrentUserId = xml.find("user > id").text().trim();
                 },
@@ -142,6 +137,8 @@ $(function () {
     // آغاز فرآیند مقداردهی اولیه صفحه
     $form.init();
 });
+
+
 
 
 //#endregion ready.js
