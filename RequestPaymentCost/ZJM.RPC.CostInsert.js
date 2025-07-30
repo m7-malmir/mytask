@@ -2,22 +2,19 @@
 // Create a variable to hold our form module
 var $form;
 var CurrentUserId;
-var params={};
 var primaryKeyName = "Id";
+var selectedCostDetailId;
 $(function () {
 	
     $form = (function () {
-		
 		var pk,
 		inEditMode = false,
 		primaryKeyName = "Id";
         // ==================== Init =====================
         function init() {
-
             build();
 			createControls();
         }
-
         // ==================== Build ====================
 		function build() {
 		    $("body").css({overflow: "hidden"}).attr({scroll: "no"});
@@ -33,16 +30,10 @@ $(function () {
 		            $("#txtRequestTitle").prop('disabled', true);
 		        }
 		        $('#btnRegister').prop('disabled', true);
-		    } else {
-		        // اگر پارامز نیومده می‌تونی مقدار پیشفرض بدی یا فرم رو آماده حالت ایجاد جدید کنی
-		        // یا اصلاً هیچ کاری نکن و let it be
-		    }
+		    } 
 		}
-
-
         // ==================== createControls ====================
         function createControls() {
-			//-----------------------------------
 			showLoading();
 			UserService.GetCurrentUser(true,
 				function(data){
@@ -56,8 +47,8 @@ $(function () {
 					$ErrorHandling.Erro(err,"خطا در سرویس GetCurrentUser");
 				}	
 			);
+
         }
-	
         // ==================== Return ====================
         return {
             init: init
