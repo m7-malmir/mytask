@@ -241,23 +241,21 @@ $(function () {
         }
         // ================= Build ==================
         function build() {
-           //element = $("#tblCostRequestDetails"); // get the table element
         }
         // =============== Bind Events ===============
         function bindEvents() {
 			
 			//-------------------------------
-			//--- گرفتن ایدی درخواست هزینه در صورتی که یک ردیف باید انتخاب شود
+			//--- گرفتن ایدی درخواست جزییات هزینه در صورتی که یک ردیف باید انتخاب شود
 			//-------------------------------
-			$("#tblCostRequestDetails").on("click", "input[type=radio][name=RequestCostId]", function() {
-			    var $this = $(this);
-			    $("#tblCostRequestDetails input[type=checkbox][name=CostRequestId]").not($this).prop("checked", false);
-			    selectedContractId = $this.is(":checked") ? $this.val() : null;
+			$('#tblCostRequestDetails').on('click', 'input[type=radio][name="RequestCostId"]', function() {
+			    var id = $(this).closest('tr').find('td').eq(1).text().trim();
+			    selectedCostDetailId = id;
 			});
 			//-------------------------------
-
+			
         }
-		// ================= Add Row =================
+		// ================= Add Row =================   
 		// This function adds a new row to the table using data from the server
 		function addRow(rowInfo) {
 		    // Clone the template row
@@ -272,7 +270,7 @@ $(function () {
 		    var tds = tempRow.children("td");
 		    // Fill table cells
 			let tbCheckbox = '';
-			 tbCheckbox = `<input type='radio' id='id${rowInfo.Id}' name="RequestCostId"  class="pointer" >`;
+			 tbCheckbox = `<input type='radio' id='id${rowInfo.RequestCostId}' name='RequestCostId' class="pointer" value="${rowInfo.RequestCostId}">`;
 		    tds.eq(0).html(tbCheckbox); 		
 		    tds.eq(1).text(rowInfo.Id);             	
 		    tds.eq(2).text(rowInfo.RequestCostId);     	
@@ -289,42 +287,36 @@ $(function () {
 		    element.children("tbody").children("tr.row-template").before(tempRow);
 		    // Hide loading spinner
 		    myHideLoading();
-		}
 
+		}
 		// ================== Load ==================
 		// This function loads data and fills the table
 		function load() {
-		var requestCostId = $("#lblCostRequestID").text().trim();
-		
-		// فقط وقتی عدد بود اجرا کن
-		if (requestCostId !== "" && !isNaN(requestCostId)) {
-		    var params = {
-		        Where: `RequestCostId = ${requestCostId}`
-		    };
-		
-		    readRows(
-		        params,
-		        function (list) {
-		            if (Array.isArray(list) && list.length > 0) {
-		                list.forEach(function (row, index) {
-		                    addRow(row, index + 1);
-		                });
-		            } else {
-		                console.warn('No data received.');
-		            }
-		            myHideLoading(); // موفقیت
-		        },
-		        function (error) {
-		            myHideLoading(); // خطا
-		            alert(error || "خطایی رخ داده است");
-		        }
-		    );
-		} else {
-		    // وقتی مقدار یا خالی یا غیرعددی بود هیچکاری نمی‌کنیم
-		    // (برای دیباگ می‌تونی لاگ بذاری)
-		    // console.warn('CostRequestID is not a valid number:', requestCostId);
-		}
-
+			var requestCostId = $("#lblCostRequestID").text().trim();
+			
+			// فقط وقتی requestCostId عدد بود اجرا کن
+			if (requestCostId !== "" && !isNaN(requestCostId)) {
+			    var params = {
+			        Where: `RequestCostId = ${requestCostId}`
+			    };
+			    readRows(
+			        params,
+			        function (list) {
+			            if (Array.isArray(list) && list.length > 0) {
+			                list.forEach(function (row, index) {
+			                    addRow(row, index + 1);
+			                });
+			            } else {
+			                console.warn('No data received.');
+			            }
+						calculateTotalCost();
+			        },
+			        function (error) {
+			            myHideLoading(); // خطا
+			            alert(error || "خطایی رخ داده است");
+			        }
+			    );
+			} 
 		}
 
         // ================= Refresh =================
@@ -333,7 +325,6 @@ $(function () {
             element.find("tr.row-data").remove();
             load();
         }
-
         // =============== Return ===============
         // Return public methods
         return {
