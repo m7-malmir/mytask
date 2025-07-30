@@ -364,7 +364,9 @@ $("#btnRegister").on("click", function (e) {
         e.preventDefault();
         return false;
     }
-    // Create a variables
+	//------------------------------------------
+    // گرفتن درست دیتا از سلکتور و اینپوت های فرم
+	//------------------------------------------
     let insertCostRequestDetail = FormManager.insertCostRequest;
 	let costDate = $("#dpCostDate").data("gdate");
 	let costRequestTypeId = $("#cmbCostRequestTypeId").val();
@@ -380,10 +382,10 @@ $("#btnRegister").on("click", function (e) {
 	let endKM = rcommafy($("#txtEndKM").val());
 	let requestCostPrice = rcommafy($("#txtRequestCostPrice").val());
 	let description = $("#txtDiscription").val();
-
+	//------------------------------------------
 
         const insertParams = {
-            RequestCostId:              globalCostRequestID,					// شماره درخواست ثبت شده
+            RequestCostId:              costRequestID,					// شماره درخواست ثبت شده
             CostDate:                   costDate,					  // تاریخ هزینه 
             CostRequestTypeId:          costRequestTypeId,				// شناسه برند پروژه
             CostRequestTypeDetailId:    costRequestTypeDetailId,				 // شناسه نوع پروژه
@@ -399,6 +401,7 @@ $("#btnRegister").on("click", function (e) {
             StartKM:   				 startKM,		  // هزینه منابع انسانی
             EndKM:       			   endKM			  // سایر هزینه
         };
+	
 		// فیلتر کردن مقادیر خالی (null, '', undefined)
 		Object.keys(insertParams).forEach(key => {
 		    // اگر مقدار فیلد خالی، undefined یا null بود، حذفش کن
@@ -406,8 +409,10 @@ $("#btnRegister").on("click", function (e) {
 		        delete insertParams[key];
 		    }
 		});
-	console.log(insertParams);
-	/*
+	
+	//------------------------------------------
+	//  افزودن جزییات درخواست هزینه در دیتابیس
+	//------------------------------------------
 	       insertCostRequestDetail(insertParams,
             function(dataXml){
                 hideLoading();
@@ -416,7 +421,8 @@ $("#btnRegister").on("click", function (e) {
 				    "ذخیره شد",
 				    "rtl",
 				    function() {
-				        closeWindow({ OK: true, Result: null });
+						
+				        closeWindow({ OK: true, Result: costRequestID });
 				    }
 				);
             },
@@ -425,7 +431,8 @@ $("#btnRegister").on("click", function (e) {
 				$.alert(`ذخیره سازی با خطا مواجه شده است.\n ${error}`, "توجه", "rtl");
                 console.error(error);
             }
-        );*/
+        );
+	//------------------------------------------
 });	
         // Insert new CostRequest
 

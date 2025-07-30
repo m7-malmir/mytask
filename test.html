@@ -466,3 +466,111 @@ Error On UserHelpes.readEmployeeInfo, [object Object]->Invalid column name 'Enab
 
 Form.+?rg=ZJM.PSE.PersonnelCredit&popupIndex=1&rv=-1:146 Details: Error Code : 46152
 Error Message : 
+
+
+
+
+
+
+
+
+
+
+
+
+
+            changeDialogTitle("ثبت جزییات اعلام هزینه");
+			// Promise list
+            const loadTasks = [
+                loadComboboxData({
+                    $element: $("#cmbCostRequestTypeId"),
+                    readFunction: FormManager.costRequestTypeDetail,
+                    idField: "Id",
+                    textField: "ExpertFirstName",
+                    textFormatter: (row) => `${row.ExpertFirstName} ${row.ExpertLastName}`
+                }),
+                loadComboboxData({
+                    $element: $("#cmbCostRequestTypeDetailId"),
+                    readFunction: FormManager.readBrand,
+                    idField: "BrandRef",
+                    textField: "BrandName"
+                }),
+                loadComboboxData({
+                    $element: $("#cmbCostRequestTypeSubDetail"),
+                    readFunction: FormManager.readBrand,
+                    idField: "BrandRef",
+                    textField: "BrandName"
+                }),
+                loadComboboxData({
+                    $element: $("#cmbOriginProvinceId"),
+                    readFunction: FormManager.readTypeName,
+                    idField: "Id",
+                    textField: "ProjectTypeName"
+                }),
+                loadComboboxData({
+                    $element: $("#cmbOriginCityId"),
+                    readFunction: FormManager.readProjectSubject,
+                    idField: "Id",
+                    textField: "ProjectSubjectName"
+                }),
+                loadComboboxData({
+                    $element: $("#cmbDestinationProvinceId"),
+                    readFunction: FormManager.readProjectTools,
+                    idField: "Id",
+                    textField: "ToolName"
+                }),
+                loadComboboxData({
+                    $element: $("#cmbDestinationCityId"),
+                    readFunction: FormManager.readProjectTools,
+                    idField: "Id",
+                    textField: "ToolName"
+                })
+            ];
+
+            // When all Promise is done
+            Promise.all(loadTasks)
+                .then(() => {
+                    hideLoading(); // Hide spinner of loading
+                })
+                .catch((err) => {
+                    console.error("Error during ComboBox loading:", err);
+                    hideLoading(); // Hide spinner of loading
+                });
+        
+
+
+
+
+
+
+
+
+
+
+
+
+$('#tblCostRequest').on('click', 'a[id^="CR"]', function(e) {
+		    e.preventDefault();
+		    var $tr = $(this).closest('tr');
+		    var costRequestId   = $tr.find('td').eq(1).text().trim();
+		    var costRequestNo   = $tr.find('td').eq(2).text().trim();
+		    var title           = $tr.find('td').eq(4).text().trim();
+		
+		    var params = {
+		        CostRequestId: costRequestId,
+		        CostRequestNo: costRequestNo,
+		        Title: title
+		    };
+		    // نمایش مودال با پارامترهای مورد نیاز
+		    $.showModalForm(
+		        {
+		            registerKey: "ZJM.RPC.CostInsert",
+		            params: params
+		        },
+		        function(retVal) {
+		            if (retVal.Result) {
+		                tblCostRequest.refresh();
+		            }
+		        }
+		    );
+		});
