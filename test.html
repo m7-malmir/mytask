@@ -574,3 +574,340 @@ $('#tblCostRequest').on('click', 'a[id^="CR"]', function(e) {
 		        }
 		    );
 		});
+
+
+
+
+
+
+
+
+CostRequestDetailCount
+SumRequestCostPrice
+SumConfirmCostPrice
+
+
+if(rowInfo.ProcessStatus==1){
+    tds.eq(2).html(`<a class="details-link" style="text-decoration: underline;" id=${rowInfo.CostRequestNo} href="#">${rowInfo.CostRequestNo}</a>`);
+    }else{
+        tds.eq(2).html(`<span>${rowInfo.CostRequestNo}</span>`);  // CostRequestNo
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    				readFromData({Where: primaryKeyName + " = " + pk},
+					function(dataXml)
+					{
+
+					}
+				);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <dataset>
+  <datatable>
+    <row>
+      <col name="Id">18</col>
+      <col name="RequestCostId">86</col>
+      <col name="CostDate">08/13/2025</col>->dpCostDate
+      <col name="CostRequestTypeId">4</col>->cmbCostRequestTypeId
+      <col name="CostRequestTypeName">سایر</col>->
+      <col name="CostRequestTypeDetailId">13</col>->cmbCostRequestTypeDetailId
+      <col name="CostRequestTypeDetailName">سایر</col>
+      <col name="CostRequestTypeSubDetail"/>->cmbCostRequestTypeSubDetail
+      <col name="CostRequestTypeSubDatailName"/>
+      <col name="OriginProvinceId"/>->cmbOriginProvinceId
+      <col name="OriginProvince"/>
+      <col name="OriginCityId"/>->cmbOriginCityId
+      <col name="OriginCity"/>
+      <col name="StartDate"/>->dpStartDate
+      <col name="StartKM"/>->txtStartKM
+      <col name="DestinationProvinceId"/>->cmbDestinationProvinceId
+      <col name="DestinationProvince"/>
+      <col name="DestinationCityId"/>->cmbDestinationCityId
+      <col name="DestinationCity"/>
+      <col name="EndDate"/>->bpEndDate
+      <col name="EndKM"/>->txtEndKM
+      <col name="RequestCostPrice">90000</col>->txtRequestCostPrice
+      <col name="ConfirmCostPrice"/>
+      <col name="CreatedDate">07/30/2025 10:49:15</col>
+    </row>
+  </datatable>
+</dataset>
+
+
+$("#cmbCostRequestTypeId")
+$("#cmbCostRequestTypeDetailId")
+$("#cmbCostRequestTypeSubDetail")
+$("#cmbOriginProvinceId")
+$("#cmbOriginCityId")
+$("#cmbDestinationProvinceId")
+$("#cmbDestinationCityId")
+
+
+
+
+
+
+
+
+
+
+
+/*
+var params = window.dialogArguments || window.arguments || {};
+// --- تبدیل XML به آبجکت JS ---
+var dataXml = $(params); // params همون XMLDocument شما
+
+// استخراج همه مقادیر مورد نیاز
+var costDate                = dataXml.find("row:first > col[name='CostDate']").text();                  // dpCostDate
+var costRequestTypeId       = dataXml.find("row:first > col[name='CostRequestTypeId']").text();         // cmbCostRequestTypeId
+var costRequestTypeDetailId = dataXml.find("row:first > col[name='CostRequestTypeDetailId']").text();   // cmbCostRequestTypeDetailId
+var costRequestTypeSubDetail= dataXml.find("row:first > col[name='CostRequestTypeSubDetail']").text();  // cmbCostRequestTypeSubDetail
+var originProvinceId        = dataXml.find("row:first > col[name='OriginProvinceId']").text();          // cmbOriginProvinceId
+var originCityId            = dataXml.find("row:first > col[name='OriginCityId']").text();              // cmbOriginCityId
+var startDate               = dataXml.find("row:first > col[name='StartDate']").text();                 // dpStartDate
+var startKM                 = dataXml.find("row:first > col[name='StartKM']").text();                   // txtStartKM
+var destinationProvinceId   = dataXml.find("row:first > col[name='DestinationProvinceId']").text();     // cmbDestinationProvinceId
+var destinationCityId       = dataXml.find("row:first > col[name='DestinationCityId']").text();         // cmbDestinationCityId
+var endDate                 = dataXml.find("row:first > col[name='EndDate']").text();                   // bpEndDate
+var endKM                   = dataXml.find("row:first > col[name='EndKM']").text();                     // txtEndKM
+var requestCostPrice        = dataXml.find("row:first > col[name='RequestCostPrice']").text();          // txtRequestCostPrice
+
+// ============================================
+// ست کردن مقدارها به المنت‌های مربوطه
+// (input ها، datepicker ها، select ها)
+
+// تقویم‌ها یا inputهای تاریخ (مثلاً dpCostDate, dpStartDate, bpEndDate)
+// مقدار inputها
+$("#txtStartKM").val(startKM);
+$("#txtEndKM").val(endKM);
+$("#txtRequestCostPrice").val(requestCostPrice);
+$("#txtConfirmPrice").val(confirmPrice);
+
+// مقداردهی selectهای async-safe
+$("#cmbCostRequestTypeId").val(costRequestTypeId);
+$("#cmbCostRequestTypeDetailId").val(costRequestTypeDetailId);
+$("#cmbCostRequestTypeSubDetail").val(costRequestTypeSubDetail);
+$("#cmbOriginProvinceId").val(originProvinceId);
+$("#cmbOriginCityId").val(originCityId);
+$("#cmbDestinationProvinceId").val(destinationProvinceId);
+$("#cmbDestinationCityId").val(destinationCityId);
+
+// مقداردهی datepickerها به صورت مستقیم (در صورت داشتن setDate):
+$("#dpCostDate").val(costDate);
+$("#dpStartDate").val(startDate);
+$("#bpEndDate").val(endDate);
+*/
+
+/// for insert to database
+      IdeaNo->(nextIR)
+      IdeaSubject->txtIdeaSubject
+      FullDescription->txtFullDescription
+      CreatorUserId-> txtCreatorUserId
+      UserIdIdeas->txtUserIdIdeas
+      RoleIdIdeas->txtRoleIdIdeas
+
+
+      //checkbox1
+      NewProduct->chbNewProduct
+      ImprovementCurrentProducts->chbImprovementCurrentProducts
+
+      //checkbox2
+      BusinessModels->chbNewProduct
+      OptimizationOfOrganization->chbOptimizationOfOrganization
+      MotivatingEmployees->chbMotivatingEmployees
+      FinancialStructue->chbFinancialStructue
+      KnowledgeManagment->chbKnowledgeManagment
+      InformationTechnology->chbInformationTechnology
+      MarketingAndBranding->chbMarketingAndBranding
+      InteractAndCommunicating->chbInteractAndCommunicating
+      ImprovePerformance->chbImprovePerformance
+      OtherInovations->chbOtherInovations
+
+      //checkbox3
+      IncreaseIncome->chbIncreaseIncome
+      IncreaseEffectiveness->chbIncreaseEffectiveness
+      AccelerationOfProcesses->chbAccelerationOfProcesses
+      FacilitateProcesses->chbFacilitateProcesses
+      CreatingMotivationWorkplace->chbCreatingMotivationWorkplace
+      PromoteEmployerBrand->chbPromoteEmployerBrand
+      ReduceBusinessThreats->chbReduceBusinessThreats
+      ReduceBusinessSafetyRisks->chbReduceBusinessSafetyRisks
+      ReduceWaste->chbReduceWaste
+      QualityImprovement->chbQualityImprovement
+      ReducingFoodSafetyRisks->chbReducingFoodSafetyRisks
+      OtherImprovement->chbOtherImprovement
+
+      //textbox  
+      ResponsibleForImplementation->txtResponsibleForImplementation
+      ReasonForResponsible->txtReasonForResponsible
+      AdditionalInformation->txtOtherImprovement
+
+
+
+
+      // آرایه‌هایی برای نگهداری همه UserId و RoleIdها (هر وقت رکوردی حذف شد، این‌ها رو هم آپدیت می‌کنیم!)
+$("#btnAddIdeatorInfo").click(function(){
+    var $combo = $("#cmbIdeatorInfo");
+    var data = $combo.select2('data')[0]; // اطلاعات آیتم انتخاب شده
+    if (!data) {
+        alert('طرف رو انتخاب کن!');
+        return;
+    }
+
+    // حالا اطلاعات رو بردار:
+    var userId = data.userId || $combo.attr("data-userid") || '';
+    var roleId = data.roleId || $combo.attr("data-roleid") || '';
+    var fullName = data.text || '';
+
+    // آرایه‌ها (اگر بار اول بود تعریف کن)
+    window.selectedUserIds = window.selectedUserIds || [];
+    window.selectedRoleIds = window.selectedRoleIds || [];
+
+    // چک تکراری بودن
+    if (selectedUserIds.indexOf(userId) !== -1) {
+        alert('این قبلاً اضافه شده.');
+        return;
+    }
+
+    // اضافه به آرایه و input‌ها
+    selectedUserIds.push(userId);
+    selectedRoleIds.push(roleId);
+    $("#txtUserIdIdeas").val(selectedUserIds.join(","));
+    $("#txtRoleIdIdeas").val(selectedRoleIds.join(","));
+
+    // اضافه به جدول
+    var $tr = $('<tr>'+
+        '<td>'+fullName+'</td>'+
+        '<td><span class="delete-ideator" style="color:red;cursor:pointer;">-</span></td>'+
+    '</tr>');
+    $("#tblIdeatorInfo tbody").append($tr);
+
+    $tr.find(".delete-ideator").click(function(){
+        var idx = selectedUserIds.indexOf(userId);
+        if(idx !== -1){
+            selectedUserIds.splice(idx, 1);
+            selectedRoleIds.splice(idx, 1);
+        }
+        $("#txtUserIdIdeas").val(selectedUserIds.join(","));
+        $("#txtRoleIdIdeas").val(selectedRoleIds.join(","));
+        $tr.remove();
+    });
+});
+
+
+
+
+
+
+
+
+function showAlertWithFocus(message, selectorToFocus) {
+    $.alert({
+        title: '',
+        content: String(message), // 
+        type: 'red',
+        rtl: true,
+        onClose: function () {
+            if (selectorToFocus) {
+                $(selectorToFocus).focus();
+            }
+        },
+        buttons: {
+            ok: {
+                text: 'باشه',
+                action: function () { /* هیچ کاری لازم نیست */ }
+            }
+        }
+    });
+}
+
+
+
+insertFromData(params,
+				function(dataXml)
+				{
+					pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+					
+					inEditMode = true;
+					var FormNewTitle= 'N\'درخواست وام (درخواست دهنده: '+ $("#txtFullName").val()+')\''
+					WorkflowService.RunWorkflow("ZJM.LRP.LoanRequestProcess",
+					    '<Content><Id>'+pk+'</Id><IsInTestMode>' + isInTestMode + '</IsInTestMode></Content>',
+					    true,
+					    function(data)
+					    {		
+					        $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
+								hideLoading();
+					        	closeWindow({OK:true, Result:null});
+							});				
+					    }
+					    ,function(err)
+					    {
+					        alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
+					        hideLoading();
+					    }
+					);
+					myHideLoading();
+					if($.isFunction(callback))
+					{
+						callback();
+					}
+				},
+				function(err)
+				{
+					hideLoading();
+					alert(err);
+				}
+			);
+
+
+
+
+
+
+
