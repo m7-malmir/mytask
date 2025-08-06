@@ -745,12 +745,16 @@ $("#bpEndDate").val(endDate);
 */
 
 /// for insert to database
-      IdeaNo->(nextIR)
+      IdeaNo->txtIdeaNo
       IdeaSubject->txtIdeaSubject
       FullDescription->txtFullDescription
+
       CreatorUserId-> txtCreatorUserId
       UserIdIdeas->txtUserIdIdeas
       RoleIdIdeas->txtRoleIdIdeas
+
+      OtherInovations->txtOtherInovations
+      OtherImprovement->txtchbOtherImprovement
 
 
       //checkbox1
@@ -767,7 +771,7 @@ $("#bpEndDate").val(endDate);
       MarketingAndBranding->chbMarketingAndBranding
       InteractAndCommunicating->chbInteractAndCommunicating
       ImprovePerformance->chbImprovePerformance
-      OtherInovations->chbOtherInovations
+
 
       //checkbox3
       IncreaseIncome->chbIncreaseIncome
@@ -781,7 +785,7 @@ $("#bpEndDate").val(endDate);
       ReduceWaste->chbReduceWaste
       QualityImprovement->chbQualityImprovement
       ReducingFoodSafetyRisks->chbReducingFoodSafetyRisks
-      OtherImprovement->chbOtherImprovement
+
 
       //textbox  
       ResponsibleForImplementation->txtResponsibleForImplementation
@@ -911,3 +915,80 @@ insertFromData(params,
 
 
 
+
+      IdeaSubject->txtIdeaSubject
+      FullDescription->txtFullDescription
+
+
+
+      //checkbox1
+      NewProduct->chbNewProduct
+      ImprovementCurrentProducts->chbImprovementCurrentProducts
+
+      //checkbox2
+      BusinessModels->chbNewProduct
+      OptimizationOfOrganization->chbOptimizationOfOrganization
+      MotivatingEmployees->chbMotivatingEmployees
+      FinancialStructue->chbFinancialStructue
+      KnowledgeManagment->chbKnowledgeManagment
+      InformationTechnology->chbInformationTechnology
+      MarketingAndBranding->chbMarketingAndBranding
+      InteractAndCommunicating->chbInteractAndCommunicating
+      ImprovePerformance->chbImprovePerformance
+      OtherInovations->chbOtherInovations
+
+      //checkbox3
+      IncreaseIncome->chbIncreaseIncome
+      IncreaseEffectiveness->chbIncreaseEffectiveness
+      AccelerationOfProcesses->chbAccelerationOfProcesses
+      FacilitateProcesses->chbFacilitateProcesses
+      CreatingMotivationWorkplace->chbCreatingMotivationWorkplace
+      PromoteEmployerBrand->chbPromoteEmployerBrand
+      ReduceBusinessThreats->chbReduceBusinessThreats
+      ReduceBusinessSafetyRisks->chbReduceBusinessSafetyRisks
+      ReduceWaste->chbReduceWaste
+      QualityImprovement->chbQualityImprovement
+      ReducingFoodSafetyRisks->chbReducingFoodSafetyRisks
+      OtherImprovement->chbOtherImprovement
+
+      //textbox  
+      ResponsibleForImplementation->txtResponsibleForImplementation
+      ReasonForResponsible->txtReasonForResponsible
+      AdditionalInformation->txtOtherImprovement
+
+
+
+readFromData({ Where: primaryKeyName + " = " + pk }, function(dataXml) {
+  const data = dataXml[0];
+
+  const creatorUserId = data.CreatorUserId;
+  const userIdIdeasList = (data.UserIdIdeas || "").split(',').map(id => id.trim()).filter(Boolean);
+  const roleIdIdeasList = (data.RoleIdIdeas || "").split(',').map(id => id.trim()).filter(Boolean);
+
+  console.log(" CreatorUserId:", creatorUserId);
+  console.log(" UserIdIdeas:", userIdIdeasList);
+  console.log(" RoleIdIdeas:", roleIdIdeasList);
+
+  // حالا برای هر کاربر می‌ریم اطلاعات پرسنلی می‌گیریم
+  const allUserIds = [...new Set([creatorUserId, ...userIdIdeasList])];
+
+  allUserIds.forEach(userId => {
+    const params = { Where: "ActorId = " + userId };
+    BS_GetUserInfo.Read(params, function(data) {
+      if ($.trim(data) !== "") {
+        const dataXml = $.xmlDOM(data);
+        const fullName = dataXml.find("row:first > col[name='fullName']").text();
+        const UnitsName = dataXml.find("row:first > col[name='UnitsName']").text();
+        const UserName = dataXml.find("row:first > col[name='UserName']").text();
+        const userId = dataXml.find("row:first > col[name='UserId']").text();
+
+        console.log(` User Info for ID ${userId}:`);
+        console.log("   - FullName:", fullName);
+        console.log("   - UnitsName:", UnitsName);
+        console.log("   - UserName:", UserName);
+      } else {
+        console.warn(` No user data found for ActorId = ${userId}`);
+      }
+    });
+  });
+});
