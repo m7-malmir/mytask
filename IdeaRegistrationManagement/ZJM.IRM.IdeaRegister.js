@@ -206,3 +206,58 @@ $(function(){
 });
 //#endregion
 
+
+//#region btnregister
+$("#btnRegister").click(function () {
+	//فراخوانی تابع ولیدیشن برای فرم
+    if (!validateIdeaForm()) return;  
+	
+    FormManager.readIdeaRegistration({}, function (list, status) {
+        const nextIR = getNextIdeaNo(list);
+        const insertParams = {
+            IdeaNo: nextIR,
+            IdeaSubject: $("#txtIdeaSubject").val(),
+            FullDescription: $("#txtFullDescription").val(),
+            CreatorUserId: $("#txtCreatorUserId").val(),
+            UserIdIdeas: $("#txtUserIdIdeas").val(),
+            RoleIdIdeas: $("#txtRoleIdIdeas").val(),
+			OtherInovations: $("#txtOtherInovations").val(),
+			OtherImprovement: $("#txtchbOtherImprovement").val(),
+            ResponsibleForImplementation: $("#txtResponsibleForImplementation").val(),
+            ReasonForResponsible: $("#txtReasonForResponsible").val(),
+            AdditionalInformation: $("#txtOtherImprovement").val()
+        };
+
+        // چک باکس ها رو با همین groups اضافه کن
+	        const allCheckboxes = [
+	            ...groups.product.fields,
+	            ...groups.innovation.fields,
+	            ...groups.ideaGoal.fields
+	        ];
+	        allCheckboxes.forEach(field => {
+	            if ($(`#chb${field}`).is(":checked")) {
+	                insertParams[field] = "1";
+	            }
+	        });
+		
+        FormManager.insertIdeaRegistration(
+            insertParams,
+            function (dataXml) {
+		 	   var pk = dataXml.find("row:first > col[name='Id']").text();
+		        WorkflowService.RunWorkflow("ZJM.IRM.IdeaRegistrationProcess",
+		            '<Content><Id>' + pk + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
+		            true,
+		            function(data) {handleRunWorkflowResponse(data);},
+		            function(err) {handleError(err, 'WorkflowService.RunWorkflow');}
+		        );
+                $.alert('ثبت ایده با موفقیت انجام شد', 'ذخیره شد', 'rtl');
+				},
+            function (err) {
+                myHideLoading();
+                alert(err);
+            }
+        );
+    });
+});
+
+//#endregion
