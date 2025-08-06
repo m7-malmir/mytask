@@ -261,3 +261,59 @@ $("#btnRegister").click(function () {
 });
 
 //#endregion
+
+//#region btnAddIdeatorInfo.js
+$("#btnAddIdeatorInfo").click(function(){
+    var $combo = $("#cmbIdeatorInfo");
+    var dataArr = $combo.select2('data');
+    var data = dataArr && dataArr[0];
+
+    // حالت انتخاب نشده یا خالی
+    if (!data || !data.userId || !data.roleId) {
+        $.alert('لطفا شخص مورد نظر را جستجو و انتخاب کنید!', '', 'rtl');
+        return;
+    }
+    var userId = data.userId;
+    var roleId = data.roleId;
+    var fullName = data.text || '';
+
+    window.selectedUserIds = window.selectedUserIds || [];
+    window.selectedRoleIds = window.selectedRoleIds || [];
+
+    if (selectedUserIds.indexOf(userId) !== -1) {
+	    $.alert('این شخص در لیست شما ثبت شده است!', '', 'rtl');
+	    return;
+    }
+    selectedUserIds.push(userId);
+    selectedRoleIds.push(roleId);
+
+    $("#txtUserIdIdeas").val(selectedUserIds.join(","));
+    $("#txtRoleIdIdeas").val(selectedRoleIds.join(","));
+
+    // ردیف جدول
+    var $tr = $('<tr class="row-data" style="height:20px">' +
+        '<td style="width:25px;background-color:#ADD8E6;border:solid 1px #778899" align="center">*</td>' +
+        '<td style="width:100px;display:none;border:solid 1px #778899">'+ userId +'</td>' +
+        '<td style="border:solid 1px #778899" align="center">' +
+            '<span class="delete-ideator" style="display: inline-block;width: 20px;height: 20px;line-height: 20px;text-align: center;border-radius: 50%;background: red;color: white; border: 2px solid red;cursor: pointer;font-weight: bold;font-size: 20px;">-</span>' +
+        '</td>' +
+        '<td style="width:300px;border:solid 1px #778899">'+ fullName +'</td>' +
+    '</tr>');
+    $("#tblIdeatorInfo tbody").append($tr);
+
+    // حذف ردیف
+    $tr.find('.delete-ideator').on('click', function() {
+        var idx = selectedUserIds.indexOf(userId);
+        if(idx !== -1) {
+            selectedUserIds.splice(idx, 1);
+            selectedRoleIds.splice(idx, 1);
+            $("#txtUserIdIdeas").val(selectedUserIds.join(","));
+            $("#txtRoleIdIdeas").val(selectedRoleIds.join(","));
+            $tr.remove();
+        }
+    });
+
+	$combo.val(null).trigger('change');
+});
+
+//#endregion
