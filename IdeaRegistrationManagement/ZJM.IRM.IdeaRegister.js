@@ -396,3 +396,237 @@ var FormManager = {
 	//******************************************************************************************************
 };
 //#endregion
+
+//#region helper.js
+function commafy(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+/*****************************************************************************************/
+function rcommafy(x) {
+    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
+	a=parseInt(a,10);
+	return a
+}
+
+//******************************************************************************************************
+function myHideLoading(){
+	$("#__modalPage").css('display', 'none');
+}
+//******************************************************************************************************
+// برای ایجاد یک عدد تصادفی با طول دخواه که با 0 و 5 و 3 شروع نمی شود
+function GenerateRandomCode(length) {
+    if (length < 1) {
+        throw new Error("Length must be at least 1");
+    }
+
+    const digits = '0123456789';
+    const disallowedFirstDigits = ['0', '3', '5'];
+
+    // Generate the first digit, excluding 0 and 3 and 5
+    let firstDigit;
+    do {
+        firstDigit = digits[Math.floor(Math.random() * digits.length)];
+    } while (disallowedFirstDigits.includes(firstDigit));
+
+    let code = firstDigit;
+
+    // Generate the remaining digits
+    for (let i = 1; i < length; i++) {
+        code += digits[Math.floor(Math.random() * digits.length)];
+    }
+
+    return code;
+}
+//******************************************************************************************************
+function ErrorMessage(message,data) {
+	$.alert(message);
+	console.log('Data: '+list);
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleError(err,methodName) {
+	console.error('Error On '+methodName, err); // چاپ خطا در کنسول
+	alert('Error On '+ methodName +', '+ err);
+	hideLoading();
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleRunWorkflowResponse(xmlString) {
+  // Parse XML string
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+
+  // Get hasError and errorMessage values
+  const hasErrorNode = xmlDoc.querySelector("hasError");
+  const errorMessageNode = xmlDoc.querySelector("errorMessage");
+
+  const hasError = hasErrorNode && hasErrorNode.textContent.trim().toLowerCase() === "true";
+  const errorMessage = errorMessageNode ? errorMessageNode.textContent.trim() : "Unknown error";
+
+  if (hasError) {
+    console.error("خطا در اجرای فرآیند:", errorMessage);
+    alert("خطا در اجرای فرآیند: " + errorMessage);
+  } else {
+    console.log("درخواست شما با موفقیت ارسال شد");
+	$.alert("درخواست شما با موفقیت ارسال شد", "", "rtl", function() {
+		hideLoading();
+		closeWindow({ OK: true, Result: null });
+		 myHideLoading();
+	});
+  }
+}
+//******************************************************************************************************
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        if ($titleSpan.length > 0) {
+            $titleSpan.text(title);
+
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
+        }
+    } catch (e) {
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+//******************************************************************************************************
+function fillIdeatorCombo($combo, service, placeholderText) {
+    var params = {};
+    service.Read(params,
+        function (data) {
+            var xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
+            var list = [];
+
+            xmlData.find("row").each(function () {
+                // استخراج فیلدهای جدید
+                var actorId = $(this).find("col[name='ActorId']").text();
+                var fullName = $(this).find("col[name='fullName']").text();
+                var roleName = $(this).find("col[name='RoleName']").text();
+                var userId = $(this).find("col[name='UserId']").text();
+                var roleId = $(this).find("col[name='RoleId']").text();
+
+                list.push({
+                    id: actorId,
+                    text: fullName + '-' + roleName,
+                    userId: userId,
+                    roleId: roleId
+                });
+            });
+
+            $combo.empty().append($('<option></option>'));
+            $combo.select2({
+                data: list,
+                placeholder: placeholderText || 'انتخاب فرد',
+                dir: "rtl"
+            });
+
+            // رویداد select: هر وقت آیتمی انتخاب شد، UserId و RoleId رو روی خودش ثبت کن
+            $combo.off('select2:select').on('select2:select', function (e) {
+                var d = e.params.data;
+                // مثلا ذخیره روی attr خود select
+                $combo.attr('data-userid', d.userId || '');
+                $combo.attr('data-roleid', d.roleId || '');
+                // اگر خواستی: console.log(d.userId, d.roleId, d);
+            });
+        },
+        function (err) {
+            alert("service titles read error:" + err);
+            hideLoading();
+        }
+    );
+}
+//******************************************************************************************************
+	//----------------------------------
+    // -- تابع تولید شماره جدید ایده --
+	//---------------------------------
+    function getNextIdeaNo(list) {
+        const startNum = 100001;
+        if (!Array.isArray(list) || list.length === 0) {
+            return "IR" + startNum;
+        }
+        let maxNum = startNum - 1;
+        list.forEach(item => {
+            let value = item.IdeaNo;
+            let num = 0;
+            if (typeof value === "string" && value.startsWith("IR")) {
+                num = parseInt(value.replace("IR", ""), 10);
+            } else {
+                num = parseInt(value, 10);
+            }
+            if (!isNaN(num) && num > maxNum) {
+                maxNum = num;
+            }
+        });
+        const nextNum = maxNum + 1;
+        return "IR" + nextNum.toString().padStart(6, "0");
+    }
+//---------------------------------------------------------------------------------------------
+	//----------------------------------
+    // -- اعتبار سنجی برای فرم --
+	//---------------------------------
+
+function validateIdeaForm() {
+    // اعتبارسنجی فیلد اجباری
+    for (let field of requiredFields) {
+        if (!$(field.selector).val().trim()) {
+            $.alert(field.message, '', 'rtl');
+            $(field.selector).focus();
+            return false;
+        }
+    }
+
+    // اعتبارسنجی گروه‌های چک‌باکس
+    const isGroupChecked = (fields) =>
+        fields.some(field => $(`#chb${field}`).is(":checked"));
+
+    for (let key in groups) {
+        const { fields, alert } = groups[key];
+        if (!isGroupChecked(fields)) {
+            $.alert(alert, '', 'rtl');
+            setTimeout(() => { $(`#chb${fields[0]}`).focus(); }, 100);
+            return false;
+        }
+    }
+
+    // فقط یکی از گروه محصول (Mutually Exclusive)
+    const product = groups.product.fields;
+    const productChecked = product.filter(f => $(`#chb${f}`).is(":checked"));
+    if (productChecked.length > 1) {
+        $.alert('در بخش محصول فقط مجاز به انتخاب یک گزینه هستید!', '', 'rtl');
+        setTimeout(() => { $(`#chb${productChecked[1]}`).focus(); }, 100);
+        return false;
+    }
+
+    // اعتبارسنجی مسئول اجرا و علت انتخاب
+    for (let field of additionalValidations) {
+        if (!$(field.selector).val().trim()) {
+            $.alert(field.message, '', 'rtl');
+            $(field.selector).focus();
+            return false;
+        }
+    }
+
+    return true;
+}
+//---------------------------------------------------------------------------------------------
+function isFullDescriptionValid(str){
+    const regex = /^[\u0600-\u06FFa-zA-Z0-9\s.,\-_،]+$/;
+    return regex.test(str.trim());
+}
+
+//#endregion
