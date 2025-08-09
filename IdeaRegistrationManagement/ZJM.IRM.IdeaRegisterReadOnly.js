@@ -293,3 +293,11 @@ var FormManager = {
 };
 
 //#endregion
+
+
+//#region btnViewed.js
+$("#btnViewed").click(function(){
+	closeWindow({OK:true, Result:null});
+});
+
+//#endregion
