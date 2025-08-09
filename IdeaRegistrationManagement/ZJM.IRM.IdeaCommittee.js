@@ -312,3 +312,195 @@ var FormManager = {
 	//******************************************************************************************************
 };
 //#endregion
+
+//#region helpercommon.js
+function commafy(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+/*****************************************************************************************/
+function rcommafy(x) {
+    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
+	a=parseInt(a,10);
+	return a
+}
+
+//******************************************************************************************************
+function ErrorMessage(message,data) {
+	$.alert(message);
+	console.log('Data: '+list);
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleError(err,methodName) {
+	console.error('Error On '+methodName, err); // چاپ خطا در کنسول
+	alert('Error On '+ methodName +', '+ err);
+	hideLoading();
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleRunWorkflowResponse(xmlString) {
+  // Parse XML string
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+
+  // Get hasError and errorMessage values
+  const hasErrorNode = xmlDoc.querySelector("hasError");
+  const errorMessageNode = xmlDoc.querySelector("errorMessage");
+
+  const hasError = hasErrorNode && hasErrorNode.textContent.trim().toLowerCase() === "true";
+  const errorMessage = errorMessageNode ? errorMessageNode.textContent.trim() : "Unknown error";
+
+  if (hasError) {
+    console.error("خطا در اجرای فرآیند:", errorMessage);
+    alert("خطا در اجرای فرآیند: " + errorMessage);
+  } else {
+    console.log("درخواست شما با موفقیت ارسال شد");
+	$.alert("درخواست شما با موفقیت ارسال شد", "", "rtl", function() {
+		hideLoading();
+		closeWindow({ OK: true, Result: null });
+		 myHideLoading();
+	});
+  }
+}
+//******************************************************************************************************
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        if ($titleSpan.length > 0) {
+            $titleSpan.text(title);
+
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
+        }
+    } catch (e) {
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+
+//******************************************************************************************************
+      //-----------------------------------------------
+      //-----  تابع افزودن دیتا به آبجکت های فرم  ----
+      //-----------------------------------------------
+      function fillAndDisableFields(data) {
+        Object.entries(fieldMap).forEach(([dataKey, elementId]) => {
+          const value = data[dataKey];
+          const el = document.getElementById(elementId);
+
+          if (!el) return;
+
+          const isHiddenTextField =
+            elementId === "txtOtherInovations" || elementId === "txtchbOtherImprovement";
+
+          if (el.type === "checkbox") {
+            el.checked = value === "true" || value === "1";
+            el.disabled = true;
+
+          } else {
+            if (isHiddenTextField) {
+              if (value && value.trim() !== "") {
+                // فقط اگر مقدار داشت، نشون بده و مقدار ست کن
+                el.style.display = "block";
+                el.disabled = false;    // آزاد کن تا بشه مقدار داد
+                el.readOnly = true;     // فقط خواندنی باشه
+                el.value = value;
+                el.disabled = true;     // دوباره غیرفعال کن بعد مقداردهی
+              } else {
+                // مقدار نداشت، پنهان بمونه
+                el.style.display = "none";
+              }
+            } else {
+              // فیلدهای معمولی
+              el.disabled = false;
+              el.value = value || "";
+              el.readOnly = true;
+              el.disabled = true;
+            }
+          }
+        });
+      }
+//---------------------------------------------------------------------------------------------
+function isFullDescriptionValid(str){
+    const regex = /^[\u0600-\u06FFa-zA-Z0-9\s.,\-_،]+$/;
+    return regex.test(str.trim());
+}
+//***************************showLoading*********************************************
+function showLoading() {
+    let $box = $('#loadingBoxTweaked');
+    if (!$box.length) {
+        $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+
+        // spinner css فقط یکبار اضافه شود
+        if (!$('#loadingSpinnerStyle').length) {
+            $('<style id="loadingSpinnerStyle">')
+                .html(`
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                `)
+                .appendTo('head');
+        }
+        $('body').append($box);
+    } else {
+        $box.show();
+    }
+}
+
+function hideLoading() {
+    $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
+}
+//*****************************************************************************************
+//-----------------------------------
+//------promise for loading----------
+//-----------------------------------
+function getCurrentActorPromise() {
+  return new Promise((resolve, reject) => {
+    UserService.GetCurrentActor(true, resolve, reject);
+  });
+}
+function readIdeaRegistrationPromise(params) {
+  return new Promise((resolve, reject) => {
+    FormManager.readIdeaRegistration(params, function(dataXml) {
+      resolve(dataXml);
+    });
+  });
+}
+function getUserInfoPromise(params) {
+  return new Promise((resolve, reject) => {
+    BS_GetUserInfo.Read(params, function(response) {
+      resolve(response);
+    });
+  });
+}
+//-----------------------------------
+
+
+//#endregion
