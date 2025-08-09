@@ -206,7 +206,6 @@ $(function(){
 });
 //#endregion
 
-
 //#region btnregister
 $("#btnRegister").click(function () {
 	//فراخوانی تابع ولیدیشن برای فرم
@@ -630,3 +629,6 @@ function isFullDescriptionValid(str){
 }
 
 //#endregion
+
+
+
