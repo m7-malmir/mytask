@@ -505,5 +505,28 @@ function getUserInfoPromise(params) {
 
 //#endregion
 
-//#region 
+//#region btnViewed.js
+$("#btnViewed").click(function(){
+	showLoading();
+	var params = {
+		'Context': 'مشاهده شد',
+		'DocumentId': DocumentId,
+		'CreatorActorId': CurrentUserActorId,
+		'InboxId': InboxId
+	};
+	
+	FormManager.InsertHamesh(params,
+		function()
+		{
+			Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
+			    function(data)
+			    { 
+			        closeWindow({OK:true, Result:null});
+			    }, function(err){ throw Error(err); }
+			);
+		}
+	);
+});
+
+
 //#endregion
