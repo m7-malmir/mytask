@@ -193,3 +193,103 @@ $(function() {
 });
 
 //#endregion
+
+//#region formManager
+var FormManager = {
+	//******************************************************************************************************
+    // دریافت لیست کالاهای قابل فروش
+	readIdeaRegistration: function (jsonParams, onSuccess, onError) {
+	    // لیست ستونها یک جا
+	    var dbFields = [
+	        "Id",
+	        "IdeaNo",
+	        "IdeaSubject",
+	        "FullDescription",
+	        "CreatorUserId",
+	        "UserIdIdeas",
+	        "RoleIdIdeas",
+	        "NewProduct",
+	        "ImprovementCurrentProducts",
+	        "BusinessModels",
+	        "OptimizationOfOrganization",
+	        "MotivatingEmployees",
+	        "FinancialStructue",
+	        "KnowledgeManagment",
+	        "InformationTechnology",
+	        "MarketingAndBranding",
+	        "InteractAndCommunicating",
+	        "ImprovePerformance",
+	        "OtherInovations",
+	        "IncreaseIncome",
+	        "IncreaseEffectiveness",
+	        "AccelerationOfProcesses",
+	        "FacilitateProcesses",
+	        "CreatingMotivationWorkplace",
+	        "PromoteEmployerBrand",
+	        "ReduceBusinessThreats",
+	        "ReduceBusinessSafetyRisks",
+	        "ReduceWaste",
+	        "QualityImprovement",
+	        "ReducingFoodSafetyRisks",
+	        "OtherImprovement",
+	        "ResponsibleForImplementation",
+	        "ReasonForResponsible",
+	        "AdditionalInformation",
+	        "ProcessStatus",
+	        "RejectStatus",
+	        "CreatedDate"
+	    ];
+	
+ BS_IR_IdeaRegistration.Read(
+        jsonParams,
+        function (data) {
+            var list = [];
+            var xmlvar = $.xmlDOM(data);
+            xmlvar.find("row").each(function () {
+                var obj = {};
+                dbFields.forEach(function (field) {
+                    var value = $(this).find("col[name='" + field + "']").text();
+
+                    if (field === "CreatedDate" && value) {
+                        // جدا کردن تاریخ از ساعت
+                        var datePart = value.split(" ")[0].split("/"); // MM/DD/YYYY
+                        var gy = datePart[2];
+                        var gm = datePart[0];
+                        var gd = datePart[1];
+                        var [jy, jm, jd] = toJalali(gy, gm, gd);
+                        value = jy + "/" + String(jm).padStart(2, "0") + "/" + String(jd).padStart(2, "0");
+                    }
+
+                    obj[field] = value;
+                }, this);
+                list.push(obj);
+            });
+
+            if ($.isFunction(onSuccess)) {
+                onSuccess(list);
+            }
+        },
+        function (error) {
+            var methodName = "readIdeaRegistration";
+            if ($.isFunction(onError)) {
+                var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                console.error("Error:", erroMessage);
+                console.error("Details:", error);
+                onError({
+                    message: erroMessage,
+                    details: error
+                });
+            } else {
+                console.error(
+                    "خطایی در سیستم رخ داده است. (Method: " + methodName + ") (no onError callback provided):",
+                    error
+                );
+            }
+        }
+    );
+},
+
+    /*********************************************************************************************************/
+};
+
+//#endregion
