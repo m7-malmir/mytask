@@ -200,3 +200,115 @@ $(function() {
 
 //#endregion
 
+//#region formManager.js
+var FormManager = {
+	//******************************************************************************************************
+    // دریافت لیست کالاهای قابل فروش
+	readIdeaRegistration: function (jsonParams, onSuccess, onError) {
+	    // لیست ستون‌ها یک جا: فقط همین رو تغییر بده اگه در آینده ستونی اضافه شد
+	    var dbFields = [
+	        "Id",
+	        "IdeaNo",
+	        "IdeaSubject",
+	        "FullDescription",
+	        "CreatorUserId",
+	        "UserIdIdeas",
+	        "RoleIdIdeas",
+	        "NewProduct",
+	        "ImprovementCurrentProducts",
+	        "BusinessModels",
+	        "OptimizationOfOrganization",
+	        "MotivatingEmployees",
+	        "FinancialStructue",
+	        "KnowledgeManagment",
+	        "InformationTechnology",
+	        "MarketingAndBranding",
+	        "InteractAndCommunicating",
+	        "ImprovePerformance",
+	        "OtherInovations",
+	        "IncreaseIncome",
+	        "IncreaseEffectiveness",
+	        "AccelerationOfProcesses",
+	        "FacilitateProcesses",
+	        "CreatingMotivationWorkplace",
+	        "PromoteEmployerBrand",
+	        "ReduceBusinessThreats",
+	        "ReduceBusinessSafetyRisks",
+	        "ReduceWaste",
+	        "QualityImprovement",
+	        "ReducingFoodSafetyRisks",
+	        "OtherImprovement",
+	        "ResponsibleForImplementation",
+	        "ReasonForResponsible",
+	        "AdditionalInformation",
+	        "ProcessStatus",
+	        "RejectStatus",
+	        "CreatedDate"
+	    ];
+	
+	    BS_IR_IdeaRegistration.Read(jsonParams,
+	        function (data) {
+	            var list = [];
+	            var xmlvar = $.xmlDOM(data);
+	            xmlvar.find("row").each(function () {
+	                var obj = {};
+	                dbFields.forEach(function(field) {
+	                    obj[field] = $(this).find("col[name='" + field + "']").text();
+	                }, this); // توجه کن این this رو برای حفظ context گذاشتی
+	                list.push(obj);
+	            });
+	            if ($.isFunction(onSuccess)) {
+	                onSuccess(list);
+	            }
+	        },
+	        function (error) {
+	            var methodName = "readIdeaRegistration"; // اسم متد درست!
+	            if ($.isFunction(onError)) {
+	                var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+	                console.error("Error:", erroMessage);
+	                console.error("Details:", error);
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error("خطایی در سیستم رخ داده است. (Method: " + methodName + ") (no onError callback provided):", error);
+	            }
+	        }
+	    );
+	},
+
+    /*********************************************************************************************************/
+	InsertHamesh: function(jsonParams, onSuccess, onError)
+	{
+		SP_HameshInsert.Execute(jsonParams,
+			function(data)
+			{ 
+				var xmlvar = null;
+				var xmlvar = $.xmlDOM(data);
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(200);
+				}
+			},
+			function(error) {
+				var methodName = "InsertHamesh";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	}
+	//******************************************************************************************************
+};
+//#endregion
