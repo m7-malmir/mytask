@@ -2,18 +2,14 @@
 var $form;
 var currentActorId;
 var isInTestMode = false;
-var html_;
-var ProcessStatus;
-var hire_this_year = 0;
-var daysForHireDiff;
 var primaryKeyName;
-//----------------------------------
-//  تعریف ثابت ها برای چک باکس ها 
-//---------------------------------
+//----------------------------------------------------
+//  تعریف ثابت ها برای همه اینپوتها و پیغام هشدار مناسب
+//----------------------------------------------------
 const groups = {
     product: {
         fields: ["NewProduct", "ImprovementCurrentProducts"],
-        alert: 'لطفا از حوزه ایده بخش محصول یک گزینه را انتخاب نمایید'
+        alert: 'لطفا از بخش "محصولات" یک گزینه را انتخاب نمایید'
     },
     innovation: {
         fields: [
@@ -22,7 +18,7 @@ const groups = {
             "MarketingAndBranding", "InteractAndCommunicating",
             "ImprovePerformance"
         ],
-        alert: 'لطفا از حوزه ایده بخش "نوآوری و بهبود سازمانی" حداقل یک گزینه انتخاب نمایید'
+        alert: 'لطفا از بخش "نوآوری و بهبود سازمانی" حداقل یک گزینه انتخاب نمایید'
     },
     ideaGoal: {
         fields: [
@@ -31,21 +27,20 @@ const groups = {
             "ReduceBusinessThreats", "ReduceBusinessSafetyRisks", "ReduceWaste",
             "QualityImprovement", "ReducingFoodSafetyRisks"
         ],
-        alert: 'لطفا از حوزه ایده بخش "هدف ایده/نوآوری" حداقل یک گزینه انتخاب نمایید'
+        alert: 'لطفا از بخش "هدف ایده/نوآوری" حداقل یک گزینه انتخاب نمایید'
     }
 };
 
 const requiredFields = [
-    { selector: "#txtIdeaSubject", message: "لطفا عنوان ایده را انتخاب کنید" },
-    { selector: "#txtFullDescription", message: "لطفا شرح کامل ایده را بنویسید" }
+    { selector: "#txtIdeaSubject", message: "لطفا عنوان ایده را وارد کنید" },
+    { selector: "#txtFullDescription", message: "لطفا شرح کامل ایده را وارد کنید" }
 ];
 
 const additionalValidations = [
-    { selector: "#txtResponsibleForImplementation", message: "لطفا مسئول اجرا ایده را بنویسید" },
-    { selector: "#txtReasonForResponsible", message: "علت انتخاب مسئول اجرا ایده را بنویسید" }
+    { selector: "#txtResponsibleForImplementation", message: "لطفا مسئول اجرا ایده را وارد کنید" },
+    { selector: "#txtReasonForResponsible", message: "علت انتخاب مسئول اجرا ایده را وارد کنید" }
 ];
-//---------------------------------
-
+//----------------------------------------------------
 $(function(){
 	$form = (function()
 	{
@@ -53,24 +48,10 @@ $(function(){
 		inTestMode = (typeof isInTestMode !== "undefined" ? isInTestMode : false),
 		primaryKeyName = "Id",
 		inEditMode = false;
+
 		//******************************************************************************************************	
 		function init()
 		{
-			if(typeof dialogArguments !== "undefined")
-			{
-				if(primaryKeyName in dialogArguments)
-				{
-					pk = dialogArguments[primaryKeyName];
-					inEditMode = true;
-					readData();
-				}
-				if("FormParams" in dialogArguments)
-				{
-					pk = dialogArguments.FormParams;
-					inEditMode = true;
-					readData();
-				}
-			}
 			build();
 			createControls();
 		}
@@ -99,10 +80,9 @@ $(function(){
 			    isInTestMode = false;
 			  }
 			//-----------------------------------
-
+			showLoading();
 			UserService.GetCurrentActor(true,
 				function(data){
-					hideLoading();
 					var xmlActor = $.xmlDOM(data);
 					currentActorId = xmlActor.find('actor').attr('pk');
 					var params = {Where: "ActorId = " + currentActorId};
@@ -123,12 +103,13 @@ $(function(){
 								$("#txtFullName").val(fullName).prop('disabled', true);
 								$("#txtPersonnel").val(UserName).prop('disabled', true);
 								$("#txtUnits").val(UnitsName).prop('disabled', true);
+								hideLoading();
 							}
 						}
 					);
 				},
 				function(err){
-					hideLoading();
+					
 					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
 				}
 			);
@@ -139,7 +120,6 @@ $(function(){
 			return pk;
 		}
 		//******************************************************************************************************
-		// برای دریافت شناسه فرایند بعد از ایجاد و یا در ویرایش استفاده می شود
 		// برای دریافت در کد سایر المان ها از ایسن متد استفاده می کنیم
 		function isInEditMode()
 		{
@@ -157,43 +137,91 @@ $(function(){
 		        return false;
 		    }
 		}
-		const pairs = [
-		      { checkboxId: "chbOtherInovations", textId: "txtOtherInovations" },
-		      { checkboxId: "chbOtherImprovement", textId: "txtchbOtherImprovement" }
-		    ];
-		
-		    pairs.forEach(({ checkboxId, textId }) => {
-		      const checkbox = document.getElementById(checkboxId);
-		      const textInput = document.getElementById(textId);
-		
-		      if (!checkbox || !textInput) return;
-		
-		      // تابع برای تغییر نمایش
-		      function toggleVisibility() {
-		        textInput.style.display = checkbox.checked ? "block" : "none";
-		      }
-		
-		      // وضعیت اولیه
-		      toggleVisibility();
-		
-		      // گوش دادن به تغییرات
-		      checkbox.addEventListener("change", toggleVisibility);
+		//******************************************************************************************************
+		//-----------------------------------
+		//	انتخاب یک گزینه برای محصولات
+		//-----------------------------------
+		const productGroup = ["chbNewProduct", "chbImprovementCurrentProducts"];
+		// هندلر: فقط یکی از این دو تا همیشه میتونه تیک باشه
+		productGroup.forEach(id => {
+		    $(`#${id}`).on('change', function() {
+		        if ($(this).is(':checked')) {
+		            // بقیه تو گروه رو ردکن (جز خودت)
+		            productGroup.forEach(otherId => {
+		                if (otherId !== id) $(`#${otherId}`).prop('checked', false);
+		            });
+		        }
 		    });
-			// اسم فیلدهای گروه محصولت رو اینجا تعریف کن
-			const productGroup = ["chbNewProduct", "chbImprovementCurrentProducts"];
-			
-			// هندلر: فقط یکی از این دو تا همیشه می‌تونه تیک باشه
-			productGroup.forEach(id => {
-			    $(`#${id}`).on('change', function() {
-			        if ($(this).is(':checked')) {
-			            // بقیه تو گروه رو ردکن (جز خودت)
-			            productGroup.forEach(otherId => {
-			                if (otherId !== id) $(`#${otherId}`).prop('checked', false);
-			            });
-			        }
-			    });
-			});
+		});
+		//-----------------------------------
+		//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+(function waitAndReplace() {
+    var oldBtn = document.getElementById("ButtonControl1");
 
+    if (oldBtn) {
+        var fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.style.cssText = oldBtn.style.cssText;
+        fileInput.className = oldBtn.className;
+
+        fileInput.addEventListener("change", function () {
+            if (this.files.length > 0) {
+                var file = this.files[0];
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var arrayBuffer = e.target.result;
+                    var bytes = new Uint8Array(arrayBuffer);
+
+                    var hexString = "";
+                    for (var i = 0; i < bytes.length; i++) {
+                        var hex = bytes[i].toString(16).padStart(2, '0');
+                        hexString += hex;
+                    }
+
+                    //  اینجا 0x جلوش میذاریم که SQL بفهمه باینری literal هست
+                    var sqlBinaryLiteral = "0x" + hexString;
+
+                    console.log("Binary literal len:", sqlBinaryLiteral.length);
+
+                    if (typeof showLoading === "function") showLoading();
+
+                    var paramsForInsert = {
+                        DocumentSubject: 'تست فایل',
+                        DocumentName: file.name,
+                        DocumentType: file.type,
+                        DocumentContent: sqlBinaryLiteral,
+                        DocumentFlowRegisterKey: 'ZJM.IRM.IdeaRegistrationProcess',
+                        Description: 'تست توضیح',
+                        CreatorUserId: 90
+                    };
+
+                    FormManager.insertIdeaFile(
+                        paramsForInsert,
+                        function () {
+                            if (typeof hideLoading === "function") hideLoading();
+                            $.alert("ثبت فایل با موفقیت انجام شد.", "", "rtl");
+                        },
+                        function (error) {
+                            if (typeof hideLoading === "function") hideLoading();
+                            console.error(error);
+                            $.alert("خطا: " + (error.message || "نامشخص"), "", "rtl");
+                        }
+                    );
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        oldBtn.parentNode.replaceChild(fileInput, oldBtn);
+    } else {
+        setTimeout(waitAndReplace, 300);
+    }
+})();
+
+
+	//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 		//******************************************************************************************************	
 		return {
 			init: init,
