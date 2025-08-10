@@ -348,7 +348,6 @@ $("#btnAddIdeatorInfo").click(function(){
 //#region formmanager
 var FormManager = {
 	//******************************************************************************************************
-    // دریافت لیست کالاهای قابل فروش
     readIdeaRegistration: function (jsonParams, onSuccess, onError) {
         BS_IR_IdeaRegistration.Read(jsonParams,
             function (data) {
@@ -419,7 +418,42 @@ var FormManager = {
 	        }
 		);
 	},
-    //******************************************************************************************************
+	//******************************************************************************************************
+		// ==================== insertEntity ====================
+	insertIdeaFile: function(jsonParams, onSuccess, onError)
+	{
+		BS_File.Insert(jsonParams,
+			function(data)
+			{
+				console.log(data);
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			},
+			function(error) {
+				var methodName = "insertContract";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
 	//******************************************************************************************************
 };
 //#endregion
