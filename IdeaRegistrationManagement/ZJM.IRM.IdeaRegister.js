@@ -6,6 +6,7 @@ var primaryKeyName;
 //----------------------------------------------------
 //  تعریف ثابت ها برای همه اینپوتها و پیغام هشدار مناسب
 //----------------------------------------------------
+
 const groups = {
     product: {
         fields: ["NewProduct", "ImprovementCurrentProducts"],
@@ -16,7 +17,7 @@ const groups = {
             "BusinessModels", "OptimizationOfOrganization", "MotivatingEmployees",
             "FinancialStructue", "KnowledgeManagment", "InformationTechnology",
             "MarketingAndBranding", "InteractAndCommunicating",
-            "ImprovePerformance"
+            "ImprovePerformance","OtherInovations",
         ],
         alert: 'لطفا از بخش "نوآوری و بهبود سازمانی" حداقل یک گزینه انتخاب نمایید'
     },
@@ -25,7 +26,7 @@ const groups = {
             "IncreaseIncome", "IncreaseEffectiveness", "AccelerationOfProcesses",
             "FacilitateProcesses", "CreatingMotivationWorkplace", "PromoteEmployerBrand",
             "ReduceBusinessThreats", "ReduceBusinessSafetyRisks", "ReduceWaste",
-            "QualityImprovement", "ReducingFoodSafetyRisks"
+            "QualityImprovement", "ReducingFoodSafetyRisks","OtherImprovement",
         ],
         alert: 'لطفا از بخش "هدف ایده/نوآوری" حداقل یک گزینه انتخاب نمایید'
     }
@@ -40,6 +41,7 @@ const additionalValidations = [
     { selector: "#txtResponsibleForImplementation", message: "لطفا مسئول اجرا ایده را وارد کنید" },
     { selector: "#txtReasonForResponsible", message: "علت انتخاب مسئول اجرا ایده را وارد کنید" }
 ];
+
 //----------------------------------------------------
 $(function(){
 	$form = (function()
@@ -57,10 +59,7 @@ $(function(){
 		}
         //******************************************************************************************************	
 		function build()
-		{
-			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
-			$("#frmLoanRequest").css({top: "0", left: "0", width: $(document).width() + "px", height: $(document).height() + "px"});
-						
+		{			
 			//Set the new dialog title
 	 	   changeDialogTitle("ثبت ایده / پیشنهادات");
 		}
@@ -154,74 +153,6 @@ $(function(){
 		    });
 		});
 		//-----------------------------------
-		//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-(function waitAndReplace() {
-    var oldBtn = document.getElementById("ButtonControl1");
-
-    if (oldBtn) {
-        var fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.style.cssText = oldBtn.style.cssText;
-        fileInput.className = oldBtn.className;
-
-        fileInput.addEventListener("change", function () {
-            if (this.files.length > 0) {
-                var file = this.files[0];
-                var reader = new FileReader();
-
-                reader.onload = function (e) {
-                    var arrayBuffer = e.target.result;
-                    var bytes = new Uint8Array(arrayBuffer);
-
-                    var hexString = "";
-                    for (var i = 0; i < bytes.length; i++) {
-                        var hex = bytes[i].toString(16).padStart(2, '0');
-                        hexString += hex;
-                    }
-
-                    //  اینجا 0x جلوش میذاریم که SQL بفهمه باینری literal هست
-                    var sqlBinaryLiteral = "0x" + hexString;
-
-                    console.log("Binary literal len:", sqlBinaryLiteral.length);
-
-                    if (typeof showLoading === "function") showLoading();
-
-                    var paramsForInsert = {
-                        DocumentSubject: 'تست فایل',
-                        DocumentName: file.name,
-                        DocumentType: file.type,
-                        DocumentContent: sqlBinaryLiteral,
-                        DocumentFlowRegisterKey: 'ZJM.IRM.IdeaRegistrationProcess',
-                        Description: 'تست توضیح',
-                        CreatorUserId: 90
-                    };
-
-                    FormManager.insertIdeaFile(
-                        paramsForInsert,
-                        function () {
-                            if (typeof hideLoading === "function") hideLoading();
-                            $.alert("ثبت فایل با موفقیت انجام شد.", "", "rtl");
-                        },
-                        function (error) {
-                            if (typeof hideLoading === "function") hideLoading();
-                            console.error(error);
-                            $.alert("خطا: " + (error.message || "نامشخص"), "", "rtl");
-                        }
-                    );
-                };
-
-                reader.readAsArrayBuffer(file);
-            }
-        });
-
-        oldBtn.parentNode.replaceChild(fileInput, oldBtn);
-    } else {
-        setTimeout(waitAndReplace, 300);
-    }
-})();
-
-
-	//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 		//******************************************************************************************************	
 		return {
 			init: init,
@@ -236,9 +167,9 @@ $(function(){
 
 //#region btnregister
 $("#btnRegister").click(function () {
-	//فراخوانی تابع ولیدیشن برای فرم
-    if (!validateIdeaForm()) return;  
-	
+    // فراخوانی تابع ولیدیشن برای فرم
+    if (!validateIdeaForm()) return;
+
     FormManager.readIdeaRegistration({}, function (list, status) {
         const nextIR = getNextIdeaNo(list);
         const insertParams = {
@@ -248,42 +179,47 @@ $("#btnRegister").click(function () {
             CreatorUserId: $("#txtCreatorUserId").val(),
             UserIdIdeas: $("#txtUserIdIdeas").val(),
             RoleIdIdeas: $("#txtRoleIdIdeas").val(),
-			OtherInovations: $("#txtOtherInovations").val(),
-			OtherImprovement: $("#txtchbOtherImprovement").val(),
+            OtherInovations: $("#txtOtherInovations").val(),
+            OtherImprovement: $("#txtOtherImprovementTargrt").val(),
             ResponsibleForImplementation: $("#txtResponsibleForImplementation").val(),
             ReasonForResponsible: $("#txtReasonForResponsible").val(),
             AdditionalInformation: $("#txtOtherImprovement").val()
         };
 
         // چک باکس ها رو با همین groups اضافه کن
-	        const allCheckboxes = [
-	            ...groups.product.fields,
-	            ...groups.innovation.fields,
-	            ...groups.ideaGoal.fields
-	        ];
-	        allCheckboxes.forEach(field => {
-	            if ($(`#chb${field}`).is(":checked")) {
-	                insertParams[field] = "1";
-	            }
-	        });
+        const allCheckboxes = [
+            ...groups.product.fields,
+            ...groups.innovation.fields,
+            ...groups.ideaGoal.fields
+        ];
+        allCheckboxes.forEach(field => {
+            if ($(`#chb${field}`).is(":checked")) {
+                insertParams[field] = "1";
+            }
+        });
 		
+        // ثبت کل فرم در دیتابیس و ران کردن وورکفلو
         FormManager.insertIdeaRegistration(
             insertParams,
             function (dataXml) {
-		 	   var pk = dataXml.find("row:first > col[name='Id']").text();
-		        WorkflowService.RunWorkflow("ZJM.IRM.IdeaRegistrationProcess",
-		            '<Content><Id>' + pk + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
-		            true,
-		            function(data) {handleRunWorkflowResponse(data);},
-		            function(err) {handleError(err, 'WorkflowService.RunWorkflow');}
-		        );
-                $.alert('ثبت ایده با موفقیت انجام شد', 'ذخیره شد', 'rtl');
-				},
+                var pk = dataXml.find("row:first > col[name='Id']").text();
+                WorkflowService.RunWorkflow(
+                    "ZJM.IRM.IdeaRegistrationProcess",
+                    '<Content><Id>' + pk + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
+                    true,
+                    function (data) { handleRunWorkflowResponse(data); },
+                    function (err) { handleError(err, 'WorkflowService.RunWorkflow'); }
+                );
+            },
             function (err) {
                 myHideLoading();
                 alert(err);
             }
         );
+    },
+    function (err) {
+        myHideLoading();
+        alert(err);
     });
 });
 
