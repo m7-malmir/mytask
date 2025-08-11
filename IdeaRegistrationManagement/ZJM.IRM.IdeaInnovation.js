@@ -365,80 +365,88 @@ var FormManager = {
 
 //#region btnDecline.js
 $("#btnDecline").click(function(){
-var that = $(this);
-	var hameshPopup = $(
-		'<div tabindex="1" style="direction:rtl;" class="ui-form">'+
-	     '<label tabindex="-1" style="text-align:right;" class="ui-form-label">لطفا دلیل مخالفت خود را بنویسید.</label>'+
-	    '</div>'
-	);
-	var commentInput = $("<textarea>", {type: "text"}).addClass("comment-input form-control").css({height:"60px","font-size":"8pt",resize:"none"});
-	hameshPopup.append(commentInput);
-	
-	var res = false;
-	
-	hameshPopup.dialog({
-		buttons: [
-			{
-				text: "ثبت",
-				click: function() {
-					showLoading();
-					if($(this).find('.comment-input').val().trim().length > 0){
-					
-						var hameshDescription = $(this).find('.comment-input').val();
-						var params = {
-							'Context': 'رد شد ('+hameshDescription+')',
-							'DocumentId': DocumentId,
-							'CreatorActorId': CurrentUserActorId,
-							'InboxId': InboxId
-						};
-						
-						FormManager.InsertHamesh(params,
-							function(res)
-							{
-								Office.Inbox.setResponse(dialogArguments.WorkItem,0, "",
-								 function(data)
-								    { 
-								        closeWindow({OK:true, Result:null});
-								    }, function(err){ throw Error(err); }
-								);
-							}
-						);
-						
-					}else{
-						$(this).notify('لطفاً علت رد را وارد نمایید',{position:'top'});
-						myHideLoading();
-					}
-				}
-			},
-			{
-				text: "انصراف",
-				click: function(){
-					$(this).dialog("close");
-				}
-			}
-		],
-		open: function( event, ui ) {
-			res = false;
-		},
-		close: function(e,u) {
-			if( res == true ){
-				
-			}
-			else{
-				
-			}
-				
-		}
-	});
+    var hameshPopup = $(
+        '<div tabindex="1" style="direction:rtl;" class="ui-form">'+
+        '<label tabindex="-1" style="text-align:right;" class="ui-form-label">لطفاً دلیل مخالفت خود را بنویسید.</label>'+
+        '</div>'
+    );
+    var commentInput = $("<textarea>", {type: "text"})
+        .addClass("comment-input form-control")
+        .css({height:"60px","font-size":"8pt",resize:"none"});
+    hameshPopup.append(commentInput);
+
+    hameshPopup.dialog({
+        buttons: [
+            {
+                text: "ثبت",
+                click: function() {
+                    showLoading();
+                    var rejectReason = $(this).find('.comment-input').val().trim();
+                    if(rejectReason.length > 0){
+                        
+                        var ideaSubject = $("#txtIdeaSubject").val();
+                        
+                        // متن ایمیل و Context با فرمت مورد نظر
+                        var emailText = "<p dir='rtl'>ایده/پیشنهاد شما با موضوع '<b>" 
+                            + ideaSubject + 
+                            "</b>' به دلیل '<b>" + rejectReason + "</b>' رد شد.</p>";
+
+                        var list = {
+                            'UserId': userId,
+                            'EmailText': emailText,
+                            'EmailSubject': 'رد ایده/پیشنهاد'
+                        };
+
+                        // ارسال ایمیل
+                        FormManager.SendEmail(list,
+                            function(data) { 
+                                var params = {
+                                    'Context': "ایده/پیشنهاد شما با موضوع '" + ideaSubject + "' به دلیل '" + rejectReason + "' رد شد",
+                                    'DocumentId': DocumentId,
+                                    'CreatorActorId': CurrentUserActorId,
+                                    'InboxId': InboxId
+                                };
+                                FormManager.InsertHamesh(params,
+                                    function() {
+                                        Office.Inbox.setResponse(dialogArguments.WorkItem, 0, "",
+                                            function(data) { 
+                                                closeWindow({OK:true, Result:null});
+                                            },
+                                            function(err) {
+                                                throw Error(err);
+                                            }
+                                        );
+                                    },
+                                    function(err){
+                                        throw Error(err);
+                                    }
+                                );
+                            },
+                            function(err) {
+                                throw Error(err);
+                            }
+                        );
+
+                    } else {
+                        $(this).notify('لطفاً علت رد را وارد نمایید',{position:'top'});
+                        myHideLoading();
+                    }
+                }
+            },
+            {
+                text: "انصراف",
+                click: function(){
+                    $(this).dialog("close");
+                }
+            }
+        ]
+    });
 });
-
-
-
 
 //#endregion
 
-//#region  btnRecheck.js
-$("#btnDecline").click(function(){
+//#region  btnIdeaCompletion.js
+$("#btnIdeaCompletion").click(function(){
 	showLoading();
 	var params = {
 		'Context': 'بررسی مجدد',
@@ -446,7 +454,7 @@ $("#btnDecline").click(function(){
 		'CreatorActorId': CurrentUserActorId,
 		'InboxId': InboxId
 	};
-	
+    $.alert("برای تکمیل ایده، ارجاع داده شد", "", "rtl");
 	FormManager.InsertHamesh(params,
 		function()
 		{
@@ -458,31 +466,49 @@ $("#btnDecline").click(function(){
 			);
 		}
 	);
+
 });
-//#endregion
+//#endregion btnIdeaCompletion.js
 
 //#region btnAccept.js
 //******************************************************************************************************
+//******************************************************************************************************
 $("#btnAccept").click(function() {
-	showLoading();
-	var params = {
-		'Context': 'تایید شد',
-		'DocumentId': DocumentId,
-		'CreatorActorId': CurrentUserActorId,
-		'InboxId': InboxId
-	};
-	
-	FormManager.InsertHamesh(params,
-		function()
-		{
-			Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
-			    function(data)
-			    { 
-			        closeWindow({OK:true, Result:null});
-			    }, function(err){ throw Error(err); }
-			);
-		}
-	);
+    ideaSubject = $("#txtIdeaSubject").val();
+    var list = {
+        'UserId': userId,
+        'EmailText': "<p dir='rtl'>ایده/پیشنهاد شما با موضوع '<b>" + ideaSubject + "</b>' جهت طرح در کمیته تایید اولیه شد.</p>",
+        'EmailSubject': 'ثبت ایده/پیشنهاد'
+    };
+
+    FormManager.SendEmail(list,
+        function(data) { 
+            var params = {
+                'Context': 'تایید شد',
+                'DocumentId': DocumentId,
+                'CreatorActorId': CurrentUserActorId,
+                'InboxId': InboxId
+            };
+            FormManager.InsertHamesh(params,
+                function() { // callback موفق درج هامش
+                    Office.Inbox.setResponse(dialogArguments.WorkItem, 1, "",
+                        function(data) { 
+                            closeWindow({OK:true, Result:null});
+                        },
+                        function(err) {
+                            throw Error(err);
+                        }
+                    );
+                },
+                function(err) {
+                    throw Error(err);
+                }
+            );
+        },
+        function(err) {
+            throw Error(err);
+        }
+    );
 });
 //******************************************************************************************************
 //#endregion 
