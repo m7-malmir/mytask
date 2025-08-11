@@ -559,26 +559,51 @@ function getUserInfoPromise(params) {
 
 //#region btnViewed.js
 $("#btnViewed").click(function(){
-	showLoading();
-	var params = {
-		'Context': 'مشاهده شد',
-		'DocumentId': DocumentId,
-		'CreatorActorId': CurrentUserActorId,
-		'InboxId': InboxId
+			
+	if ($("#txtCommitteeDescription").val().trim() === '') {
+	    $.alert("لطفا نظر خود را وارد کنید", "", "rtl");
+	    $("#txtCommitteeDescription").focus();
+	    return;
+	}
+	
+	var list = {
+	    CommitteeDescription: $("#txtCommitteeDescription").val().trim(),
+	    Where: "Id = '" + pk + "'" 
 	};
 	
-	FormManager.InsertHamesh(params,
-		function()
-		{
-			Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
-			    function(data)
-			    { 
-			        closeWindow({OK:true, Result:null});
-			    }, function(err){ throw Error(err); }
-			);
-		}
+	FormManager.updateIdeaCommittee(
+	    list,
+	    function(status, res) { 
+	        $.alert("نظر دبیر کمیته ثبت و با موفقیت ارسال شد", "", "rtl", function(){
+	            showLoading();
+				var params = {
+					'Context': 'مشاهده شد',
+					'DocumentId': DocumentId,
+					'CreatorActorId': CurrentUserActorId,
+					'InboxId': InboxId
+				};
+				
+				FormManager.InsertHamesh(params,
+					function()
+					{
+						Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
+						    function(data)
+						    { 
+						        closeWindow({OK:true, Result:null});
+						    }, function(err){ throw Error(err); }
+						);
+					}
+				);
+	        });
+	    },
+	    function(error) {
+	        console.error("خطای برگشتی:", error);
+	        $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+	    }
 	);
+	
 });
+
 
 
 //#endregion
