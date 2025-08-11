@@ -3,8 +3,10 @@ var $form;
 var currentActorId;
 var isInTestMode = false;
 var primaryKeyName;
-
-//---------------------------------
+var pk;
+//--------------------------------------
+//-- تعریف ثابت ها برای پر کردن اینپوتها
+//--------------------------------------
 const fieldMap = {
   // Textboxes
   IdeaNo: "txtIdeaNo",
@@ -12,16 +14,17 @@ const fieldMap = {
   FullDescription: "txtFullDescription",
   ResponsibleForImplementation: "txtResponsibleForImplementation",
   ReasonForResponsible: "txtReasonForResponsible",
-  OtherImprovement: "txtchbOtherImprovement",
+  OtherImprovement: "txtOtherImprovementTargrt",
   OtherInovations: "txtOtherInovations",
   AdditionalInformation: "txtOtherImprovement",
-
+  CreatedDate: "txtRegistrationDate",
+	
   // Checkbox1
   NewProduct: "chbNewProduct",
   ImprovementCurrentProducts: "chbImprovementCurrentProducts",
 
   // Checkbox2
-  BusinessModels: "chbNewProduct",
+  BusinessModels: "chbBusinessModels",
   OptimizationOfOrganization: "chbOptimizationOfOrganization",
   MotivatingEmployees: "chbMotivatingEmployees",
   FinancialStructue: "chbFinancialStructue",
@@ -44,18 +47,17 @@ const fieldMap = {
   QualityImprovement: "chbQualityImprovement",
   ReducingFoodSafetyRisks: "chbReducingFoodSafetyRisks"
 };
-
+//--------------------------------------
 $(function() {
 
   $form = (function() {
-    var pk;
     var inTestMode = (typeof isInTestMode !== "undefined" ? isInTestMode : false);
     var primaryKeyName = "Id";
     var readFromData = FormManager.readIdeaRegistration;
     var inEditMode = false;
 
     //*************************        INIT         *****************************
-    function init() {
+	function init() {
 		if(typeof dialogArguments !== "undefined")
 		{
 			if(primaryKeyName in dialogArguments)
@@ -86,9 +88,8 @@ $(function() {
         width: $(document).width() + "px",
         height: $(document).height() + "px"
       });
-
       //Set the new dialog title
-      changeDialogTitle("ثبت ایده / پیشنهادات");
+      changeDialogTitle("مشاهده ایده / پیشنهاد");
     }
 
     //*************************    CREATE CONTROLS    **************************
@@ -120,7 +121,7 @@ $(function() {
 	      const $tblBody = $("#tblIdeatorInfo tbody");
 	      $tblBody.find("tr:not(.row-header):not(.row-template)").remove();
 	
-	      // نمایش اسامی ایده پردازان افزوده شده در جدول
+	      // اسامی ایده پردازان
 	      const ideatorPromises = userIdIdeasList.map(function(userId) {
 	        return getUserInfoPromise({ Where: "UserId = " + userId }).then(response => {
 	          if ($.trim(response) !== "") {
@@ -140,7 +141,7 @@ $(function() {
 	        });
 	      });
 	
-	      // نمایش اطلاعات ایده پرداز 
+	      // ایده پرداز اصلی
 	      const creatorPromise = getUserInfoPromise({ Where: "UserId = " + creatorUserId }).then(response => {
 	        if ($.trim(response) !== "") {
 	          const dataXml = $.xmlDOM(response);
@@ -164,6 +165,7 @@ $(function() {
 	      hideLoading();
 	    });
 	}
+	  
     //*********************************************************************************
     function getPK() {
       return pk;
@@ -184,15 +186,14 @@ $(function() {
       }
     }
 
-    //**********************************************************************************
+    //*************************************************************************************
     return {
       init: init,
       getPK: getPK,
       isInEditMode: isInEditMode,
       isInTestMode: isInTestMode
     };
-
-    //============================== END ===============================
+    //*************************************************************************************
   }());
   $form.init();
 
@@ -202,67 +203,81 @@ $(function() {
 
 //#region formManager.js
 var FormManager = {
-	//******************************************************************************************************
-    // دریافت لیست کالاهای قابل فروش
-	readIdeaRegistration: function (jsonParams, onSuccess, onError) {
-	    // لیست ستون‌ها یک جا: فقط همین رو تغییر بده اگه در آینده ستونی اضافه شد
-	    var dbFields = [
-	        "Id",
-	        "IdeaNo",
-	        "IdeaSubject",
-	        "FullDescription",
-	        "CreatorUserId",
-	        "UserIdIdeas",
-	        "RoleIdIdeas",
-	        "NewProduct",
-	        "ImprovementCurrentProducts",
-	        "BusinessModels",
-	        "OptimizationOfOrganization",
-	        "MotivatingEmployees",
-	        "FinancialStructue",
-	        "KnowledgeManagment",
-	        "InformationTechnology",
-	        "MarketingAndBranding",
-	        "InteractAndCommunicating",
-	        "ImprovePerformance",
-	        "OtherInovations",
-	        "IncreaseIncome",
-	        "IncreaseEffectiveness",
-	        "AccelerationOfProcesses",
-	        "FacilitateProcesses",
-	        "CreatingMotivationWorkplace",
-	        "PromoteEmployerBrand",
-	        "ReduceBusinessThreats",
-	        "ReduceBusinessSafetyRisks",
-	        "ReduceWaste",
-	        "QualityImprovement",
-	        "ReducingFoodSafetyRisks",
-	        "OtherImprovement",
-	        "ResponsibleForImplementation",
-	        "ReasonForResponsible",
-	        "AdditionalInformation",
-	        "ProcessStatus",
-	        "RejectStatus",
-	        "CreatedDate"
-	    ];
-	
-	    BS_IR_IdeaRegistration.Read(jsonParams,
+		//******************************************************************************************************
+	    // دریافت اطلاعات ایده ثبت شده توسط پرسنل
+		readIdeaRegistration: function (jsonParams, onSuccess, onError) {
+		    // لیست همه اینپوتها
+		    var dbFields = [
+		        "Id",
+		        "IdeaNo",
+		        "IdeaSubject",
+		        "FullDescription",
+		        "CreatorUserId",
+		        "UserIdIdeas",
+		        "RoleIdIdeas",
+		        "NewProduct",
+		        "ImprovementCurrentProducts",
+		        "BusinessModels",
+		        "OptimizationOfOrganization",
+		        "MotivatingEmployees",
+		        "FinancialStructue",
+		        "KnowledgeManagment",
+		        "InformationTechnology",
+		        "MarketingAndBranding",
+		        "InteractAndCommunicating",
+		        "ImprovePerformance",
+		        "OtherInovations",
+		        "IncreaseIncome",
+		        "IncreaseEffectiveness",
+		        "AccelerationOfProcesses",
+		        "FacilitateProcesses",
+		        "CreatingMotivationWorkplace",
+		        "PromoteEmployerBrand",
+		        "ReduceBusinessThreats",
+		        "ReduceBusinessSafetyRisks",
+		        "ReduceWaste",
+		        "QualityImprovement",
+		        "ReducingFoodSafetyRisks",
+		        "OtherImprovement",
+		        "ResponsibleForImplementation",
+		        "ReasonForResponsible",
+		        "AdditionalInformation",
+		        "ProcessStatus",
+		        "RejectStatus",
+		        "CreatedDate"
+		    ];
+		
+	 BS_IR_IdeaRegistration.Read(
+	        jsonParams,
 	        function (data) {
 	            var list = [];
 	            var xmlvar = $.xmlDOM(data);
 	            xmlvar.find("row").each(function () {
 	                var obj = {};
-	                dbFields.forEach(function(field) {
-	                    obj[field] = $(this).find("col[name='" + field + "']").text();
-	                }, this); // توجه کن این this رو برای حفظ context گذاشتی
+	                dbFields.forEach(function (field) {
+	                    var value = $(this).find("col[name='" + field + "']").text();
+	
+	                    if (field === "CreatedDate" && value) {
+	                        // جدا کردن تاریخ از ساعت
+	                        var datePart = value.split(" ")[0].split("/"); // MM/DD/YYYY
+	                        var gy = datePart[2];
+	                        var gm = datePart[0];
+	                        var gd = datePart[1];
+	                        var [jy, jm, jd] = toJalali(gy, gm, gd);
+	                        value = jy + "/" + String(jm).padStart(2, "0") + "/" + String(jd).padStart(2, "0");
+	                    }
+	
+	                    obj[field] = value;
+	                }, this);
 	                list.push(obj);
 	            });
+	
 	            if ($.isFunction(onSuccess)) {
 	                onSuccess(list);
 	            }
 	        },
 	        function (error) {
-	            var methodName = "readIdeaRegistration"; // اسم متد درست!
+	            var methodName = "readIdeaRegistration";
 	            if ($.isFunction(onError)) {
 	                var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
 	                console.error("Error:", erroMessage);
@@ -272,13 +287,50 @@ var FormManager = {
 	                    details: error
 	                });
 	            } else {
-	                console.error("خطایی در سیستم رخ داده است. (Method: " + methodName + ") (no onError callback provided):", error);
+	                console.error(
+	                    "خطایی در سیستم رخ داده است. (Method: " + methodName + ") (no onError callback provided):",
+	                    error
+	                );
 	            }
 	        }
 	    );
 	},
+//******************************************************************************************************
+	updateIdeaCommittee: function(jsonParams, onSuccess, onError)
+	{
+		 BS_IR_IdeaRegistration.Update(jsonParams
+			, function(data)
+			{
+				
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+		function(error) {
+				var methodName = "updateIdeaCommittee";
 
-    /*********************************************************************************************************/
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+	//*****************************************************************************************************
 	InsertHamesh: function(jsonParams, onSuccess, onError)
 	{
 		SP_HameshInsert.Execute(jsonParams,
