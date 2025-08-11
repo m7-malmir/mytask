@@ -501,7 +501,47 @@ function changeDialogTitle (title, onSuccess, onError) {
         }
     }
 }
+//***************************showLoading*********************************************
+function showLoading() {
+    let $box = $('#loadingBoxTweaked');
+    if (!$box.length) {
+        $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+
+        // spinner css فقط یکبار اضافه شود
+        if (!$('#loadingSpinnerStyle').length) {
+            $('<style id="loadingSpinnerStyle">')
+                .html(`
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                `)
+                .appendTo('head');
+        }
+        $('body').append($box);
+    } else {
+        $box.show();
+    }
+}
 //******************************************************************************************************
+function hideLoading() {
+    $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
+}
+//******************************************************************************************************
+
 function fillIdeatorCombo($combo, service, placeholderText) {
     var params = {};
     service.Read(params,
@@ -538,7 +578,6 @@ function fillIdeatorCombo($combo, service, placeholderText) {
                 // مثلا ذخیره روی attr خود select
                 $combo.attr('data-userid', d.userId || '');
                 $combo.attr('data-roleid', d.roleId || '');
-                // اگر خواستی: console.log(d.userId, d.roleId, d);
             });
         },
         function (err) {
@@ -574,28 +613,35 @@ function fillIdeatorCombo($combo, service, placeholderText) {
     }
 //---------------------------------------------------------------------------------------------
 	//----------------------------------
-    // -- اعتبار سنجی برای فرم --
+    // -- اعتبار سنجی برای فرم --------
 	//---------------------------------
 
+// تابع کمکی برای نمایش پیام و فوکوس بعد از بسته شدن alert
+function showAlertAndFocus(message, selector) {
+    $.alert(message, '', 'rtl', function () {
+        if (selector) {
+            $(selector).focus();
+        }
+    });
+}
+
 function validateIdeaForm() {
-    // اعتبارسنجی فیلد اجباری
+    // اعتبارسنجی فیلدهای اجباری
     for (let field of requiredFields) {
         if (!$(field.selector).val().trim()) {
-            $.alert(field.message, '', 'rtl');
-            $(field.selector).focus();
+            showAlertAndFocus(field.message, field.selector);
             return false;
         }
     }
 
-    // اعتبارسنجی گروه‌های چک‌باکس
+    // اعتبارسنجی گروه‌های چک باکس
     const isGroupChecked = (fields) =>
         fields.some(field => $(`#chb${field}`).is(":checked"));
 
     for (let key in groups) {
         const { fields, alert } = groups[key];
         if (!isGroupChecked(fields)) {
-            $.alert(alert, '', 'rtl');
-            setTimeout(() => { $(`#chb${fields[0]}`).focus(); }, 100);
+            showAlertAndFocus(alert, `#chb${fields[0]}`);
             return false;
         }
     }
@@ -604,29 +650,50 @@ function validateIdeaForm() {
     const product = groups.product.fields;
     const productChecked = product.filter(f => $(`#chb${f}`).is(":checked"));
     if (productChecked.length > 1) {
-        $.alert('در بخش محصول فقط مجاز به انتخاب یک گزینه هستید!', '', 'rtl');
-        setTimeout(() => { $(`#chb${productChecked[1]}`).focus(); }, 100);
+        showAlertAndFocus(
+            'در بخش محصول فقط مجاز به انتخاب یک گزینه هستید!',
+            `#chb${productChecked[1]}`
+        );
         return false;
     }
 
     // اعتبارسنجی مسئول اجرا و علت انتخاب
     for (let field of additionalValidations) {
         if (!$(field.selector).val().trim()) {
-            $.alert(field.message, '', 'rtl');
-            $(field.selector).focus();
+            showAlertAndFocus(field.message, field.selector);
             return false;
         }
     }
-
     return true;
 }
+
 //---------------------------------------------------------------------------------------------
 function isFullDescriptionValid(str){
     const regex = /^[\u0600-\u06FFa-zA-Z0-9\s.,\-_،]+$/;
     return regex.test(str.trim());
 }
 
+
 //#endregion
 
+//#region chbOtherInovations.btn
+document.addEventListener("DOMContentLoaded", function() {
+    const chk = document.getElementById("chbOtherInovations");
+    const txt = document.getElementById("txtOtherInovations");
 
+    // حالت اولیه
+    txt.style.display = chk.checked ? "block" : "none";
+
+    // رویداد تغییر
+    chk.addEventListener("change", function() {
+        if (this.checked) {
+            txt.style.display = "block";
+        } else {
+            txt.style.display = "none";
+            txt.value = ""; // پاک کردن متن وقتی unchecked میشه
+        }
+    });
+});
+
+//#endregion
 
