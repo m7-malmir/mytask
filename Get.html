@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>آپلود و نمایش همان فایل</title>
+</head>
+<body>
+
+<input type="file" id="fileInput">
+<button id="uploadBtn">آپلود و نمایش فایل</button>
+
+<div id="preview"></div>
+
+<script>
+document.getElementById('uploadBtn').addEventListener('click', function () {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) {
+        alert("لطفاً یک فایل انتخاب کنید");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('myfile', fileInput.files[0]);
+
+    fetch('https://httpbin.org/post', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        // گرفتن base64 از پاسخ
+        const base64DataUrl = data.files.myfile; // این همون data:image/... هست
+        const preview = document.getElementById('preview');
+        
+        // نمایش در صفحه
+        const img = document.createElement('img');
+        img.src = base64DataUrl;
+        img.style.maxWidth = "300px";
+        preview.innerHTML = '';
+        preview.appendChild(img);
+
+        // یا دانلود همزمان همان فایل
+        const a = document.createElement('a');
+        a.href = base64DataUrl;
+        a.download = fileInput.files[0].name;
+        a.textContent = "دانلود فایل";
+        preview.appendChild(document.createElement('br'));
+        preview.appendChild(a);
+    })
+    .catch(err => console.error("خطا در آپلود:", err));
+});
+</script>
+
+</body>
+</html>

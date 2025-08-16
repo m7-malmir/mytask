@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>اجرای Workflow با یک کلیک</title>
+</head>
+<body>
+<h1>اجرای Workflow</h1>
+<button id="runBtn">اجرای فرآیند</button>
+<pre id="result"></pre>
+
+<script>
+document.getElementById('runBtn').addEventListener('click', () => {
+    fetch('http://localhost:3000/runworkflow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    })
+    .catch(err => {
+        document.getElementById('result').textContent = 'Error: ' + err;
+    });
+});
+</script>
+</body>
+</html>
