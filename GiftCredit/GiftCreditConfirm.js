@@ -417,3 +417,181 @@ $("#btnAccept").click(function() {
 });
 
 //#endregion
+
+//#region common.js
+function commafy(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+/*****************************************************************************************/
+function rcommafy(x) {
+    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
+	a=parseInt(a,10);
+	return a
+}
+//******************************************************************************************************
+function ErrorMessage(message,data) {
+	$.alert(message);
+	console.log('Data: '+list);
+	hideLoading();
+}
+//******************************************************************************************************
+function handleError(err,methodName) {
+	console.error('Error On '+methodName, err); // چاپ خطا در کنسول
+	alert('Error On '+ methodName +', '+ err);
+	hideLoading();
+}
+//******************************************************************************************************
+function handleRunWorkflowResponse(xmlString) {
+  // Parse XML string
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+
+  // Get hasError and errorMessage values
+  const hasErrorNode = xmlDoc.querySelector("hasError");
+  const errorMessageNode = xmlDoc.querySelector("errorMessage");
+
+  const hasError = hasErrorNode && hasErrorNode.textContent.trim().toLowerCase() === "true";
+  const errorMessage = errorMessageNode ? errorMessageNode.textContent.trim() : "Unknown error";
+
+  if (hasError) {
+    console.error("خطا در اجرای فرآیند:", errorMessage);
+    alert("خطا در اجرای فرآیند: " + errorMessage);
+  } else {
+    console.log("درخواست شما با موفقیت ارسال شد");
+	$.alert("درخواست شما با موفقیت ارسال شد", "", "rtl", function() {
+		hideLoading();
+		closeWindow({ OK: true, Result: null });
+		 hideLoading();
+	});
+  }
+}
+//******************************************************************************************************
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        if ($titleSpan.length > 0) {
+            $titleSpan.text(title);
+
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
+        }
+    } catch (e) {
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+//***************************showLoading*********************************************
+function showLoading() {
+    let $box = $('#loadingBoxTweaked');
+    if (!$box.length) {
+        $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+
+        // spinner css فقط یکبار اضافه شود
+        if (!$('#loadingSpinnerStyle').length) {
+            $('<style id="loadingSpinnerStyle">')
+                .html(`
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                `)
+                .appendTo('head');
+        }
+        $('body').append($box);
+    } else {
+        $box.show();
+    }
+}
+//**********************************hideLoading*****************************************************
+function hideLoading() {
+    $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
+}
+//**************************************************************************************************
+function isFullDescriptionValid(str){
+    const regex = /^[\u0600-\u06FFa-zA-Z0-9\s.,\-_،]+$/;
+    return regex.test(str.trim());
+}
+//******************************************************************************************************
+// تابع کمکی برای نمایش پیام و فوکوس بعد از بسته شدن alert
+function showAlertAndFocus(message, selector) {
+    $.alert(message, '', 'rtl', function () {
+        if (selector) {
+            $(selector).focus();
+        }
+    });
+}
+//******************************************************************************************************
+function validateIdeaForm() {
+    //  گرفتن مقادیر و trim کردن قبل از بررسی
+    var confirmedGiftCredit = $.trim($("#txtConfirmedGiftCredit").val());
+    //  بررسی اجباری بودن مقدار اعتبار هدیه
+    if (confirmedGiftCredit === '') {
+        showAlertAndFocus('لطفا میزان اعتبار تایید شده را وارد کنید', '#txtConfirmedGiftCredit');
+        return false;
+    }
+    return true;
+}
+//******************************************************************************************************
+// تبدیل تاریخ
+function getFullDateTime() {
+    var now = new Date();
+
+    var year      = now.getFullYear();
+    var month     = String(now.getMonth() + 1).padStart(2, '0');
+    var day       = String(now.getDate()).padStart(2, '0');
+    var hours     = String(now.getHours()).padStart(2, '0');
+    var minutes   = String(now.getMinutes()).padStart(2, '0');
+    var seconds   = String(now.getSeconds()).padStart(2, '0');
+    var millis    = String(now.getMilliseconds()).padStart(3, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${millis}`;
+}
+//******************************************************************************************************
+// Helper یکپارچه برای خواندن فیلد هم از JSON هم از XML
+const getField = (data, jsonKey, xmlKey) => {
+    if (!data) return "";
+    return Array.isArray(data)
+        // JSON
+        ? (data[0][jsonKey] || data[0][jsonKey.toLowerCase()] || "")
+        // XML
+        : $.xmlDOM(data).find(`row:first > col[name='${xmlKey}']`).text();
+};
+//*****************************************************************************************************
+function showSuccessAlert(message, callback) {
+    $.alert(message, "", "rtl", function () {
+        if (typeof callback === "function") {
+            callback();
+        }
+    });
+}
+
+
+
+//#endregion
