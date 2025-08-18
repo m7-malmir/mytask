@@ -439,3 +439,86 @@ var createdDate         = getFullDateTime(); // تاریخ دقیق میلادی
     );
 });
 //#endregion
+
+//#region tblPersonnelGiftCredit.js
+var tblPersonnelGiftCredit = null;
+
+$(function() {
+    tblPersonnelGiftCredit = (function() {
+        //خواندن پارامترهای اصلی جدول
+        var element = null,
+            isDirty = false,
+            rowPrimaryKeyName = "Id",
+            readRows = FormManager.readPersonnelGiftCredit;
+        //فراخوانی سازنده جدول
+        init();
+        //******************************************************************************************************
+        function init() {
+            element = $("#tblPersonnelGiftCredit");
+            load();
+        }
+        /* *********************************************************************************************** */
+        // عملیات پر کردن دیتای هر سطر می باشد
+       function load() {
+		    var giftCreditForUserId = $.trim($("#txtGiftCreditForUserId").val() || '');
+		
+		    element.find("tr.row-data").remove();
+		
+		    if (!giftCreditForUserId) {
+		        showNoDataRow();
+		        return;
+		    }
+		    var params = { Where: "GiftCreditForUserId = " + giftCreditForUserId };
+		    showLoading();
+		
+		    readRows(params,
+		        function(list) {
+		            element.find("tr.row-data").remove();
+		
+		            if (list.length === 0) {
+		                showNoDataRow();
+		            } else {
+		                for (var i = 0; i < list.length; i++) {
+		                    addRow(list[i], i + 1);
+		                }
+		                hideLoading();
+		            }
+		        },
+		        function(error) {
+		            hideLoading();
+		            alert(error);
+		        }
+		    );
+		}
+		function addRow(rowInfo, rowNumber) {
+		    var index = 0,
+		    tempRow = element.find("tr.row-template").clone();
+		    tempRow.show().removeClass("row-template").addClass("row-data");
+		    tempRow.data("rowInfo", rowInfo);
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(formatGregorianToJalali(rowInfo.CreatedDate));
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.ConfirmedGiftCredit));
+		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Description);
+		    tempRow.attr({ state: "new" });
+		
+		    element.find("tr.row-template").before(tempRow);
+		}
+		function showNoDataRow() {
+		    // colspan رو برابر تعداد ستون‌ها بذار
+		    element.append('<tr class="row-data"><td colspan="4" style="text-align:center;color:#999;">داده‌ای یافت نشد!</td></tr>');
+		    hideLoading();
+		}
+        //******************************************************************************************************
+        //بروز رسانی دیتای جدول
+        function refresh() {
+            element.find("tr.row-data").remove();
+            load();
+        }
+        //******************************************************************************************************
+        return {
+            refresh: refresh,
+            load: load
+        };
+    }());
+});
+//#endregion
