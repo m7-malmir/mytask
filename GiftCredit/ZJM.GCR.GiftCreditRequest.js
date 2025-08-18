@@ -399,3 +399,43 @@ function getFullDateTime() {
 
 //#endregion
 
+//#region btnRegister.js
+$("#btnRegister").click(function () {
+    // فراخوانی تابع ولیدیشن برای فرم
+    if (!validateIdeaForm()) return;
+
+
+ // گرفتن مقادیر و trim کردن قبل ارسال
+var creatorActorId      = $.trim($("#txtCreatorActorId").val());
+var giftCreditForUserId = $.trim($("#txtGiftCreditForUserId").val());
+var offeredGiftCredit   = $.trim($("#txtOfferedGiftCredit").val());
+var description         = $.trim($("#txtDescription").val());
+var createdDate         = getFullDateTime(); // تاریخ دقیق میلادی
+
+    var insertParams = {
+        CreatorActorId:      creatorActorId,
+        GiftCreditForUserId: giftCreditForUserId,
+        OfferedGiftCredit:   rcommafy(offeredGiftCredit),
+		ConfirmedGiftCredit: rcommafy(offeredGiftCredit),
+        Description:         description
+    };
+
+    FormManager.insertPersonnelGiftCredit(
+        insertParams,
+        function (dataXml) {
+            var pk = dataXml.find("row:first > col[name='Id']").text();
+            WorkflowService.RunWorkflow(
+                "ZJM.GCR.GiftCreditProcess",
+                '<Content><Id>' + pk + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
+                true,
+                function (data) { handleRunWorkflowResponse(data); },
+                function (err) { handleError(err, 'WorkflowService.RunWorkflow'); }
+            );  
+        },
+        function (err) {
+            hideLoading();
+            alert(err);
+        }
+    );
+});
+//#endregion
