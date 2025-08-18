@@ -135,6 +135,9 @@ $(function(){
 });
 //#endregion
 
-//#region 
+//#region btnClose.js
+$("#btnRegister").click(function () {
+	closeWindow({OK:true, Result:null});
+});
 
 //#endregion
