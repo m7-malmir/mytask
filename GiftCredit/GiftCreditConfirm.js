@@ -622,11 +622,20 @@ $(function() {
             load();
         }
         /* *********************************************************************************************** */
-        // عملیات پر کردن دیتای هر سطر می باشد
+        // عملیات پر کردن دیتای هر سطر میباشد
 		function load() {
-		    var params = { Where: "Id = " + $form.getPK() };
-		    showLoading();
+		    var currentId = $form.getPK(); // رکورد جاری
+		    var giftCreditForUserId = $("#txtGiftCreditForUserId").val(); // فیلد هدف
+			if (!giftCreditForUserId) {
+		       // منتظر مقدار txtGiftCreditForUserId;
+		        return;
+		    }
+		    // شرط WHERE: همه با GiftCreditForUserId یکسان ولی Id غیر از جاری
+		    var params = { 
+		        Where: "GiftCreditForUserId = " + giftCreditForUserId + " AND Id <> " + currentId 
+		    };
 		
+		    showLoading();
 		    readRows(
 		        params,
 		        function(list) {
@@ -639,31 +648,32 @@ $(function() {
 		                    addRow(list[i], i + 1);
 		                }
 		            }
-		
-		            hideLoading(); // اینجا بعد از پر شدن جدول
+		            hideLoading();
 		        },
 		        function(error) {
-		            hideLoading(); // اینجا بعد از مواجهه با خطا
+		            hideLoading();
 		            alert(error);
 		        }
 		    );
 		}
-
+		//*********************************************************************************************		
 		function addRow(rowInfo, rowNumber) {
 		    var index = 0,
+			
 		    tempRow = element.find("tr.row-template").clone();
 		    tempRow.show().removeClass("row-template").addClass("row-data");
 		    tempRow.data("rowInfo", rowInfo);
 		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
 		    tempRow.find("td:eq(" + index++ + ")").empty().text(formatGregorianToJalali(rowInfo.CreatedDate));
 		    tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.ConfirmedGiftCredit));
-		    tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Description);
+			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.Description);
+		    var statusText = (rowInfo.RejectStatus === true || rowInfo.RejectStatus === "true") ? "رد شده" : "تایید";
+			tempRow.find("td:eq(" + (index++) + ")").empty().text(statusText);
 		    tempRow.attr({ state: "new" });
-		
 		    element.find("tr.row-template").before(tempRow);
 		}
 		function showNoDataRow() {
-		    // colspan رو برابر تعداد ستون‌ها بذار
+		    // colspan رو برابر تعداد ستون ها بذار
 		    element.append('<tr class="row-data"><td colspan="4" style="text-align:center;color:#999;">داده‌ای یافت نشد!</td></tr>');
 		    hideLoading();
 		}
