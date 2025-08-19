@@ -1,42 +1,86 @@
-document.getElementById('upload').addEventListener('click', function () {
-    let input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '*/*';
-    input.onchange = async function (e) {
-        let file = e.target.files[0];
-        if (!file) return;
+$("#btnAccept").click(function () {
 
-        let formData = new FormData();
-        formData.append('file', file);
-        formData.append('FoodTitle', 'Pizza');
-        formData.append('FoodStatus', 'Ready');
-        formData.append('UserId', '12345');
-        formData.append('Token', 'ABC-XYZ');
+    //  تایید صحت مقدار اعتبار مورد تایید فرم
+    validateIdeaForm(function () {
 
-        // نمایش مقادیر قبل از ارسال
-        console.group(' داده‌های ارسالی:');
-        for (let [key, value] of formData.entries()) {
-            if (value instanceof File) {
-                console.log(key, `(File)`, value.name, `${value.size} bytes`);
-            } else {
-                console.log(key, value);
-            }
+    // --- گرفتن مقادیر ورودی مورد نیاز---
+    const confirmedGiftCreditRaw = $("#txtConfirmedGiftCredit").val().trim();
+    const confirmedGiftCredit = (typeof rcommafy === "function")
+        ? rcommafy(confirmedGiftCreditRaw)
+        : confirmedGiftCreditRaw.replace(/,/g, "");
+
+    const personnelCode = $("#txtUserName").val().trim();
+    const giftCreditPerson = { Where: "Id = '" + $form.getPK() + "'" };
+	//-------------------------------------
+		
+    //  خواندن موجودی فعلی پرسنل
+    const paramsReadCredit = { Where: "PersonnelCode = '" + personnelCode + "'" };
+    FormManager.readPersonnelCredit(paramsReadCredit, function (data) {
+
+        if (!Array.isArray(data) || data.length === 0) {
+            $.alert("رکوردی با این کد پرسنلی یافت نشد.", "", "rtl");
+            return;
         }
-        console.groupEnd();
 
-        try {
-            let res = await fetch('https://tmpfiles.org/api/v1/upload', {
-                method: 'POST',
-                body: formData
+        //  محاسبه موجودی جدید هدیه
+        const remainGiftCredit = Number(data[0].RemainGiftCredit || 0);
+        const newGiftCredit = remainGiftCredit + Number(confirmedGiftCredit);
+
+        //  آپدیت موجودی هدیه پرسنل در جدول PersonnelCredit
+        const updatePersonnelList = {
+            RemainGiftCredit: newGiftCredit,
+            Where: "PersonnelCode = '" + personnelCode + "'"
+        };
+        FormManager.updatePersonnelCredit(updatePersonnelList, function () {
+
+            //  آپدیت مبلغ تایید شده در جدول  PersonnelGiftCredit
+            const updateGiftList = $.extend({ ConfirmedGiftCredit: confirmedGiftCredit }, giftCreditPerson);
+            FormManager.updatePersonnelGiftCredit(updateGiftList, function () {
+
+                //  ارسال ایمیل به کاربر
+                const emailList = {
+                    UserId: $("#txtGiftCreditForUserId").val(),
+                    EmailText: `<p dir='rtl'>همکار گرامی – اعتبار خرید 100% تخفیف به مبلغ '<b>${confirmedGiftCredit}</b>' ریال برای شما در خرید تکی و عمده محصولات لحاظ گردید.</p>`,
+                    EmailSubject: 'اعتبار هدیه'
+                };
+                FormManager.SendEmail(emailList, function () {
+
+                    // ثبت هامش
+                    const hameshParams = {
+                        Context: 'تایید شد',
+                        DocumentId: DocumentId,
+                        CreatorActorId: CurrentUserActorId,
+                        InboxId: InboxId
+                    };
+                    FormManager.InsertHamesh(hameshParams, function () {
+
+                        //  ادامه گردش کار و پیام موفقیت
+                        Office.Inbox.setResponse(dialogArguments.WorkItem, 1, "", function () {
+                            showSuccessAlert("اعتبار با موفقیت ثبت و ارسال شد", function () {
+                                closeWindow({ OK: true, Result: null });
+                            });
+                        }, function (err) {
+                            throw Error(err);
+                        });
+
+                    }, function (err) {
+                        throw Error(err);
+                    });
+
+                }, function (err) {
+                    throw Error(err);
+                });
+
+            }, function (err) {
+                $.alert("خطا در آپدیت هدیه: " + (err.message || "خطای ناشناخته"), "", "rtl");
             });
-            let data = await res.json();
-            console.log('پاسخ سرور:', data);
-            if (data?.data?.url) {
-                console.log(' لینک دانلود فایل:', data.data.url);
-            }
-        } catch (err) {
-            console.error('خطا در آپلود:', err);
-        }
-    };
-    input.click();
+
+        }, function (err) {
+            $.alert("خطا در آپدیت موجودی پرسنل: " + (err.message || "خطای ناشناخته"), "", "rtl");
+        });
+
+    }, function (err) {
+        $.alert("خطا در خواندن موجودی پرسنل: " + (err.message || "خطای ناشناخته"), "", "rtl");
+    });
+ });
 });
