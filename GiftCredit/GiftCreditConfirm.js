@@ -355,65 +355,73 @@ $("#btnDecline").click(function(){
 //#endregion
 
 //#region btnAccept.js
-$("#btnAccept").click(function() {
-	// فراخوانی تابع ولیدیشن برای فرم
-    if (!validateIdeaForm()) return;
-	
-	let confirmedGiftCredit = $("#txtConfirmedGiftCredit").val().trim();
-	confirmedGiftCredit = rcommafy ? rcommafy(confirmedGiftCredit) : confirmedGiftCredit.replace(/,/g, "");
-	
-	let list = {ConfirmedGiftCredit: confirmedGiftCredit};
-	list = $.extend(list, { Where: "Id = '" + $form.getPK() + "'" });
+$("#btnAccept").click(function () {
+    validateIdeaForm(function () {
+        let confirmedGiftCredit = $("#txtConfirmedGiftCredit").val().trim();
+        confirmedGiftCredit = rcommafy ? rcommafy(confirmedGiftCredit) : confirmedGiftCredit.replace(/,/g, "");
 
-		FormManager.updatePersonnelGiftCredit(list,
-	        function(status, list) { 
-				
-				var userId = $("#txtGiftCreditForUserId").val();
-			    var list = {
-			        'UserId': userId,
-			        'EmailText': "<p dir='rtl'>همکار گرامی – اعتبار خرید 100% تخفیف به مبلغ '<b>" + confirmedGiftCredit + "</b>' ريال برای شما در خرید تکی و عمده محصولات لحاظ گردید.</p>",
-			        'EmailSubject': 'اعتبار هدیه'
-			    };
-			    FormManager.SendEmail(list,
-			        function(data) { 
-			            var params = {
-			                'Context': 'تایید شد',
-			                'DocumentId': DocumentId,
-			                'CreatorActorId': CurrentUserActorId,
-			                'InboxId': InboxId
-			            };
-			
-			            FormManager.InsertHamesh(params,
-			                function() { 
-			                    Office.Inbox.setResponse(dialogArguments.WorkItem, 1, "",
-			                        function(data) { 
-			                            // پیام موفقیت قبل از بستن
-			                            showSuccessAlert("اعتبار با موفقیت ثبت و ارسال شد", function(){
-			                                closeWindow({OK:true, Result:null});
-			                            });
-			                        },
-			                        function(err) {
-			                            throw Error(err);
-			                        }
-			                    );
-			                },
-			                function(err) {
-			                    throw Error(err);
-			                }
-			            );
-			      
-						},
-			        function(err) {
-			            throw Error(err);
-			        }
-			    );	
-	        },
-	        function(error) { 
-	            console.log("1خطای برگشتی:", error);
-	            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-	        }
-		);
+        // مرحله اول: آپدیت مبلغ تایید شده
+        let list = $.extend({ ConfirmedGiftCredit: confirmedGiftCredit }, { Where: "Id = '" + $form.getPK() + "'" });
 
+        FormManager.updatePersonnelGiftCredit(
+            list,
+            function (status, list) {
+                // مرحله دوم: ارسال ایمیل
+                let userId = $("#txtGiftCreditForUserId").val();
+                let emailList = {
+                    'UserId': userId,
+                    'EmailText': "<p dir='rtl'>همکار گرامی – اعتبار خرید 100% تخفیف به مبلغ '<b>" +
+                                 confirmedGiftCredit +
+                                 "</b>' ريال برای شما در خرید تکی و عمده محصولات لحاظ گردید.</p>",
+                    'EmailSubject': 'اعتبار هدیه'
+                };
+
+                FormManager.SendEmail(
+                    emailList,
+                    function (data) {
+                        // مرحله سوم: ثبت هامش
+                        let params = {
+                            'Context': 'تایید شد',
+                            'DocumentId': DocumentId,
+                            'CreatorActorId': CurrentUserActorId,
+                            'InboxId': InboxId
+                        };
+
+                        FormManager.InsertHamesh(
+                            params,
+                            function () {
+                                // مرحله چهارم: ران وورکفلو
+                                Office.Inbox.setResponse(
+                                    dialogArguments.WorkItem,1,"",
+                                    function () {
+                                        // مرحله پنجم: آپدیت اعتبار دوم پرسنل 
+                                        let updatePersonnelCredit = { 'Id': $form.getPK() };
+                                        FormManager.updatePersonnelCredit(
+                                            updatePersonnelCredit,
+                                            function (data) { console.log('ok'); },
+                                            function (err) { $.alert("خطا در آپدیت هدیه: " + (err.message || "خطای ناشناخته"), "", "rtl"); }
+                                        );
+
+                                        // پیام موفقیت و بستن پنجره
+                                        showSuccessAlert("اعتبار با موفقیت ثبت و ارسال شد", function () {
+                                            closeWindow({ OK: true, Result: null });
+                                        });
+                                    },
+                                    function (err) { throw Error(err); }
+                                );
+                            },
+                            function (err) { throw Error(err); }
+                        );
+                    },
+                    function (err) { throw Error(err); }
+                );
+            },
+            function (error) {
+                console.log("1خطای برگشتی:", error);
+                $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+            }
+        );
+    });
 });
 
 //#endregion
