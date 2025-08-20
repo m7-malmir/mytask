@@ -95,3 +95,69 @@ $("#txtRemainCreditNew").val(commafy(remainCredit));
 $("#txtDiscountPercent").val(discountPercentForUser);
 $("#txtTotalPrice").val('0');
 $("#txtTotalPriceWithDiscount").val('0');
+
+
+$("#txtRemainCredit").val('0');
+$("#txtRemainCreditNew").val('0');
+$("#txtDiscountPercent").val('0');
+$("#txtTotalPrice").val('0');
+$("#txtTotalPriceWithDiscount").val('0');
+
+let $options = $("#cmbCreditType option");
+
+// شرط مورد نیاز برای نمایش انتخاب نوع اعتبار
+$options.hide().prop("disabled", true);
+if (discountPercentMax == discountPercentBase) {
+    $options.filter('[credittype="2"]').show().prop("disabled", false);
+} else {
+    $options.filter('[credittype="1"], [credittype="2"]').show().prop("disabled", false);
+}
+
+// شرط دوم
+if (remainGiftCredit > 0) {
+    $options.filter('[credittype="3"]').show().prop("disabled", false);
+}
+
+$("#cmbCreditType").on("change", function () {
+    let selectedType = $(this).find(":selected").attr("credittype");
+
+    // مقادیر پیش فرض (برای حالتی که چیزی انتخاب نشده یا حالت خاصی باشه)
+    $("#txtRemainCredit").val('0');
+    $("#txtRemainCreditNew").val('0');
+    $("#txtDiscountPercent").val('0');
+    $("#txtTotalPrice").val('0');
+    $("#txtTotalPriceWithDiscount").val('0');
+
+    // حالا بر اساس انتخاب مقداردهی می کنیم
+    switch (selectedType) {
+        case "1": // سازمانی
+		    $("#txtRemainCredit").val(commafy(remainCredit));
+            $("#txtRemainCreditNew").val(commafy(remainCredit));
+            $("#txtDiscountPercent").val(discountPercentForUser);
+            break;
+
+        case "2": // پایه
+			discountPercentForUser=discountPercentBase;
+ 		   $("#txtRemainCredit").val("نامحدود");
+            $("#txtRemainCreditNew").val("نامحدود");
+            $("#txtDiscountPercent").val(discountPercentBase);
+            break;
+
+        case "3": // هدیه
+			discountPercentForUser=100;
+            $("#txtRemainCredit").val(commafy(remainGiftCredit));
+            $("#txtRemainCreditNew").val(commafy(remainGiftCredit));
+            $("#txtDiscountPercent").val('100');
+            break;
+
+        default:
+            // چیزی انتخاب نشده، مقادیر پیش فرض باقی میمونه
+            break;
+    }
+	let $rows = $("#tblOrderedGoods tbody tr").not(".row-header, .row-template");
+	if ($rows.length > 0) {
+	    $rows.remove();
+	    updateTotalPrice();
+	    refresh();
+	}
+});
