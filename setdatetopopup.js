@@ -84,3 +84,14 @@ $("#btnAccept").click(function () {
     });
  });
 });
+
+
+
+
+
+
+$("#txtRemainCredit").val(commafy(remainCredit));
+$("#txtRemainCreditNew").val(commafy(remainCredit));
+$("#txtDiscountPercent").val(discountPercentForUser);
+$("#txtTotalPrice").val('0');
+$("#txtTotalPriceWithDiscount").val('0');
