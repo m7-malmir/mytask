@@ -133,3 +133,11 @@ function validateIdeaForm() {
 
 
 
+
+    //  شرط جلوگیری کامل: اگر اعتبار باقیمانده < قیمت محصول
+    let currentRemain = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, ''), 10) || 0;
+    if (currentRemain < price) {
+        alert("اعتبار شما برای خرید این کالا کافی نیست");
+        $(this).prop("checked", false); // تیک رو هم برگردون
+        return false; 
+    }

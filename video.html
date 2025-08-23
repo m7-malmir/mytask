@@ -1,36 +1,19 @@
+63,394,011
+63394011
 
 
+if (discountPercentForUser ==100 && currentRemainingBalance < total) {
+	alert(JSON.stringify('مبلغ خرید بیش از مقدار باقیمانده است!'));
+	//$("#tblOrderedGoods").find("tbody tr:last").remove();
+	//updateTotalPrice();
+	refresh();
+	return false;					
+}
 
-66,383,704
-
-
-
-
-[ZJM].[SP_IS_WholeSalePersonnelOrderRespond] @PersonnelOrderId,@JsonArray,@Type
-
-$form.getPK()
-
-
-
-
-
-
-			var params = {
-				'Context': 'تایید شد',
-				'DocumentId': DocumentId,
-				'CreatorActorId': CurrentUserActorId,
-				'InboxId': InboxId
-			};
-			
-			FormManager.InsertHamesh(params,
-				function()
-				{
-					//ServiceLocationId شناسه محل خدمت وام گیرنده می باشد که یک برای دفتر مرکزی و دو برای کارخانه می باشد
-					Office.Inbox.setResponse(dialogArguments.WorkItem,ServiceLocationId, "",
-					    function(data)
-					    { 
-					        closeWindow({OK:true, Result:null});
-					    }, function(err){ throw Error(err); }
-					);
-				}
-			);
+if (discountPercentForUser < 100 && currentRemainingBalance < finalTotal) {
+	alert(JSON.stringify('مبلغ خرید بیش از مقدار باقیمانده است!'));
+	//$("#tblOrderedGoods").find("tbody tr:last").remove();
+	//updateTotalPrice();
+	refresh();
+	return false;					
+}

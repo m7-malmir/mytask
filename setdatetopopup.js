@@ -86,10 +86,6 @@ $("#btnAccept").click(function () {
 });
 
 
-
-
-
-
 $("#txtRemainCredit").val(commafy(remainCredit));
 $("#txtRemainCreditNew").val(commafy(remainCredit));
 $("#txtDiscountPercent").val(discountPercentForUser);
