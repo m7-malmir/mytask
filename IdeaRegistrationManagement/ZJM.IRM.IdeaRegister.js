@@ -541,51 +541,69 @@ function hideLoading() {
     $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
 }
 //******************************************************************************************************
+// افزودن ایده پردازان
+function fillIdeaGeneratorsCombo($combo, service, placeholderText) {
+    
+    // خواندن داده ها از سرویس
+    service.Read({}, function (data) {
 
-function fillIdeatorCombo($combo, service, placeholderText) {
-    var params = {};
-    service.Read(params,
-        function (data) {
-            var xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
-            var list = [];
+        // گرفتن و پارس داده های XML
+        const xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
+        const list = [];
 
-            xmlData.find("row").each(function () {
-                // استخراج فیلدهای جدید
-                var actorId = $(this).find("col[name='ActorId']").text();
-                var fullName = $(this).find("col[name='fullName']").text();
-                var roleName = $(this).find("col[name='RoleName']").text();
-                var userId = $(this).find("col[name='UserId']").text();
-                var roleId = $(this).find("col[name='RoleId']").text();
+        xmlData.find("row").each(function () {
+            list.push({
+                id:       $(this).find("col[name='ActorId']").text(),
+                text:     $(this).find("col[name='fullName']").text(), // فقط نام کامل
+                userId:   $(this).find("col[name='UserId']").text(),
+                roleId:   $(this).find("col[name='RoleId']").text()
+            });
+        });
 
-                list.push({
-                    id: actorId,
-                    text: fullName + '-' + roleName,
-                    userId: userId,
-                    roleId: roleId
-                });
+        // مقداردهی Select2
+        $combo.empty().select2({
+            data: list,
+            placeholder: placeholderText || "انتخاب ایده‌پردازان",
+            dir: "rtl",
+            multiple: true,
+            closeOnSelect: false,
+            scrollAfterSelect: false
+        });
+
+        // به روزرسانی فیلدهای مخفی
+        const updateHiddenFields = (userId, roleId, isAdd) => {
+            let userIds = $("#txtUserIdIdeas").val().split(",").filter(Boolean);
+            let roleIds = $("#txtRoleIdIdeas").val().split(",").filter(Boolean);
+
+            if (isAdd) {
+                if (!userIds.includes(userId)) userIds.push(userId);
+                if (!roleIds.includes(roleId)) roleIds.push(roleId);
+            } else {
+                userIds = userIds.filter(id => id !== userId);
+                roleIds = roleIds.filter(id => id !== roleId);
+            }
+
+            $("#txtUserIdIdeas").val(userIds.join(","));
+            $("#txtRoleIdIdeas").val(roleIds.join(","));
+        };
+
+        // اتصال رویدادها
+        $combo
+            .off("select2:select").on("select2:select", e => {
+                const d = e.params.data;
+                updateHiddenFields(d.userId, d.roleId, true);
+            })
+            .off("select2:unselect").on("select2:unselect", e => {
+                const d = e.params.data;
+                updateHiddenFields(d.userId, d.roleId, false);
             });
 
-            $combo.empty().append($('<option></option>'));
-            $combo.select2({
-                data: list,
-                placeholder: placeholderText || 'انتخاب فرد',
-                dir: "rtl"
-            });
-
-            // رویداد select: هر وقت آیتمی انتخاب شد، UserId و RoleId رو روی خودش ثبت کن
-            $combo.off('select2:select').on('select2:select', function (e) {
-                var d = e.params.data;
-                // مثلا ذخیره روی attr خود select
-                $combo.attr('data-userid', d.userId || '');
-                $combo.attr('data-roleid', d.roleId || '');
-            });
-        },
-        function (err) {
-            alert("service titles read error:" + err);
-            hideLoading();
-        }
-    );
+    }, function (err) {
+        alert("Service titles read error: " + err);
+    });
 }
+
+
 //******************************************************************************************************
 	//----------------------------------
     // -- تابع تولید شماره جدید ایده --
@@ -615,64 +633,97 @@ function fillIdeatorCombo($combo, service, placeholderText) {
 	//----------------------------------
     // -- اعتبار سنجی برای فرم --------
 	//---------------------------------
-
-// تابع کمکی برای نمایش پیام و فوکوس بعد از بسته شدن alert
-function showAlertAndFocus(message, selector) {
-    $.alert(message, '', 'rtl', function () {
-        if (selector) {
-            $(selector).focus();
-        }
-    });
-}
-
 function validateIdeaForm() {
-    // اعتبارسنجی فیلدهای اجباری
-    for (let field of requiredFields) {
-        if (!$(field.selector).val().trim()) {
-            showAlertAndFocus(field.message, field.selector);
-            return false;
-        }
-    }
+    let hasError = false;
 
-    // اعتبارسنجی گروه‌های چک باکس
+    /*------------------------------------
+      تنظیمات ثابت
+    ------------------------------------*/
+    const fieldLabelMap = {
+        "#txtProducts": "#lblRequireProducts",
+        "#txtIdeaSubject": "#lblRequireSubject",
+        "#txtSubject": "#lblRequireSubject",
+        "#txtFullDescription": "#lblRequireFullDescription",
+        "#txtImprovePerformance": "#lblRequireImprovePerformance",
+        "#txtImplementation": "#lblRequireImplementation",
+        "#txtImplementationIdea": "#lblRequireImplementationIdea",
+        "#txtReasonForResponsible": "#lblRequireReasonForResponsible",
+        "#txtResponsibleForImplementation": "#lblRequireImplementation",
+        "#cmbIdeaGenerators": "#lblRequireIdeatorInfo", // پیام خاص
+        "gbxProducts": "#lblRequireProducts",
+        "gbxInnovation": "#lblRequireImprovePerformance",
+        "gbxGoal": "#lblRequireImplementationIdea"
+    };
+
+    const groupPanels = {
+        product: "gbxProducts",
+        innovation: "gbxInnovation",
+        ideaGoal: "gbxGoal"
+    };
+
+    /*------------------------------------
+      توابع کمکی
+    ------------------------------------*/
+    const markError = (key) => {
+        const labelSelector = fieldLabelMap[key] || fieldLabelMap[`#${key}`];
+        if (labelSelector) $(labelSelector).addClass("input-error");
+        hasError = true;
+    };
+
+    const isEmpty = (value) =>
+        !value || (Array.isArray(value) && value.length === 0) || !String(value).trim();
+
     const isGroupChecked = (fields) =>
         fields.some(field => $(`#chb${field}`).is(":checked"));
 
-    for (let key in groups) {
-        const { fields, alert } = groups[key];
-        if (!isGroupChecked(fields)) {
-            showAlertAndFocus(alert, `#chb${fields[0]}`);
-            return false;
-        }
+    /*------------------------------------
+      منطق اصلی اعتبارسنجی
+    ------------------------------------*/
+
+    // 1) پاک کردن قرمزی قبلی
+    $(".input-error").removeClass("input-error");
+
+    // 2) اعتبارسنجی خاص cmbIdeaGenerators
+    if (isEmpty($("#cmbIdeaGenerators").val())) {
+        markError("#cmbIdeaGenerators");
+        $.alert("حداقل نام و نام خانوادگی خود ایده‌دهنده یا شخص دیگری را حتما وارد کنید", '', 'rtl');
+        return false; // توقف سریع برای جلوگیری از پیام کلی
     }
 
-    // فقط یکی از گروه محصول (Mutually Exclusive)
-    const product = groups.product.fields;
-    const productChecked = product.filter(f => $(`#chb${f}`).is(":checked"));
-    if (productChecked.length > 1) {
-        showAlertAndFocus(
-            'در بخش محصول فقط مجاز به انتخاب یک گزینه هستید!',
-            `#chb${productChecked[1]}`
-        );
+    // 3) فیلدهای تکی اجباری
+    requiredFields.forEach(field => {
+        if (isEmpty($(field.selector).val())) markError(field.selector);
+    });
+
+    // 4) گروه‌های چک‌باکس
+    Object.keys(groups).forEach(key => {
+        if (!isGroupChecked(groups[key].fields)) {
+            markError(groupPanels[key]);
+        }
+    });
+
+    // 5) محدودیت فقط یک انتخاب در گروه محصول
+    const productCheckedCount = groups.product.fields.filter(f => $(`#chb${f}`).is(":checked")).length;
+    if (productCheckedCount > 1) markError("gbxProducts");
+
+    // 6) فیلدهای اعتبارسنجی اضافه
+    additionalValidations.forEach(field => {
+        if (isEmpty($(field.selector).val())) markError(field.selector);
+    });
+
+    // 7) پیام کلی در صورت وجود خطا
+    if (hasError) {
+        $.alert("لطفاً تمام فیلدهای ضروری (ستاره‌دار) را تکمیل کنید", '', 'rtl');
         return false;
     }
 
-    // اعتبارسنجی مسئول اجرا و علت انتخاب
-    for (let field of additionalValidations) {
-        if (!$(field.selector).val().trim()) {
-            showAlertAndFocus(field.message, field.selector);
-            return false;
-        }
-    }
     return true;
 }
-
 //---------------------------------------------------------------------------------------------
 function isFullDescriptionValid(str){
     const regex = /^[\u0600-\u06FFa-zA-Z0-9\s.,\-_،]+$/;
     return regex.test(str.trim());
 }
-
 
 //#endregion
 
