@@ -41,7 +41,6 @@ const additionalValidations = [
     { selector: "#txtResponsibleForImplementation", message: "لطفا مسئول اجرا ایده را وارد کنید" },
     { selector: "#txtReasonForResponsible", message: "علت انتخاب مسئول اجرا ایده را وارد کنید" }
 ];
-
 //----------------------------------------------------
 $(function(){
 	$form = (function()
@@ -66,6 +65,7 @@ $(function(){
 		//******************************************************************************************************	
 		function createControls()
 		{
+
 			//-----------------------------------
 			//	Get Test Mode Value
 			//-----------------------------------
@@ -82,10 +82,10 @@ $(function(){
 			showLoading();
 			UserService.GetCurrentActor(true,
 				function(data){
-					var xmlActor = $.xmlDOM(data);
+							var xmlActor = $.xmlDOM(data);
 					currentActorId = xmlActor.find('actor').attr('pk');
 					var params = {Where: "ActorId = " + currentActorId};
-					
+			
 					BS_GetUserInfo.Read(params
 						, function(data)
 						{
@@ -112,6 +112,11 @@ $(function(){
 					$ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
 				}
 			);
+
+			requestAnimationFrame(() => {
+			    fillIdeaGeneratorsCombo($("#cmbIdeaGenerators"), BS_GetUserInfo, "انتخاب شخص");
+			});
+
 		}
 		//******************************************************************************************************
 		function getPK()
