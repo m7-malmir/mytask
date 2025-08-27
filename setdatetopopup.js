@@ -1,159 +1,341 @@
-$("#btnAccept").click(function () {
+var $form;
+var randomFileId = 0;
+var currentActorId;
+var SC = 0;
+var inEditMode2 = 0;
+var firstRandomId;
+var requirements_list = [];
+var caterings_list = [];
+var place_list = [];
+var OfficeResponsibleId;
+var amount = 0;
+var HID = '';
+var next_person_role_id = 30;
+var next_person_type = 1;
+var AccountNo = '';
+var Bank = '';
+var PersonnelNO_ = '';
+var resDate;
+var resDate2;
+var maxDayForRequest;
+$(function(){
+    $form = (function()
+    {
+        var pk,
+            inEditMode = false,
+            primaryKeyName = "Id",
+            bindingSourceName = "BS_MainData",
+            insertFromData = FormManager.insertEntity;
+            readGtSettings = FormManager.readSetting;
 
-    //  تایید صحت مقدار اعتبار مورد تایید فرم
-    validateIdeaForm(function () {
-
-    // --- گرفتن مقادیر ورودی مورد نیاز---
-    const confirmedGiftCreditRaw = $("#txtConfirmedGiftCredit").val().trim();
-    const confirmedGiftCredit = (typeof rcommafy === "function")
-        ? rcommafy(confirmedGiftCreditRaw)
-        : confirmedGiftCreditRaw.replace(/,/g, "");
-
-    const personnelCode = $("#txtUserName").val().trim();
-    const giftCreditPerson = { Where: "Id = '" + $form.getPK() + "'" };
-	//-------------------------------------
-		
-    //  خواندن موجودی فعلی پرسنل
-    const paramsReadCredit = { Where: "PersonnelCode = '" + personnelCode + "'" };
-    FormManager.readPersonnelCredit(paramsReadCredit, function (data) {
-
-        if (!Array.isArray(data) || data.length === 0) {
-            $.alert("رکوردی با این کد پرسنلی یافت نشد.", "", "rtl");
-            return;
+        function init()
+        {
+            if(typeof dialogArguments !== "undefined")
+            {
+                if(primaryKeyName in dialogArguments)
+                {
+                    pk = dialogArguments[primaryKeyName];
+                    inEditMode = true;
+                    readData();
+                }
+                if("FormParams" in dialogArguments)
+                {
+                    pk = dialogArguments.FormParams;
+                    inEditMode = true;
+                    readData();
+                }
+            }
+            build();
+            createControls();
+            bindEvents();
         }
 
-        //  محاسبه موجودی جدید هدیه
-        const remainGiftCredit = Number(data[0].RemainGiftCredit || 0);
-        const newGiftCredit = remainGiftCredit + Number(confirmedGiftCredit);
+        function build()
+        {
+            $("body").css({overflow: "hidden"}).attr({scroll: "no"});
+            $("#Form1").css({top: "0", left: "0", width: $(document).width() + "px", height: $(document).height() + "px"});
+        }
 
-        //  آپدیت موجودی هدیه پرسنل در جدول PersonnelCredit
-        const updatePersonnelList = {
-            RemainGiftCredit: newGiftCredit,
-            Where: "PersonnelCode = '" + personnelCode + "'"
-        };
-        FormManager.updatePersonnelCredit(updatePersonnelList, function () {
+        function createControls()
+        {
 
-            //  آپدیت مبلغ تایید شده در جدول  PersonnelGiftCredit
-            const updateGiftList = $.extend({ ConfirmedGiftCredit: confirmedGiftCredit }, giftCreditPerson);
-            FormManager.updatePersonnelGiftCredit(updateGiftList, function () {
+            var params = {
+                WHERE: `ProjectName LIKE '%AssistanceApplicationProcess%' AND [Parameter] LIKE '%maxDayForRequest%'`
+            };
 
-                //  ارسال ایمیل به کاربر
-                const emailList = {
-                    UserId: $("#txtGiftCreditForUserId").val(),
-                    EmailText: `<p dir='rtl'>همکار گرامی – اعتبار خرید 100% تخفیف به مبلغ '<b>${confirmedGiftCredit}</b>' ریال برای شما در خرید تکی و عمده محصولات لحاظ گردید.</p>`,
-                    EmailSubject: 'اعتبار هدیه'
-                };
-                FormManager.SendEmail(emailList, function () {
+            readGtSettings(params,
+                function(list)
+                {
+                    maxDayForRequest = list[0].Value
 
-                    // ثبت هامش
-                    const hameshParams = {
-                        Context: 'تایید شد',
-                        DocumentId: DocumentId,
-                        CreatorActorId: CurrentUserActorId,
-                        InboxId: InboxId
-                    };
-                    FormManager.InsertHamesh(hameshParams, function () {
+                    var dateStr = new Date();
 
-                        //  ادامه گردش کار و پیام موفقیت
-                        Office.Inbox.setResponse(dialogArguments.WorkItem, 1, "", function () {
-                            showSuccessAlert("اعتبار با موفقیت ثبت و ارسال شد", function () {
-                                closeWindow({ OK: true, Result: null });
-                            });
-                        }, function (err) {
-                            throw Error(err);
+                    // Get gregorian
+                    const [m, d, y] = String(dateStr).toString().split('/').map(n => parseInt(n, 10));
+                    // Get gregorian
+                    const [jy, jm, jd] = convertGregorianToJalali(y, m, d).split('/').map(n => parseInt(n, 10));
+
+                    var now = new Date();
+                    aa = getShamsiDate(now);
+                    resDate2 = aa;
+                    //resDate2 = "2024-09-22 07:04:00"; //resDate[0] + '-' + resDate[1] + '-' + resDate[2] + " 23:59:00";
+                    //if(0/*resDate2.length > 10*/){
+                    // 0 close 1 open
+                    if(jd <= maxDayForRequest){
+                        UserService.GetCurrentActor(true,
+                            function(data){
+                                hideLoading();
+                                var xmlActor = $.xmlDOM(data);
+                                currentActorId = xmlActor.find('actor').attr('pk');
+                                var params = {Where: "ActorId = " + currentActorId};
+                                BS_GetUserInfo.Read(params
+                                    , function(data)
+                                    {
+                                        var dataXml = null;
+                                        if($.trim(data) != "")
+                                        {
+                                            dataXml = $.xmlDOM(data);
+                                            UserId = dataXml.find("row:first").find(">col[name='UserId']").text();
+                                            fullName = dataXml.find("row:first").find(">col[name='fullName']").text();
+                                            RoleName = dataXml.find("row:first").find(">col[name='RoleName']").text();
+                                            UnitsName = dataXml.find("row:first").find(">col[name='UnitsName']").text();
+                                            UserName = dataXml.find("row:first").find(">col[name='UserName']").text();
+                                            RoleId = dataXml.find("row:first").find(">col[name='RoleId']").text();
+                                            PersonnelNO_ = UserName;
+
+                                            $("#txtFullName").val(fullName);
+                                            $("#txtPersonnel").val(UserName);
+                                            $("#txtUnits").val(UnitsName);
+                                            $("#TextBoxControl2").val(RoleName);
+
+                                            var params2 = {Where: "Id = " + UserId};
+                                            BS_Users.Read(params2
+                                                , function(data2)
+                                                {
+                                                    var dataXml2 = null;
+                                                    if($.trim(data2) != "")
+                                                    {
+                                                        dataXml2 = $.xmlDOM(data2);
+                                                        Mobile = dataXml2.find("row:first").find(">col[name='Mobile']").text();
+                                                        $("#TextBoxControl3").val(Mobile);
+                                                    }
+                                                }
+                                            );
+
+                                            var params4 = {PersonnelNo: PersonnelNO_};
+                                            FormManager.RequestCount(params4,
+                                                function(res, isManager)
+                                                {
+                                                    if(res == 1000){
+                                                        $.alert("شما در این ماه درخواست باز دارید.","","rtl",function(){
+                                                            hideLoading();
+                                                            closeWindow({OK:true, Result:null});
+                                                        });
+                                                    }else{
+                                                        if(res > 3){
+                                                            if(isManager == 1){
+                                                                if(res == 4){
+                                                                    next_person_type = 2;
+                                                                }else{
+                                                                    $.alert("به دلیل عبور از سقف مجاز درخواست، امکان ثبت درخواست برای شما وجود ندارد","","rtl",function(){
+                                                                        hideLoading();
+                                                                        closeWindow({OK:true, Result:null});
+                                                                    });
+                                                                }
+                                                            }else if(res < 5){
+                                                                next_person_type = 1;
+                                                            }else{
+                                                                if(res == 5){
+                                                                    next_person_type = 2;
+                                                                }else{
+                                                                    $.alert("به دلیل عبور از سقف مجاز درخواست، امکان ثبت درخواست برای شما وجود ندارد","","rtl",function(){
+                                                                        hideLoading();
+                                                                        closeWindow({OK:true, Result:null});
+                                                                    });
+                                                                }
+                                                            }
+                                                        }else{
+                                                            next_person_type = 1;
+                                                        }
+                                                    }
+                                                }
+                                            );
+
+                                            var params3 = {'PersonnelNo': UserName};
+                                            FormManager.findAccount(params3,
+                                                function(res)
+                                                {
+                                                    if(res == "" || res.length <= 5){
+                                                        $.alert("خطا در دریافت شماره حساب. لطفا با پشتیبان سامانه تماس بگیرید. کد 201","","rtl",function(){
+                                                            hideLoading();
+                                                            closeWindow({OK:true, Result:null});
+                                                        });
+                                                    }else{
+                                                        $("#TextBoxControl1").val(res);
+                                                        AccountNo = res.split(',')[0];
+                                                        Bank = res.split(',')[1];
+                                                    }
+                                                },
+                                                function(err)
+                                                {
+                                                    $.alert("خطا در دریافت شماره حساب. لطفا با پشتیبان سامانه تماس بگیرید. کد 202","","rtl",function(){
+                                                        hideLoading();
+                                                        closeWindow({OK:true, Result:null});
+                                                    });
+                                                }
+                                            );
+
+                                        }
+                                        if($.isFunction(onSuccess))
+                                        {
+                                            onSuccess(dataXml);
+                                        }
+                                    }
+                                );
+                            },
+                            function(err){
+                                hideLoading();
+                                $ErrorHandling.Erro(err,"خطا در سرویس getCurrentActor");
+                            }
+                        );
+                    }else if (resDate2.length > 10){
+                        $.alert("بازه مجاز درخواست اول تا یازدهم هر ماه بجز فروردین و اسفند است.","","rtl",function(){
+                            hideLoading();
+                            closeWindow({OK:true, Result:null});
                         });
+                    }else{
+                        $.alert("مشکل در اجرای فرآیند. لطفا با پشتیبان سیستم تماس بگیرید.","","rtl",function(){
+                            hideLoading();
+                            closeWindow({OK:true, Result:null});
+                        });
+                    }
+                },
+                function(error)
+                {
+                    alert('خطایی در سیستم رخ داده است: '+error.erroMessage);
+                    return;
+                }
+            );
+        }
 
-                    }, function (err) {
-                        throw Error(err);
-                    });
+        function getPK()
+        {
+            return pk;
+        }
 
-                }, function (err) {
-                    throw Error(err);
-                });
+        function isInEditMode()
+        {
+            return inEditMode;
+        }
 
-            }, function (err) {
-                $.alert("خطا در آپدیت هدیه: " + (err.message || "خطای ناشناخته"), "", "rtl");
-            });
+        function saveData(callback)
+        {
+            validateForm(
+                function()
+                {
+                    if(inEditMode)
+                    {
+                        //updateData(callback);
+                    }
+                    else
+                    {
+                        insertData(callback);
+                    }
+                },
+                function()
+                {
+                    $.alert("لطفا موارد اجباری را تکمیل نمایید.", "", "rtl",
+                        function()
+                        {}
+                    );
+                }
+            );
+        }
 
-        }, function (err) {
-            $.alert("خطا در آپدیت موجودی پرسنل: " + (err.message || "خطای ناشناخته"), "", "rtl");
-        });
+        function insertData(callback)
+        {
+            showLoading();
+            var params = $.getFormDataValues(bindingSourceName);
+            params.CreatorActor_ID = currentActorId;
+            params.PersonnelNO = $("#txtPersonnel").val();
+            params.SuggestedAmount = rcommafy($("#TextBoxControl4").val());
+            params.AccountNO = AccountNo;
+            params.ConfirmedAccountNO = AccountNo;
+            params.Bank = Bank;
+            params.ConfirmedBank = Bank;
+            insertFromData(params,
+                function(dataXml)
+                {
+                    pk = dataXml.find("row:first").find(">col[name='" + primaryKeyName + "']").text();
+                    randomFileId = pk;
+                    var result = "<data><" + primaryKeyName + ">" + pk + "</" + primaryKeyName + "></data>";
+                    inEditMode = true;
+                 /*   WorkflowService.RunWorkflow("ZJM.AAP.AssistanceApplicationProcess",
+                        '<Content><Id>'+pk+'</Id><nextPersonType>'+next_person_type+'</nextPersonType></Content>',
+                        true,
+                        function(data)
+                        {
+                            $.alert("درخواست شما با موفقیت ارسال شد.","","rtl",function(){
+                                hideLoading();
+                                closeWindow({OK:true, Result:null});
+                            });
+                        }
+                        ,function(err)
+                        {
+                            alert('مشکلی در شروع فرآیند به وجود آمده. '+err);
+                            hideLoading();
+                        }
+                    );*/
+					
+                    hideLoading();
+                    if($.isFunction(callback))
+                    {
+                        callback();
+                    }
+                },
+                function(err)
+                {
+                    hideLoading();
+                    alert(err);
+                }
+            );
+        }
 
-    }, function (err) {
-        $.alert("خطا در خواندن موجودی پرسنل: " + (err.message || "خطای ناشناخته"), "", "rtl");
-    });
- });
-});
+        function updateData(callback)
+        {
+            //showLoading();
+        }
 
+        function deleteData(callback)
+        {
+            showLoading();
+        }
 
-$("#txtRemainCredit").val(commafy(remainCredit));
-$("#txtRemainCreditNew").val(commafy(remainCredit));
-$("#txtDiscountPercent").val(discountPercentForUser);
-$("#txtTotalPrice").val('0');
-$("#txtTotalPriceWithDiscount").val('0');
+        function validateForm(onSuccess, onError)
+        {
+            try
+            {
+                $("[role]").validateData(true);
+                if($.isFunction(onSuccess))
+                {
+                    onSuccess();
+                }
+            }
+            catch(e)
+            {
+                if($.isFunction(onError))
+                {
+                    onError();
+                }
+            }
+        }
 
-
-$("#txtRemainCredit").val('0');
-$("#txtRemainCreditNew").val('0');
-$("#txtDiscountPercent").val('0');
-$("#txtTotalPrice").val('0');
-$("#txtTotalPriceWithDiscount").val('0');
-
-let $options = $("#cmbCreditType option");
-
-// شرط مورد نیاز برای نمایش انتخاب نوع اعتبار
-$options.hide().prop("disabled", true);
-if (discountPercentMax == discountPercentBase) {
-    $options.filter('[credittype="2"]').show().prop("disabled", false);
-} else {
-    $options.filter('[credittype="1"], [credittype="2"]').show().prop("disabled", false);
-}
-
-// شرط دوم
-if (remainGiftCredit > 0) {
-    $options.filter('[credittype="3"]').show().prop("disabled", false);
-}
-
-$("#cmbCreditType").on("change", function () {
-    let selectedType = $(this).find(":selected").attr("credittype");
-
-    // مقادیر پیش فرض (برای حالتی که چیزی انتخاب نشده یا حالت خاصی باشه)
-    $("#txtRemainCredit").val('0');
-    $("#txtRemainCreditNew").val('0');
-    $("#txtDiscountPercent").val('0');
-    $("#txtTotalPrice").val('0');
-    $("#txtTotalPriceWithDiscount").val('0');
-
-    // حالا بر اساس انتخاب مقداردهی می کنیم
-    switch (selectedType) {
-        case "1": // سازمانی
-		    $("#txtRemainCredit").val(commafy(remainCredit));
-            $("#txtRemainCreditNew").val(commafy(remainCredit));
-            $("#txtDiscountPercent").val(discountPercentForUser);
-            break;
-
-        case "2": // پایه
-			discountPercentForUser=discountPercentBase;
- 		   $("#txtRemainCredit").val("نامحدود");
-            $("#txtRemainCreditNew").val("نامحدود");
-            $("#txtDiscountPercent").val(discountPercentBase);
-            break;
-
-        case "3": // هدیه
-			discountPercentForUser=100;
-            $("#txtRemainCredit").val(commafy(remainGiftCredit));
-            $("#txtRemainCreditNew").val(commafy(remainGiftCredit));
-            $("#txtDiscountPercent").val('100');
-            break;
-
-        default:
-            // چیزی انتخاب نشده، مقادیر پیش فرض باقی میمونه
-            break;
-    }
-	let $rows = $("#tblOrderedGoods tbody tr").not(".row-header, .row-template");
-	if ($rows.length > 0) {
-	    $rows.remove();
-	    updateTotalPrice();
-	    refresh();
-	}
+        return {
+            init: init,
+            getPK: getPK,
+            isInEditMode: isInEditMode,
+            saveData: saveData
+        };
+    }());
+    $form.init();
 });
