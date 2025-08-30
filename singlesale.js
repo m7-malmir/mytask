@@ -1,6 +1,5 @@
 var tblMain = null;
- // متغیر برای ذخیره مقدار انتخاب شده برند
-var selectedBrandValue = '0';
+var selectedBrandValue = '0'; // متغیر برای ذخیره مقدار انتخاب شده برند
 
 $(function () {
     tblMain = (function () {
@@ -51,33 +50,71 @@ $(function () {
             });
             //----------------------------------------------------
 
+			function hasEnoughCredit(price) {
+			    let selectedCreditType = String($("#cmbCreditType option:selected").attr("credittype") || "");
+			
+			    // اگر نوع انتخاب معتبر نیست
+			    if (!["1", "2", "3"].includes(selectedCreditType)) {
+			        alert("لطفاً نوع اعتبار را مشخص کنید");
+			        $("#cmbCreditType").focus();
+			        return false;
+			    }
+			
+			    // اگر انتخاب اعتبار پایه باشد نامحدود است
+			    if (selectedCreditType === "2") {
+			        return true;
+			    }
+			
+			    // موجودی فعلی
+			    let currentRemainingBalance =
+			        (selectedCreditType === "1" || selectedCreditType === "3")
+			            ? parseInt($('#txtRemainCreditNew').val().replace(/,/g, '')) || 0
+			            : parseInt($('#txtRemainCredit').val().replace(/,/g, '')) || 0;
+			
+			    // قیمت با لحاظ تخفیف
+			    let finalPrice = (discountPercentForUser == 100)
+			        ? price
+			        : price - Math.floor(price * discountPercentForUser / 100);
+			
+			    if (currentRemainingBalance < finalPrice) {
+			        alert("اعتبار کافی نیست");
+			        return false;
+			    }
+			
+			    return true;
+			}
 
 
             //----------------------------------------------------
             // تعریف متد کلیک بر روی چک باکس انتخاب در هر ردیف
             //----------------------------------------------------
             element.on("click", ".CHbox", function () {
+				//ابتدا نوع اعتبار باید مشخص شود
+			    let selectedCreditType = String($("#cmbCreditType option:selected").attr("credittype") || "");
+			
+			    if (!["1", "2", "3"].includes(selectedCreditType)) {
+			        alert("لطفاً نوع اعتبار را مشخص کنید");
+			        $("#cmbCreditType").focus();
+			        return false; 
+			    }
+
                 var checkbox = this;
                 if (!this.checked) return;
 
-				let $row = $(this).closest("tr");
-				let goodsId = $row.find("td").eq(2).text().trim();
-				let goodsCode = $row.find("td").eq(3).text().trim();
-				let brandName = $row.find("td").eq(4).text().trim();
-				let goodsName = $row.find("td").eq(5).text().trim();
-				
-				let CartonQTY = $row.find("td").eq(6).text().trim();
-				let UnitName = $row.find("td").eq(7).text().trim();
-				//قیمت یک واحد تکی
-				var price = parseInt(rcommafy($row.find("td").eq(8).text()), 10);
-				//قیمت یک بسته کامل
-				var unitPrice = parseInt(rcommafy($row.find("td").eq(9).text()), 10);
-
+                let $row = $(this).closest("tr");
+                let goodsId = $row.find("td").eq(2).text().trim();
+                let goodsCode = $row.find("td").eq(3).text().trim();
+                let brandName = $row.find("td").eq(4).text().trim();
+                let goodsName = $row.find("td").eq(5).text().trim();
+                var price = parseInt(rcommafy($row.find("td").eq(6).text()), 10);
+			    if (!hasEnoughCredit(price)) {
+			        $(this).prop("checked", false);
+			        return false;
+			    }
                 if (isNaN(price)) {
                     alert("قیمت کالا نامعتبر است!");
                     return;
                 }
-
                 if (!goodsId) {
                     alert("شناسه محصول نامعتبر است");
                     return;
@@ -238,28 +275,7 @@ $(function () {
 
                 tempRow.append(quantityCell);
                 //------------------------------------------------
-				
-				//------------------------------------------------
-				// تعداد در کارتن
-				//------------------------------------------------
-				tempRow.append($("<td class='price-unit'></td>").css({
-					"width": "100px",
-					"border": "solid 1px #BED4DC",
-					"text-align": "center"
-				}).text(commafy(CartonQTY)));
-				//------------------------------------------------
 
-
-				//------------------------------------------------
-				// نام واحد
-				//------------------------------------------------
-				tempRow.append($("<td class='price-unit'></td>").css({
-					"width": "100px",
-					"border": "solid 1px #BED4DC",
-					"text-align": "center"
-				}).text(commafy(UnitName)));
-				//------------------------------------------------
-				
 
                 //------------------------------------------------
                 // قیمت واحد (فی)
@@ -279,7 +295,7 @@ $(function () {
                     "width": "140px",
                     "border": "solid 1px #BED4DC",
                     "text-align": "center"
-                }).text(commafy(unitPrice))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
+                }).text(commafy(price))); // جمع واحد × تعداد = چون تعداد ۱ فعلاً
                 //------------------------------------------------
 
 
@@ -287,19 +303,28 @@ $(function () {
                 // کلیک دکمه افزایش تعداد
                 //------------------------------------------------
                 plusBtn.on("click", function () {
+				
+				    if (!hasEnoughCredit(price)) {
+				        return false; // جلو افزایش تعداد رو بگیر
+				    }
+
                     let currentRow = this.closest('tr');
                     let cells = currentRow.querySelectorAll("td");
                     let currentquantity = parseInt(cells[6].querySelector("span").innerText.trim());
-					//alert(JSON.stringify(currentquantity));
+
+                    if (currentquantity >= maxQty) {
+                        alert("تعداد هر کالا نمی تواند بیشتر از " + maxQty + " باشد.");
+                        return;
+                    }
 
                     // قیمت کل فعلی
-                    let currentTotal = parseInt(cells[10].innerText.replace(/,/g, ''));
+                    let currentTotal = parseInt(cells[8].innerText.replace(/,/g, ''));
 					
                     // قیمت جدید با افزایش مقدار کالا
-                    let itemNewTotal = (currentquantity + 1) * unitPrice;
+                    let itemNewTotal = (currentquantity + 1) * price;
 
                     // قیمت فعلی کالا
-                    let itemCurrentTotal = currentquantity * unitPrice;
+                    let itemCurrentTotal = currentquantity * price;
 
                     // قیمت کل جدید
                     let newTotal = currentTotal - itemCurrentTotal + itemNewTotal;
@@ -308,7 +333,7 @@ $(function () {
                     cells[6].querySelector("span").innerText = parseInt(currentquantity) + 1;
 
                     //قیمت کل ردیف
-                    cells[10].innerText = commafy(newTotal);
+                    cells[8].innerText = commafy(newTotal);
 
                     updateTotalPrice();
                 });
@@ -325,13 +350,13 @@ $(function () {
 
                     if (currentquantity > 1) {
                         // قیمت کل فعلی
-                        let currentTotal =  parseInt(cells[10].innerText.replace(/,/g, ''));
+                        let currentTotal =  parseInt(cells[8].innerText.replace(/,/g, ''));
                         
                         // قیمت جدید با افزایش مقدار کالا
-                        let itemNewTotal = (currentquantity - 1) * unitPrice;
+                        let itemNewTotal = (currentquantity - 1) * price;
 
                         // قیمت فعلی کالا
-                        let itemCurrentTotal = currentquantity * unitPrice;
+                        let itemCurrentTotal = currentquantity * price;
 
                         // قیمت کل جدید
                         let newTotal = currentTotal - itemCurrentTotal + itemNewTotal;
@@ -340,7 +365,7 @@ $(function () {
                         cells[6].querySelector("span").innerText = parseInt(currentquantity) - 1;
 
                         //قیمت کل ردیف
-                        cells[10].innerText = commafy(newTotal);
+                        cells[8].innerText = commafy(newTotal);
 
                         updateTotalPrice();
                     }
@@ -360,28 +385,26 @@ $(function () {
         //******************************************************************************************************
         //عملیات پر کردن دیتای هر سطر می باشد
         function addRow(rowInfo, rowNumber) {
-			var index = 0,
-			tempRow = element.find("tr.row-template").clone();
 
-			tempRow.show().removeClass("row-template").addClass("row-data");
-			tempRow.data("rowInfo", rowInfo);
+            var index = 0,
+                tempRow = element.find("tr.row-template").clone();
 
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+            tempRow.show().removeClass("row-template").addClass("row-data");
+            tempRow.data("rowInfo", rowInfo);
 
-			var CHbox = $("<input type='checkbox'  value='" + rowInfo.Id + "'>").addClass('CHbox');
-			tempRow.find("td:eq(" + index++ + ")").append(CHbox);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsId);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.UnitName);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.CartonQTY);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
-			let unitPrice=(rowInfo.CartonQTY)*(rowInfo.Price);
-			tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(unitPrice));
-			element.find("tr.row-template").before(tempRow);
-			myHideLoading();
-			
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowNumber);
+
+            var CHbox = $("<input type='checkbox'  value='" + rowInfo.Id + "'>").addClass('CHbox');
+            tempRow.find("td:eq(" + index++ + ")").append(CHbox);
+
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsId);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsCode);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.BrandName);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.GoodsName);
+            tempRow.find("td:eq(" + index++ + ")").empty().text(commafy(rowInfo.Price));
+            tempRow.find("td:eq(" + index++ + ")").empty().text(rowInfo.LogicalQty);
+            element.find("tr.row-template").before(tempRow);
+            myHideLoading();
         }
         //******************************************************************************************************
         //حذف یک سطر
@@ -444,69 +467,36 @@ $(function () {
             return totalPrice;
         }
         //******************************************************************************************************
-        function updateTotalPrice() {
-            var total = getTotalPrice();
-            var discountAmount = Math.floor(total * discountPercentForUser / 100);
-            var finalTotal = total - discountAmount;
-           
-            var currentRemainingBalance = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, ''));
-            var remainCredit = 0;
-				
-			if (discountPercentForUser=="100")
-			{
-				remainCredit = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) - total;
-			}
-			else
-			{
-				remainCredit = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) - finalTotal;
-			}
+		function updateTotalPrice() {
+		    const selectedCreditType = String($("#cmbCreditType option:selected").attr("credittype") || "");
+		    const total = getTotalPrice();
+		    const discountAmount = Math.floor(total * discountPercentForUser / 100);
+		    const finalTotal = total - discountAmount;
 		
-            // استفاده از اعتبار فعال می باشد و باید اعتبار کنترل شود
-            if (cancelCredit === 'false') {
-					
-                // اگر اعتبار باقیمانده کوچک تر از جمع کل تخفیف دار است
-                if (currentRemainingBalance < finalTotal) {
-                    // در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
-                    var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با " + discountPercentBase + "% تخفیف محاسبه خواهد گردید.");
-                    if (confirmation) {
-                        // اگر کاربر تأیید کند، نشانگر عدم استفاده از اعتبار را به روز کنیم
-                        var list = {
-                            'CancelCredit': true
-                        };
-                        list = $.extend(list, {
-                            Where: "PersonnelCode = '" + currentUserName + "'"
-                        });
+		    // اگر نوع 2 باشه → نامحدود و خروج از تابع
+		    if (selectedCreditType === "2") {
+		        $('#txtRemainCreditNew').val("نامحدود");
+		        $('#txtTotalPrice').val(commafy(total));
+		        $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+		        $('#txtDiscountPercent').val(discountPercentForUser + '%');
+		        return;
+		    }
+		
+		    // موجودی فعلی
+		    const currentBalance = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) || 0;
+		
+		    // محاسبه موجودی باقی مانده
+		    const remainCredit = currentBalance - (
+		        discountPercentForUser == 100 ? total : finalTotal
+		    );
+		
+		    // بروزرسانی فیلدها
+		    $('#txtRemainCreditNew').val(commafy(remainCredit));
+		    $('#txtTotalPrice').val(commafy(total));
+		    $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+		    $('#txtDiscountPercent').val(discountPercentForUser + '%');
+		}
 
-                        FormManager.updatePersonnelCredit(list,
-                            function (status, list) {
-                                $.alert("لغو استفاده از مانده اعتبار و محاسبه سفارشات بعدی با قیمت تخفیف پایه اعمال گردید", "", "rtl", function () {
-                                    cancelCredit = 'true';
-                                    discountPercentForUser = discountPercentBase; // تغییر تخفیف به تخفیف پایه
-                                    $("#txtDiscountPercent").val(discountPercentForUser);
-                                });
-                            },
-                            function (error) {
-                                console.log("خطای برگشتی:", error);
-                                $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-                            }
-                        );
-                    }
-                    else {
-						$("#tblOrderedGoods").find("tbody tr:last").remove();
-						updateTotalPrice();
-						refresh();
-                        return;
-                    }
-                }
-				
-                $('#txtRemainCreditNew').val(commafy(remainCredit));
-            }
-			
-			$('#txtTotalPrice').val(commafy(total));
-            $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
-            $('#txtDiscountPercent').val(discountPercentForUser + '%'); // درصد تخفیف
-
-        }
         //******************************************************************************************************
 
         return {

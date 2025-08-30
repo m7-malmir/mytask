@@ -51,12 +51,53 @@ $(function () {
             });
             //----------------------------------------------------
 
+            function hasEnoughCredit(price) {
+			    let selectedCreditType = String($("#cmbCreditType option:selected").attr("credittype") || "");
+			
+			    // اگر نوع انتخاب معتبر نیست
+			    if (!["1", "2", "3"].includes(selectedCreditType)) {
+			        alert("لطفاً نوع اعتبار را مشخص کنید");
+			        $("#cmbCreditType").focus();
+			        return false;
+			    }
+			
+			    // اگر انتخاب اعتبار پایه باشد نامحدود است
+			    if (selectedCreditType === "2") {
+			        return true;
+			    }
+			
+			    // موجودی فعلی
+			    let currentRemainingBalance =
+			        (selectedCreditType === "1" || selectedCreditType === "3")
+			            ? parseInt($('#txtRemainCreditNew').val().replace(/,/g, '')) || 0
+			            : parseInt($('#txtRemainCredit').val().replace(/,/g, '')) || 0;
+			
+			    // قیمت با لحاظ تخفیف
+			    let finalPrice = (discountPercentForUser == 100)
+			        ? price
+			        : price - Math.floor(price * discountPercentForUser / 100);
+			
+			    if (currentRemainingBalance < finalPrice) {
+			        alert("اعتبار کافی نیست");
+			        return false;
+			    }
+			
+			    return true;
+			}
 
 
             //----------------------------------------------------
             // تعریف متد کلیک بر روی چک باکس انتخاب در هر ردیف
             //----------------------------------------------------
             element.on("click", ".CHbox", function () {
+                //ابتدا نوع اعتبار باید مشخص شود
+			    let selectedCreditType = String($("#cmbCreditType option:selected").attr("credittype") || "");
+			
+			    if (!["1", "2", "3"].includes(selectedCreditType)) {
+			        alert("لطفاً نوع اعتبار را مشخص کنید");
+			        $("#cmbCreditType").focus();
+			        return false; 
+			    }
                 var checkbox = this;
                 if (!this.checked) return;
 
@@ -72,7 +113,10 @@ $(function () {
 				var price = parseInt(rcommafy($row.find("td").eq(8).text()), 10);
 				//قیمت یک بسته کامل
 				var unitPrice = parseInt(rcommafy($row.find("td").eq(9).text()), 10);
-
+                if (!hasEnoughCredit(unitPrice)) {
+			        $(this).prop("checked", false);
+			        return false;
+			    }
                 if (isNaN(price)) {
                     alert("قیمت کالا نامعتبر است!");
                     return;
@@ -287,6 +331,9 @@ $(function () {
                 // کلیک دکمه افزایش تعداد
                 //------------------------------------------------
                 plusBtn.on("click", function () {
+                    if (!hasEnoughCredit(price)) {
+				        return false; // جلو افزایش تعداد رو بگیر
+				    }
                     let currentRow = this.closest('tr');
                     let cells = currentRow.querySelectorAll("td");
                     let currentquantity = parseInt(cells[6].querySelector("span").innerText.trim());
@@ -445,66 +492,33 @@ $(function () {
         }
         //******************************************************************************************************
         function updateTotalPrice() {
-            var total = getTotalPrice();
-            var discountAmount = Math.floor(total * discountPercentForUser / 100);
-            var finalTotal = total - discountAmount;
-           
-            var currentRemainingBalance = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, ''));
-            var remainCredit = 0;
-				
-			if (discountPercentForUser=="100")
-			{
-				remainCredit = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) - total;
-			}
-			else
-			{
-				remainCredit = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) - finalTotal;
-			}
+		    const selectedCreditType = String($("#cmbCreditType option:selected").attr("credittype") || "");
+		    const total = getTotalPrice();
+		    const discountAmount = Math.floor(total * discountPercentForUser / 100);
+		    const finalTotal = total - discountAmount;
 		
-            // استفاده از اعتبار فعال می باشد و باید اعتبار کنترل شود
-            if (cancelCredit === 'false') {
-					
-                // اگر اعتبار باقیمانده کوچک تر از جمع کل تخفیف دار است
-                if (currentRemainingBalance < finalTotal) {
-                    // در صورتی که اعتبار کافی نیست، پیغام تأیید را نمایش می‌دهیم
-                    var confirmation = confirm("مبلغ فاکتور بیشتر از باقیمانده اعتبار شما می باشد، در صورت تایید برای ادامه کل مبلغ سفارش جاری و سفارشات آتی با " + discountPercentBase + "% تخفیف محاسبه خواهد گردید.");
-                    if (confirmation) {
-                        // اگر کاربر تأیید کند، نشانگر عدم استفاده از اعتبار را به روز کنیم
-                        var list = {
-                            'CancelCredit': true
-                        };
-                        list = $.extend(list, {
-                            Where: "PersonnelCode = '" + currentUserName + "'"
-                        });
-
-                        FormManager.updatePersonnelCredit(list,
-                            function (status, list) {
-                                $.alert("لغو استفاده از مانده اعتبار و محاسبه سفارشات بعدی با قیمت تخفیف پایه اعمال گردید", "", "rtl", function () {
-                                    cancelCredit = 'true';
-                                    discountPercentForUser = discountPercentBase; // تغییر تخفیف به تخفیف پایه
-                                    $("#txtDiscountPercent").val(discountPercentForUser);
-                                });
-                            },
-                            function (error) {
-                                console.log("خطای برگشتی:", error);
-                                $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-                            }
-                        );
-                    }
-                    else {
-						$("#tblOrderedGoods").find("tbody tr:last").remove();
-						updateTotalPrice();
-						refresh();
-                        return;
-                    }
-                }
-				
-                $('#txtRemainCreditNew').val(commafy(remainCredit));
-            }
-			
-			$('#txtTotalPrice').val(commafy(total));
-            $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
-            $('#txtDiscountPercent').val(discountPercentForUser + '%'); // درصد تخفیف
+		    // اگر نوع 2 باشه → نامحدود و خروج از تابع
+		    if (selectedCreditType === "2") {
+		        $('#txtRemainCreditNew').val("نامحدود");
+		        $('#txtTotalPrice').val(commafy(total));
+		        $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+		        $('#txtDiscountPercent').val(discountPercentForUser + '%');
+		        return;
+		    }
+		
+		    // موجودی فعلی
+		    const currentBalance = parseInt($('#txtRemainCredit').val().trim().replace(/,/g, '')) || 0;
+		
+		    // محاسبه موجودی باقی مانده
+		    const remainCredit = currentBalance - (
+		        discountPercentForUser == 100 ? total : finalTotal
+		    );
+		
+		    // بروزرسانی فیلدها
+		    $('#txtRemainCreditNew').val(commafy(remainCredit));
+		    $('#txtTotalPrice').val(commafy(total));
+		    $('#txtTotalPriceWithDiscount').val(commafy(finalTotal));
+		    $('#txtDiscountPercent').val(discountPercentForUser + '%');
 
         }
         //******************************************************************************************************
