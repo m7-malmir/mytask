@@ -1,101 +1,88 @@
-# 📌 Project Roadmap & Status — CodeIgniter 4 Backend + CMS + Frontend
+Phase 1 – Core Backend (بدون وابستگی به Redis)
+Status: 85% Done
+✅ Done
+Logger & MyFileHandler (override سرویس، timezone Asia/Tehran، ریستارت کانتینر)
+ProductRepository → findById, findBySlug, getAllPaginated
+ProductService → listProducts, getProduct, createProduct (slug + event)
+updateProduct (invalidate کش + event)
+CategoryService → getCategory, createCategory (slug + event)
+updateCategory (invalidate کش + event), listCategories
+Type hinting + use function CodeIgniter\Events\event;, DocBlock روی remember()
+Factories (Product + Category، داده فارسی، slug یونیک)
+Seeder (اتصال داینامیک محصول و دسته)
+Observers Product کامل
+Manual test /api/products
+✗ To Do
+CategoryController API CRUD
+CategoryObserver → invalidate کش (فعلاً کامنت)
 
-## Phase 1 – Core Backend (بدون وابستگی به Redis)
-**Status:** 85% Done
+Phase 2 – Caching Layer (Redis)
+Status: 20% Done
+✅ Done
+Redis service در docker-compose.yml
+کانفیگ Redis در Config\Cache
+✗ To Do
+.env → cache.handler = redis
+TTL → Products: 900s, Categories: 1800s
+Group cache deletion → product_*, category_* در Listenerها
+تست عملکرد Redis در Docker
+Fallback به DB در Down بودن Redis
+Phase 3 – Unit, Feature & Isolated Testing
+Status: 10% Done
 
-### ✅ Done
-- Logger & MyFileHandler (override سرویس، timezone Asia/Tehran، ریستارت کانتینر)
-- ProductRepository → `findById`, `findBySlug`, `getAllPaginated`
-- ProductService → `listProducts`, `getProduct`, `createProduct` (slug + event), `updateProduct` (invalidate کش + event)
-- CategoryService → `getCategory`, `createCategory` (slug + event), `updateCategory` (invalidate کش + event), `listCategories`
-- Type hinting + `use function CodeIgniter\Events\event;`, DocBlock روی `remember()`
-- Factories (Product + Category، داده فارسی، slug یونیک)
-- Seeder (اتصال داینامیک محصول و دسته)
-- Observers Product کامل
-- Manual test `/api/products`
+Phase 3 – Unit, Feature & Isolated Testing
+Status: 10% Done
+✅ Done
+Manual test API محصول
+✗ To Do
+Isolated Unit Test برای هر ماژول/سرویس قبل از ادغام
+Unit Test برای Repositoryها
+Unit Test برای Serviceها (با Mocking کش)
+Feature Test API (محصول + دسته)
+Integration Test (رویداد + کش + DB)
 
-### ✗ To Do
-- **CategoryController** API CRUD
-- **CategoryObserver** → invalidate کش (فعلاً کامنت)
+Phase 4 – CI/CD با تست خودکار
+Status: 0% Done
+✗ To Do
+پیکربندی GitHub Actions یا GitLab CI برای اجرای تست پیش از Merge/Deploy
+Pipeline خودکار برای اجرا و گزارش Unit/Feature Tests
+توقف خودکار استقرار در صورت Fail شدن تست‌ها
 
----
+Phase 5 – SEO & Sitemap
+Status: 0% Done
+✗ To Do
+Listener پینگ به Google/Bing
+/sitemap.xml داینامیک + کش
+Listener پاک‌کردن کش sitemap
 
-## Phase 2 – Caching Layer (Redis)
-**Status:** 20% Done
+Phase 6 – Real-time & Queue
+Status: 0% Done
+✗ To Do
+WebSocket یا SSE
+Redis Queue برای async jobs
 
-### ✅ Done
-- Redis service در `docker-compose.yml`
-- کانفیگ Redis در `Config\Cache`
+Phase 7 – DevOps & Monitoring
+Status: 0% Done
+✗ To Do
+Docker Compose Production-ready
+Log rotation
+Monitoring (Sentry یا ELK)
 
-### ✗ To Do
-- `.env` → `cache.handler = redis`
-- TTL → Products: 900s, Categories: 1800s
-- Group cache deletion → `product_*`, `category_*` در Listenerها
-- تست عملکرد Redis در Docker
-- Fallback به DB در Down بودن Redis
 
----
+Phase 8 – CMS/Admin
+Status: 0% Done
+✗ To Do
+Admin UI برای مدیریت محصول و دسته
+فرم افزودن محصول (با فیلدهای SEO)
+داشبورد و گزارش‌ها
+مدیریت کاربران و نقش‌ها
 
-## Phase 3 – Unit & Feature Testing
-**Status:** 10% Done
 
-### ✅ Done
-- Manual test API محصول
-
-### ✗ To Do
-- Unit Test برای Repositoryها
-- Unit Test برای Serviceها (Mocking کش)
-- Feature Test API (محصول + دسته)
-- Integration Test (رویداد + کش + DB)
-
----
-
-## Phase 4 – SEO & Sitemap
-**Status:** 0% Done
-
-### ✗ To Do
-- Listener پینگ به Google/Bing
-- `/sitemap.xml` داینامیک + کش
-- Listener پاک‌کردن کش sitemap
-
----
-
-## Phase 5 – Real-time & Queue
-**Status:** 0% Done
-
-### ✗ To Do
-- WebSocket یا SSE
-- Redis Queue برای async jobs
-
----
-
-## Phase 6 – DevOps & Monitoring
-**Status:** 0% Done
-
-### ✗ To Do
-- Docker Compose Production-ready
-- Log rotation
-- Monitoring (Sentry یا ELK)
-
----
-
-## Phase 7 – CMS/Admin
-**Status:** 0% Done
-
-### ✗ To Do
-- **Admin UI** برای مدیریت محصول و دسته
-- فرم افزودن محصول (با فیلدهای SEO)
-- داشبورد و گزارش‌ها
-- مدیریت کاربران و نقش‌ها
-
----
-
-## Phase 8 – Frontend (Public Website)
-**Status:** 0% Done
-
-### ✗ To Do
-- صفحات لیست محصولات (با فیلترها و دسته‌بندی‌ها)
-- صفحه جزئیات محصول (SEO-friendly URL)
-- جست‌وجوی سریع و autocomplete
-- بلاگ/اخبار (در صورت نیاز به محتوای SEO)
-- ریسپانسیو کامل + بهینه‌سازی سرعت
+Phase 9 – Frontend (Public Website)
+Status: 0% Done
+✗ To Do
+صفحات لیست محصولات (با فیلترها و دسته‌بندی‌ها)
+صفحه جزئیات محصول (SEO-friendly URL)
+جست‌وجوی سریع و autocomplete
+بلاگ/اخبار (در صورت نیاز به محتوای SEO)
+ریسپانسیو کامل + بهینه‌سازی سرعت
