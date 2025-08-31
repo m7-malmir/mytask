@@ -1,26 +1,36 @@
-63,394,011
-63394011
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>نمایش تصویر از HEX</title>
+</head>
+<body style="direction: rtl; font-family: sans-serif;">
+  <h2>خروجی تصویر از رشته HEX</h2>
+  <div id="image-container"></div>
 
+  <script>
 
-if (discountPercentForUser ==100 && currentRemainingBalance < total) {
-	alert(JSON.stringify('مبلغ خرید بیش از مقدار باقیمانده است!'));
-	//$("#tblOrderedGoods").find("tbody tr:last").remove();
-	//updateTotalPrice();
-	refresh();
-	return false;					
-}
+    // تبدیل هگز به آرایه بایت‌ها
+    function hexToBytes(hex) {
+      const bytes = [];
+      for (let c = 0; c < hex.length; c += 2) {
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+      }
+      return new Uint8Array(bytes);
+    }
 
-if (discountPercentForUser < 100 && currentRemainingBalance < finalTotal) {
-	alert(JSON.stringify('مبلغ خرید بیش از مقدار باقیمانده است!'));
-	//$("#tblOrderedGoods").find("tbody tr:last").remove();
-	//updateTotalPrice();
-	refresh();
-	return false;					
-}
+    // ساخت Blob از بایت‌ها
+    const byteArray = hexToBytes(hexData);
+    const blob = new Blob([byteArray], { type: "image/jpeg" });
 
+    // ساخت URL و نمایش تصویر
+    const imgURL = URL.createObjectURL(blob);
+    const img = document.createElement("img");
+    img.src = imgURL;
+    img.style.maxWidth = "500px";
+    img.style.border = "2px solid #333";
 
-$("#txtPaymentTrackingId").val(list[0].CreditType).attr('disabled',true);
-
-
-UserIdIdeas
-RoleIdIdeas
+    document.getElementById("image-container").appendChild(img);
+  </script>
+</body>
+</html>
