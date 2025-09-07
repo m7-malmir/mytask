@@ -231,34 +231,53 @@ $(function(){
 });
 //#endregion
 
-//#region btnTitleRegister.js
+//#region btnMinuteManagmentRegister.js
 $(function () {
     // فعال کردن اسکرول در پنل
-    $("#pnlTitles").css({
-        "max-height": "150px", // یا هر اندازه‌ای که دوست داری
+    $("#pnlManagmentDetail").css({
+        "max-height": "150px",
         "overflow-y": "auto",
-        "direction": "rtl", // جهت اسکرول راست‌چین
+        "direction": "rtl",
         "padding-right": "5px",
         "box-sizing": "border-box",
         "border": "1px solid #ccc",
         "border-radius": "4px"
     });
 
-    // رویداد کلیک دکمه ثبت مصوبه
-    $("#btnTitleRegister").on("click", function () {
-        var txt = $("#txtTitle").val().trim();
+    function logItems() {
+        alert(JSON.stringify(Items, null, 2));
+        console.log(Items);
+    }
 
-        if (!txt) {
-            $.alert({
-                title: '',
-                content: 'لطفاً متن صورتجلسه را وارد کنید.',
-                rtl: true,
-                type: 'red'
-            });
-            return;
-        }
+    $("#btnMinuteManagmentRegister").on("click", function () {
+        var title = ($("#txtTitle").val() || "").trim();
+        var UserId = ($("#txtResponsibleUserId").val() || "").trim();
+        // به جای var actionDate = getGregorianDate();
+		var gdateAttr = $("#txtActionDeadLineDate").attr("gdate");
+		var actionDate = null;
+		
+		if (gdateAttr) {
+		    let [m, d, y] = gdateAttr.split("/").map(Number);
+		    actionDate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+		} else {
+		    let shamsiVal = ($("#txtActionDeadLineDate").val() || "").trim();
+		    actionDate = shamsiVal ? shamsiToMiladiFormatted(shamsiVal) : null;
+		}
 
-        // ساخت آیتم جدید با Flexbox
+
+		if (!title) {
+			$.alert("لطفا متن مصوبه را وارد کنید","","rtl");
+		    return;
+		}
+        // ساخت ساختار JSON
+        var newItem = {
+            Title: title,
+            ActionDeadLineDate: actionDate,
+            UserId: UserId
+        };
+        Items.push(newItem);
+
+        // ساخت آیتم برای نمایش
         var $item = $("<div></div>").css({
             display: "flex",
             justifyContent: "space-between",
@@ -272,13 +291,8 @@ $(function () {
             width: "100%"
         });
 
-        // متن صورتجلسه
-        var $text = $("<div></div>").text(txt).css({
-            flex: "1",
-            paddingRight: "8px"
-        });
+        var $text = $("<div></div>").text(title).css({ flex: "1", paddingRight: "8px" });
 
-        // دکمه ویرایش
         var $btnEdit = $("<button>ویرایش</button>").css({
             backgroundColor: "#28a745",
             color: "#fff",
@@ -287,37 +301,15 @@ $(function () {
             borderRadius: "3px",
             cursor: "pointer",
             marginLeft: "5px"
-        });
-
-        // دکمه حذف
-        var $btnDelete = $("<button>حذف</button>").css({
-            backgroundColor: "#dc3545",
-            color: "#fff",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "3px",
-            cursor: "pointer"
-        });
-
-        // رویداد ویرایش
-        $btnEdit.on("click", function () {
-            var editPopup = $(
-                '<div style="direction:rtl;" class="ui-form">' +
-                    '<label style="text-align:right; display:block; margin-bottom:5px;">' +
-                        'لطفاً متن جدید صورتجلسه را وارد کنید:' +
-                    '</label>' +
-                '</div>'
+        }).on("click", function () {
+            var editPopup = $('<div style="direction:rtl;" class="ui-form">' +
+                '<label style="text-align:right; display:block; margin-bottom:5px;">' +
+                'لطفاً متن جدید صورتجلسه را وارد کنید:' +
+                '</label></div>'
             );
-
-            var editInput = $("<textarea>", { type: "text" })
-                .addClass("edit-input form-control")
-                .css({
-                    height: "60px",
-                    "font-size": "10pt",
-                    resize: "none"
-                })
+            var editInput = $("<textarea>").addClass("edit-input form-control")
+                .css({ height: "60px", "font-size": "10pt", resize: "none" })
                 .val($text.text());
-
             editPopup.append(editInput);
 
             editPopup.dialog({
@@ -329,8 +321,9 @@ $(function () {
                         text: "ذخیره",
                         click: function () {
                             var newText = $(this).find(".edit-input").val().trim();
-                            if (newText.length > 0) {
+                            if (newText) {
                                 $text.text(newText);
+                                newItem.Title = newText;
                                 $(this).dialog("close");
                             } else {
                                 $(this).notify("لطفاً متن جدید مصوبه را وارد نمایید", {
@@ -339,22 +332,20 @@ $(function () {
                             }
                         }
                     },
-                    {
-                        text: "انصراف",
-                        click: function () {
-                            $(this).dialog("close");
-                        }
-                    }
+                    { text: "انصراف", click: function () { $(this).dialog("close"); } }
                 ]
             });
         });
 
-        // رویداد حذف
-        $btnDelete.on("click", function () {
-            var deleteDialog = $('<div style="direction:rtl; font-size:10pt;">' +
-                'آیا از حذف مصوبه اطمینان دارید؟' +
-            '</div>');
-
+        var $btnDelete = $("<button>حذف</button>").css({
+            backgroundColor: "#dc3545",
+            color: "#fff",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "3px",
+            cursor: "pointer"
+        }).on("click", function () {
+            var deleteDialog = $('<div style="direction:rtl; font-size:10pt;">آیا از حذف مصوبه اطمینان دارید؟</div>');
             deleteDialog.dialog({
                 modal: true,
                 width: 350,
@@ -365,33 +356,27 @@ $(function () {
                         class: "btn-red",
                         click: function () {
                             $item.remove();
+                            Items = Items.filter(i => i !== newItem);
                             $(this).dialog("close");
                         }
                     },
-                    {
-                        text: "خیر",
-                        click: function () {
-                            $(this).dialog("close");
-                        }
-                    }
+                    { text: "خیر", click: function () { $(this).dialog("close"); } }
                 ]
             });
         });
 
-        // گروه دکمه ها
-        var $btnGroup = $("<div></div>").css({
-            display: "flex",
-            flexShrink: "0"
-        }).append($btnEdit).append($btnDelete);
+        var $btnGroup = $("<div></div>").css({ display: "flex", flexShrink: "0" })
+            .append($btnEdit, $btnDelete);
 
-        // ترکیب متن و دکمه ها
-        $item.append($text).append($btnGroup);
+        $item.append($text, $btnGroup);
+        $("#pnlManagmentDetail").append($item);
 
-        // افزودن به پنل
-        $("#pnlTitles").append($item);
+        // پاک کردن ورودیها
+        $("#txtTitle, #txtActionDeadLineDate, #txtResponsibleUserId").val("");
+		$("#cmbResponsibleForAction").val("").trigger("change");
 
-        // پاک کردن متن ورودی
-        $("#txtTitle").val("");
+        // نمایش JSON
+        logItems();
     });
 });
 
