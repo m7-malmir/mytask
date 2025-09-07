@@ -532,4 +532,114 @@ function fillComboWithService($combo, service, placeholderText, singleSelect = f
     };
 //#endregion
 
+//#region brnRegister.js
+$("#btnRegister").on("click", function (e) {
+    e.preventDefault();
 
+    const checkRequired = (selector, msg, focusSelect2 = false) => {
+        let el = $(selector), val = el.val();
+        if (!val || (typeof val === "string" && !val.trim())) {
+            alert(msg);
+            focusSelect2 ? el.select2('open') : el.focus();
+            throw new Error("StopValidation");
+        }
+    };
+
+    const checkNumberRange = (selector, min, max, msg) => {
+        let num = parseInt($(selector).val(), 10);
+        if (isNaN(num) || num < min || num > max) {
+            alert(msg);
+            $(selector).focus();
+            throw new Error("StopValidation");
+        }
+        return num;
+    };
+
+    try {
+        // اعتبارسنجی الزامات
+        checkRequired("#txtSubjectMeeting", "موضوع جلسه را وارد کنید.");
+        checkRequired("#cmbMeetingRoomId", "اتاق جلسه را انتخاب کنید.");
+        checkRequired("#txtMeetingDate", "تاریخ جلسه را انتخاب کنید.");
+
+        // گرفتن و اعتبارسنجی تاریخ جلسه
+        let gdate = $("#txtMeetingDate").attr("gdate") || "";
+        let [m, d, y] = gdate.split('/').map(Number);
+        let meetingStartDate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+        let todayStr = new Date().toISOString().slice(0, 10);
+        if (meetingStartDate > todayStr) {
+            alert("تاریخ انتخابی جلسه نمی‌تواند بزرگتر از تاریخ روز جاری باشد.");
+            $("#txtMeetingDate").focus();
+            throw new Error("StopValidation");
+        }
+
+        // ساعت و دقیقه شروع
+        let sHour = checkNumberRange("#txtMeetingStartTime", 1, 23, "ساعت شروع باید بین 1 تا 23 باشد.");
+        let sMin = checkNumberRange("#txtMinMeetingStartTime", 0, 59, "دقیقه شروع باید بین 0 تا 59 باشد.");
+
+        // ساعت و دقیقه پایان
+        let eHour = checkNumberRange("#txtHourMeetingEndTime", 1, 23, "ساعت پایان باید بین 1 تا 23 باشد.");
+        let eMin = checkNumberRange("#txtminMeetingEndTime", 0, 59, "دقیقه پایان باید بین 0 تا 59 باشد.");
+
+        // ترتیب زمان
+        if (eHour < sHour || (eHour === sHour && eMin <= sMin)) {
+            alert("زمان پایان نمی‌تواند قبل یا مساوی زمان شروع باشد.");
+            $("#txtHourMeetingEndTime").focus();
+            throw new Error("StopValidation");
+        }
+
+        // حاضرین، غایبین و دستور جلسه
+        checkRequired("#cmbUserPresent", "حداقل یک نفر شرکت‌کننده حاضر انتخاب کنید.", true);
+        checkRequired("#txtMeetingAgenda", "دستور جلسه را وارد کنید.");
+
+        // وجود حداقل یک مصوبه
+        if ($("#pnlTitles").children().length === 0) {
+            alert("حداقل یک مصوبه باید وارد شود.");
+            throw new Error("StopValidation");
+        }
+
+        // ساخت ساختار JSON کلی
+        let jsonArray = {
+            ActorIdCreator: parseInt($("#txtActorIdCreator").val(), 10),
+            MeetingStartDate: meetingStartDate, 
+            MeetingStartTime: `${String(sHour).padStart(2, '0')}:${String(sMin).padStart(2, '0')}`,
+            MeetingEndTime: `${String(eHour).padStart(2, '0')}:${String(eMin).padStart(2, '0')}`,
+            SubjectMeeting: $("#txtSubjectMeeting").val().trim(),
+            MeetingAgenda: $("#txtMeetingAgenda").val().trim(),
+            MeetingRoomId: Number($("#cmbMeetingRoomId").val()), 
+            UserPresent: $("#txtPresentUserId").val().trim(),
+            UserAbsent: $("#txtAbsentUserId").val().trim(),  
+            Items: Items.map(it => ({
+                Title: it.Title,
+                ActionDeadLineDate: it.ActionDeadLineDate && it.ActionDeadLineDate.trim() !== "" ? it.ActionDeadLineDate : null,
+                ResponsibleForAction: (it.UserId || "").toString()
+            }))
+        };
+
+        // آماده‌سازی برای ارسال به SP
+        var sp_params = {
+            jsonArray: JSON.stringify(jsonArray)
+        };
+		alert(JSON.stringify(sp_params));
+     /*   FormManager.insertMeetingMinuteManagment(
+            sp_params,
+            function (data) {
+                if (data["Success"] == 0) {
+                    $.alert("SP Error: " + data["Message"], "خطا", "rtl");
+                    e.preventDefault();
+                    return;
+                }
+				alert(JSON.stringify(data));
+                // WorkflowService.RunWorkflow(...) در صورت نیاز اینجا فعال می‌شود
+            },
+            function (err) {
+                alert(err.details);
+            }
+        );
+*/
+    } catch (err) {
+        if (err.message !== "StopValidation") throw err;
+    }
+});
+
+//#endregion
