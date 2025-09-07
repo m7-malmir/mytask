@@ -408,9 +408,8 @@ function hideLoading() {
     $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
 }
 //******************************************************************************************************
-// افزودن ایده پردازان
 
-// تابع آپدیت کردن Hidden Fields
+// تابع Hidden Fields
 function updateHiddenFields($combo, userId, roleId, isAdd) {
     const userField = $combo.data("user-field");
     const roleField = $combo.data("role-field");
@@ -435,53 +434,102 @@ function updateHiddenFields($combo, userId, roleId, isAdd) {
         $(roleField).val(roleIds.join(","));
     }
 }
-
+//-------------------------------------------------------------------------------------------
 // تابع پر کردن کمبو
+
 function fillComboWithService($combo, service, placeholderText, singleSelect = false) {
-    service.Read({}, function (data) {
-        const xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
-        const list = xmlData.find("row").map(function () {
-            return {
-                id: $(this).find("col[name='ActorId']").text(),
-                text: $(this).find("col[name='fullName']").text(),
-                userId: $(this).find("col[name='UserId']").text(),
-                roleId: $(this).find("col[name='RoleId']").text()
-            };
-        }).get();
+    return new Promise(resolve => {
+        service.Read({}, function (data) {
+            const xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
+            const list = xmlData.find("row").map(function () {
+                return {
+                    id: $(this).find("col[name='ActorId']").text(),
+                    text: $(this).find("col[name='fullName']").text(),
+                    userId: $(this).find("col[name='UserId']").text(),
+                    roleId: $(this).find("col[name='RoleId']").text()
+                };
+            }).get();
 
-        $combo.empty().select2({
-            data: list,
-            placeholder: placeholderText || "انتخاب مورد",
-            dir: "rtl",
-            multiple: !singleSelect,
-            closeOnSelect: singleSelect,
-            scrollAfterSelect: false
-        });
-
-        // رویدادها
-        $combo
-            .off("select2:select").on("select2:select", e => {
-                const d = e.params.data;
-                if (singleSelect) {
-                    // فقط به‌روزرسانی یوزرآیدی، همیشه یک نفر
-                    $($combo.data("user-field")).val(d.userId);
-                } else {
-                    updateHiddenFields($combo, d.userId, d.roleId, true);
-                }
-            })
-            .off("select2:unselect").on("select2:unselect", e => {
-                const d = e.params.data;
-                if (singleSelect) {
-                    $($combo.data("user-field")).val("");
-                } else {
-                    updateHiddenFields($combo, d.userId, d.roleId, false);
-                }
+            $combo.empty().select2({
+                data: list,
+                placeholder: placeholderText || "انتخاب مورد",
+                dir: "rtl",
+                multiple: !singleSelect,
+                closeOnSelect: singleSelect,
+                scrollAfterSelect: false
             });
 
-    }, function (err) {
-        alert("Service titles read error: " + err);
+            // رویداد انتخاب/حذف
+            $combo
+                .off("select2:select").on("select2:select", e => {
+                    const d = e.params.data;
+                    if (singleSelect) {
+                        $($combo.data("user-field")).val(d.userId);
+                    } else {
+                        updateHiddenFields($combo, d.userId, d.roleId, true);
+                    }
+                })
+                .off("select2:unselect").on("select2:unselect", e => {
+                    const d = e.params.data;
+                    if (singleSelect) {
+                        $($combo.data("user-field")).val("");
+                    } else {
+                        updateHiddenFields($combo, d.userId, d.roleId, false);
+                    }
+                });
+            resolve();  
+        }, function (err) {
+            alert("Service titles read error: " + err);
+            resolve(); // حتی توی خطا هم آزاد کن
+        });
     });
 }
-
-
+//---------------------------------------------------------------------------------------------
 //#endregion
+
+//#region formmanager.js
+    var FormManager = {
+        /*********************************************************************************************************/
+        // ثبت سفارش، کاهش موجودی منطقی انبار، کاهش اعتبار کاربر جاری
+        insertMeetingMinuteManagment: function (jsonParams, onSuccess, onError) {
+            SP_MeetingMinuteManagmentInsert.Execute(jsonParams,
+                function (data) {
+
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(data, "text/xml");
+
+                    const cols = xmlDoc.getElementsByTagName("col");
+                    
+                    const result = {};
+                    for (let i = 0; i < cols.length; i++) {
+                        const name = cols[i].getAttribute("name");
+                        const value = cols[i].textContent;
+                        result[name] = value;
+                    }
+                    if ($.isFunction(onSuccess)) {
+                        onSuccess(result);
+                    }
+                },
+                function (error) {
+                    var methodName = "retailPersonnelOrder";
+
+                    if ($.isFunction(onError)) {
+                        var erroMessage = "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+                        console.error("Error:", erroMessage);
+                        console.error("Details:", error);
+
+                        onError({
+                            message: erroMessage,
+                            details: error
+                        });
+                    } else {
+                        console.error(erroMessage + " (no onError callback provided):", error);
+                    }
+                }
+            );
+        }
+        //******************************************************************************************************
+    };
+//#endregion
+
+
