@@ -4,7 +4,9 @@ var currentActorId;
 var isInTestMode = false;
 var primaryKeyName;
 
-//---------------------------------
+//--------------------------------------
+//-- تعریف ثابت ها برای پر کردن اینپوتها
+//--------------------------------------
 const fieldMap = {
   // Textboxes
   IdeaNo: "txtIdeaNo",
@@ -12,17 +14,13 @@ const fieldMap = {
   FullDescription: "txtFullDescription",
   ResponsibleForImplementation: "txtResponsibleForImplementation",
   ReasonForResponsible: "txtReasonForResponsible",
-  OtherImprovement: "txtchbOtherImprovement",
+  OtherImprovement: "txtOtherImprovementTargrt",
   OtherInovations: "txtOtherInovations",
   AdditionalInformation: "txtOtherImprovement",
   CreatedDate: "txtRegistrationDate",
-	
-  // Checkbox1
-  NewProduct: "chbNewProduct",
-  ImprovementCurrentProducts: "chbImprovementCurrentProducts",
 
   // Checkbox2
-  BusinessModels: "chbNewProduct",
+  BusinessModels: "chbBusinessModels",
   OptimizationOfOrganization: "chbOptimizationOfOrganization",
   MotivatingEmployees: "chbMotivatingEmployees",
   FinancialStructue: "chbFinancialStructue",
@@ -31,7 +29,7 @@ const fieldMap = {
   MarketingAndBranding: "chbMarketingAndBranding",
   InteractAndCommunicating: "chbInteractAndCommunicating",
   ImprovePerformance: "chbImprovePerformance",
-
+	
   // Checkbox3
   IncreaseIncome: "chbIncreaseIncome",
   IncreaseEffectiveness: "chbIncreaseEffectiveness",
@@ -45,7 +43,7 @@ const fieldMap = {
   QualityImprovement: "chbQualityImprovement",
   ReducingFoodSafetyRisks: "chbReducingFoodSafetyRisks"
 };
-
+//--------------------------------------
 $(function() {
 
   $form = (function() {
@@ -74,13 +72,6 @@ $(function() {
 
     //*************************        BUILD         ****************************
     function build() {
-      $("body").css({overflow: "hidden"}).attr({scroll: "no"});
-      $("#frmLoanRequest").css({
-        top: "0",
-        left: "0",
-        width: $(document).width() + "px",
-        height: $(document).height() + "px"
-      });
       //Set the new dialog title
       changeDialogTitle("ثبت ایده / پیشنهادات");
     }
@@ -88,7 +79,6 @@ $(function() {
     //*************************    CREATE CONTROLS    **************************
    function createControls() {
 	  showLoading();
-	
 	  try {
 	    const parentUrl = window.parent?.location?.href;
 	    const url = new URL(parentUrl);
@@ -105,7 +95,8 @@ $(function() {
 	      const creatorUserId = data.CreatorUserId;
 	
 	      fillAndDisableFields(data);
-	
+
+
 	      const userIdIdeasList = (data.UserIdIdeas || "")
 	        .split(',')
 	        .map(id => id.trim())
@@ -133,7 +124,15 @@ $(function() {
 	          }
 	        });
 	      });
-	
+			
+			//افزودن نوع ایده یا پیشنهاد در کمبوباکس
+			if (data.IdeaType) {
+		    $("#cmbIdeaType")
+		        .val(
+		            $("#cmbIdeaType option[ideatype='" + String(data.IdeaType).trim() + "']").val()
+		        )
+		        .prop("disabled", true);
+			}
 	      // ایده پرداز اصلی
 	      const creatorPromise = getUserInfoPromise({ Where: "UserId = " + creatorUserId }).then(response => {
 	        if ($.trim(response) !== "") {
@@ -192,19 +191,21 @@ $(function() {
 
 });
 
+
 //#endregion
 
 //#region formManager
 var FormManager = {
 	//******************************************************************************************************
-    // دریافت لیست کالاهای قابل فروش
+    // دریافت اطلاعات ایده ثبت شده توسط پرسنل
 	readIdeaRegistration: function (jsonParams, onSuccess, onError) {
-	    // لیست ستونها یک جا
+	    // لیست همه اینپوتها
 	    var dbFields = [
 	        "Id",
 	        "IdeaNo",
 	        "IdeaSubject",
 	        "FullDescription",
+			"IdeaType",
 	        "CreatorUserId",
 	        "UserIdIdeas",
 	        "RoleIdIdeas",

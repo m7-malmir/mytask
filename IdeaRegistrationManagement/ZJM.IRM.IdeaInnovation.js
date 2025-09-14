@@ -18,10 +18,9 @@ const fieldMap = {
   OtherInovations: "txtOtherInovations",
   AdditionalInformation: "txtOtherImprovement",
   CreatedDate: "txtRegistrationDate",
-	
-  // Checkbox1
-  NewProduct: "chbNewProduct",
-  ImprovementCurrentProducts: "chbImprovementCurrentProducts",
+  CommitteeDescription: "txtCommitteeDescription",
+  IsRaisedInCommittee: "txtIsRaisedInCommittee",
+  CompletingTheIdeaDescription: "txtCompletingTheIdeaDescription",
 
   // Checkbox2
   BusinessModels: "chbBusinessModels",
@@ -45,7 +44,8 @@ const fieldMap = {
   ReduceBusinessSafetyRisks: "chbReduceBusinessSafetyRisks",
   ReduceWaste: "chbReduceWaste",
   QualityImprovement: "chbQualityImprovement",
-  ReducingFoodSafetyRisks: "chbReducingFoodSafetyRisks"
+  ReducingFoodSafetyRisks: "chbReducingFoodSafetyRisks",
+	
 };
 //--------------------------------------
 $(function() {
@@ -54,7 +54,7 @@ $(function() {
     var pk;
     var inTestMode = (typeof isInTestMode !== "undefined" ? isInTestMode : false);
     var primaryKeyName = "Id";
-    var readFromData = FormManager.readIdeaRegistration;
+    //var readFromData = FormManager.readIdeaRegistration;
     var inEditMode = false;
 
     //*************************        INIT         *****************************
@@ -71,6 +71,7 @@ $(function() {
 			{
 				pk = dialogArguments.FormParams;
 				inEditMode = true;
+				$("#lblIdeaRequestId").text(pk);
 			}
 			DocumentId = dialogArguments["DocumentId"];
 			CurrentUserActorId = dialogArguments["WorkItem"]["ActorId"];
@@ -82,13 +83,6 @@ $(function() {
 
     //*************************        BUILD         ****************************
     function build() {
-      $("body").css({overflow: "hidden"}).attr({scroll: "no"});
-      $("#frmLoanRequest").css({
-        top: "0",
-        left: "0",
-        width: $(document).width() + "px",
-        height: $(document).height() + "px"
-      });
       //Set the new dialog title
       changeDialogTitle("بررسی ایده / پیشنهاد");
     }
@@ -111,7 +105,12 @@ $(function() {
 	    .then(dataXmlArr => {
 	      const data = dataXmlArr[0];
 	      const creatorUserId = data.CreatorUserId;
-	
+		
+		// چک کردن مقدار CompletingTheIdeaDescription برای زمانی که کاربر ایده را تکمیل نکرده است!
+		  if (!data.CompletingTheIdeaDescription || $.trim(data.CompletingTheIdeaDescription) === "") {
+		      $("#gbxCompletingTheIdeaDescription").hide();
+		  }
+			
 	      fillAndDisableFields(data);
 	
 	      const userIdIdeasList = (data.UserIdIdeas || "")
@@ -122,7 +121,7 @@ $(function() {
 	      const $tblBody = $("#tblIdeatorInfo tbody");
 	      $tblBody.find("tr:not(.row-header):not(.row-template)").remove();
 	
-	      // اسامی ایده پردازان
+	      //افزودن اسامی ایده پردازان
 	      const ideatorPromises = userIdIdeasList.map(function(userId) {
 	        return getUserInfoPromise({ Where: "UserId = " + userId }).then(response => {
 	          if ($.trim(response) !== "") {
@@ -141,8 +140,15 @@ $(function() {
 	          }
 	        });
 	      });
-	
-	      // ایده پرداز اصلی
+			//افزودن نوع ایده یا پیشنهاد در کمبوباکس
+			if (data.IdeaType) {
+		    $("#cmbIdeaType")
+		        .val(
+		            $("#cmbIdeaType option[ideatype='" + String(data.IdeaType).trim() + "']").val()
+		        )
+		        .prop("disabled", true);
+			}
+	      //افزودن ایده پرداز اصلی
 	      const creatorPromise = getUserInfoPromise({ Where: "UserId = " + creatorUserId }).then(response => {
 	        if ($.trim(response) !== "") {
 	          const dataXml = $.xmlDOM(response);
@@ -199,6 +205,7 @@ $(function() {
   $form.init();
 
 });
+
 
 //#endregion
 
