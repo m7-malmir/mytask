@@ -206,57 +206,54 @@ $("#btnRegister").click(function () {
     // فراخوانی تابع ولیدیشن برای فرم
     if (!validateIdeaForm()) return;
 
-    FormManager.readIdeaRegistration({}, function (list, status) {
-        const nextIR = getNextIdeaNo(list);
-        const insertParams = {
-            IdeaNo: nextIR,
-            IdeaSubject: $("#txtIdeaSubject").val(),
-            FullDescription: $("#txtFullDescription").val(),
-            CreatorUserId: $("#txtCreatorUserId").val(),
-            UserIdIdeas: $("#txtUserIdIdeas").val(),
-            RoleIdIdeas: $("#txtRoleIdIdeas").val(),
-            OtherInovations: $("#txtOtherInovations").val(),
-            OtherImprovement: $("#txtOtherImprovementTargrt").val(),
-            ResponsibleForImplementation: $("#txtResponsibleForImplementation").val(),
-            ReasonForResponsible: $("#txtReasonForResponsible").val(),
-            AdditionalInformation: $("#txtOtherImprovement").val()
-        };
+    // گرفتن ideatype انتخابی
+    const ideaTypeAttr = $("#cmbIdeaType").find(":selected").attr("ideatype");
 
-        // چک باکس ها رو با همین groups اضافه کن
-        const allCheckboxes = [
-            ...groups.product.fields,
-            ...groups.innovation.fields,
-            ...groups.ideaGoal.fields
-        ];
-        allCheckboxes.forEach(field => {
-            if ($(`#chb${field}`).is(":checked")) {
-                insertParams[field] = "1";
-            }
-        });
-		
-        // ثبت کل فرم در دیتابیس و ران کردن وورکفلو
-        FormManager.insertIdeaRegistration(
-            insertParams,
-            function (dataXml) {
-                var pk = dataXml.find("row:first > col[name='Id']").text();
-                WorkflowService.RunWorkflow(
-                    "ZJM.IRM.IdeaRegistrationProcess",
-                    '<Content><Id>' + pk + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
-                    true,
-                    function (data) { handleRunWorkflowResponse(data); },
-                    function (err) { handleError(err, 'WorkflowService.RunWorkflow'); }
-                );
-            },
-            function (err) {
-                myHideLoading();
-                alert(err);
-            }
-        );
-    },
-    function (err) {
-        myHideLoading();
-        alert(err);
-    });
+    const insertParams = {
+        IdeaSubject: $("#txtIdeaSubject").val(),
+        FullDescription: $("#txtFullDescription").val(),
+        CreatorUserId: $("#txtCreatorUserId").val(),
+        UserIdIdeas: $("#txtUserIdIdeas").val(),
+        RoleIdIdeas: $("#txtRoleIdIdeas").val(),
+        OtherInovations: $("#txtOtherInovations").val(),
+        OtherImprovement: $("#txtOtherImprovementTargrt").val(),
+        ResponsibleForImplementation: $("#txtResponsibleForImplementation").val(),
+        ReasonForResponsible: $("#txtReasonForResponsible").val(),
+        AdditionalInformation: $("#txtOtherImprovement").val(),
+        IdeaType: ideaTypeAttr 
+    };
+
+    // افزودن دو بخش چک باکسها
+    const allCheckboxes = [
+        ...groups.innovation.fields,
+        ...groups.ideaGoal.fields
+    ];
+	const skipOverwrite = ["OtherInovations", "OtherImprovement"];
+	allCheckboxes.forEach(field => {
+	    if ($(`#chb${field}`).is(":checked")) {
+	        if (!skipOverwrite.includes(field)) {
+	            insertParams[field] = "1";
+	        }
+	    }
+	});
+    // ثبت کل فرم در دیتابیس و ران کردن وورکفلو
+    FormManager.insertIdeaRegistration(
+        insertParams,
+        function (dataXml) {
+            var pk = dataXml.find("row:first > col[name='Id']").text();
+            WorkflowService.RunWorkflow(
+                "ZJM.IRM.IdeaRegistrationProcess",
+                '<Content><Id>' + pk + '</Id><IsInTestMode>' + $form.isInTestMode() + '</IsInTestMode></Content>',
+                true,
+                function (data) { handleRunWorkflowResponse(data); },
+                function (err) { handleError(err, 'WorkflowService.RunWorkflow'); }
+            );
+        },
+        function (err) {
+            myHideLoading();
+            alert(err);
+        }
+    );
 });
 
 //#endregion
@@ -430,7 +427,7 @@ var FormManager = {
 };
 //#endregion
 
-//#region helper.js
+//#region common.js
 function commafy(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -439,11 +436,6 @@ function rcommafy(x) {
     a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
 	a=parseInt(a,10);
 	return a
-}
-
-//******************************************************************************************************
-function myHideLoading(){
-	$("#__modalPage").css('display', 'none');
 }
 //******************************************************************************************************
 // برای ایجاد یک عدد تصادفی با طول دخواه که با 0 و 5 و 3 شروع نمی شود
@@ -639,32 +631,6 @@ function fillIdeaGeneratorsCombo($combo, service, placeholderText) {
     });
 }
 
-
-//******************************************************************************************************
-	//----------------------------------
-    // -- تابع تولید شماره جدید ایده --
-	//---------------------------------
-    function getNextIdeaNo(list) {
-        const startNum = 100001;
-        if (!Array.isArray(list) || list.length === 0) {
-            return "IR" + startNum;
-        }
-        let maxNum = startNum - 1;
-        list.forEach(item => {
-            let value = item.IdeaNo;
-            let num = 0;
-            if (typeof value === "string" && value.startsWith("IR")) {
-                num = parseInt(value.replace("IR", ""), 10);
-            } else {
-                num = parseInt(value, 10);
-            }
-            if (!isNaN(num) && num > maxNum) {
-                maxNum = num;
-            }
-        });
-        const nextNum = maxNum + 1;
-        return "IR" + nextNum.toString().padStart(6, "0");
-    }
 //---------------------------------------------------------------------------------------------
 	//----------------------------------
     // -- اعتبار سنجی برای فرم --------
@@ -672,34 +638,7 @@ function fillIdeaGeneratorsCombo($combo, service, placeholderText) {
 function validateIdeaForm() {
     let hasError = false;
 
-    /*------------------------------------
-      تنظیمات ثابت
-    ------------------------------------*/
-    const fieldLabelMap = {
-        "#txtProducts": "#lblRequireProducts",
-        "#txtIdeaSubject": "#lblRequireSubject",
-        "#txtSubject": "#lblRequireSubject",
-        "#txtFullDescription": "#lblRequireFullDescription",
-        "#txtImprovePerformance": "#lblRequireImprovePerformance",
-        "#txtImplementation": "#lblRequireImplementation",
-        "#txtImplementationIdea": "#lblRequireImplementationIdea",
-        "#txtReasonForResponsible": "#lblRequireReasonForResponsible",
-        "#txtResponsibleForImplementation": "#lblRequireImplementation",
-        "#cmbIdeaGenerators": "#lblRequireIdeatorInfo", // پیام خاص
-        "gbxProducts": "#lblRequireProducts",
-        "gbxInnovation": "#lblRequireImprovePerformance",
-        "gbxGoal": "#lblRequireImplementationIdea"
-    };
-
-    const groupPanels = {
-        product: "gbxProducts",
-        innovation: "gbxInnovation",
-        ideaGoal: "gbxGoal"
-    };
-
-    /*------------------------------------
-      توابع کمکی
-    ------------------------------------*/
+    /*--- توابع کمکی ---*/
     const markError = (key) => {
         const labelSelector = fieldLabelMap[key] || fieldLabelMap[`#${key}`];
         if (labelSelector) $(labelSelector).addClass("input-error");
@@ -712,42 +651,47 @@ function validateIdeaForm() {
     const isGroupChecked = (fields) =>
         fields.some(field => $(`#chb${field}`).is(":checked"));
 
-    /*------------------------------------
-      منطق اصلی اعتبارسنجی
-    ------------------------------------*/
-
-    // 1) پاک کردن قرمزی قبلی
+    /*--- پاک کردن علامت قبلی ---*/
     $(".input-error").removeClass("input-error");
 
-    // 2) اعتبارسنجی خاص cmbIdeaGenerators
-    if (isEmpty($("#cmbIdeaGenerators").val())) {
+    /*--- بررسی cmbIdeaGenerators ---*/
+    const ideaGenVal = $("#cmbIdeaGenerators").val();
+    if (isEmpty(ideaGenVal)) {
         markError("#cmbIdeaGenerators");
-        $.alert("حداقل نام و نام خانوادگی خود ایده‌دهنده یا شخص دیگری را حتما وارد کنید", '', 'rtl');
-        return false; // توقف سریع برای جلوگیری از پیام کلی
+        $.alert("حداقل نام و نام خانوادگی خود ایده دهنده یا شخص دیگری را حتما وارد کنید", '', 'rtl');
+        return false; // توقف سریع
     }
 
-    // 3) فیلدهای تکی اجباری
-    requiredFields.forEach(field => {
-        if (isEmpty($(field.selector).val())) markError(field.selector);
-    });
+    /*--- بررسی cmbIdeaType ---*/
+    const selectedOption = $("#cmbIdeaType").find(":selected");
+    const ideaTypeAttr = selectedOption.attr("ideatype") || selectedOption.attr("IdeaType");
+    if (!ideaTypeAttr || isNaN(Number(ideaTypeAttr))) {
+        markError("#cmbIdeaType");
+        $.alert("لطفا نوع ایده را تعیین کنید", '', 'rtl');
+        return false; // توقف سریع
+    }
 
-    // 4) گروه‌های چک‌باکس
-    Object.keys(groups).forEach(key => {
-        if (!isGroupChecked(groups[key].fields)) {
-            markError(groupPanels[key]);
+    /*--- فیلدهای تکی اجباری ---*/
+requiredFields.forEach(selector => {
+    if (isEmpty($(selector).val())) markError(selector);
+});
+
+    /*--- گروه های چک باکس ---*/
+    Object.keys(groups).forEach(groupKey => {
+        if (groupKey === "innovation" && (ideaTypeAttr === "2" || ideaTypeAttr === "3")) {
+            return; // حذف الزام این گروه وقتی ایده نوع ۲ یا ۳ است
+        }
+        if (!isGroupChecked(groups[groupKey].fields)) {
+            markError(groupPanels[groupKey]);
         }
     });
 
-    // 5) محدودیت فقط یک انتخاب در گروه محصول
-    const productCheckedCount = groups.product.fields.filter(f => $(`#chb${f}`).is(":checked")).length;
-    if (productCheckedCount > 1) markError("gbxProducts");
+    /*--- فیلدهای الزامی اضافه ---*/
+additionalValidations.forEach(selector => {
+    if (isEmpty($(selector).val())) markError(selector);
+});
 
-    // 6) فیلدهای اعتبارسنجی اضافه
-    additionalValidations.forEach(field => {
-        if (isEmpty($(field.selector).val())) markError(field.selector);
-    });
-
-    // 7) پیام کلی در صورت وجود خطا
+    /*--- پیام کلی ---*/
     if (hasError) {
         $.alert("لطفاً تمام فیلدهای ضروری (ستاره‌دار) را تکمیل کنید", '', 'rtl');
         return false;
