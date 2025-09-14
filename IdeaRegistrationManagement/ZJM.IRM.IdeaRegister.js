@@ -3,45 +3,69 @@ var $form;
 var currentActorId;
 var isInTestMode = false;
 var primaryKeyName;
-//----------------------------------------------------
-//  تعریف ثابت ها برای همه اینپوتها و پیغام هشدار مناسب
-//----------------------------------------------------
 
+//----------------------------------------------------------
+//------ گروه ها و فیلدهای برای ثبت در دیتابیس--------------
+//----------------------------------------------------------
 const groups = {
-    product: {
-        fields: ["NewProduct", "ImprovementCurrentProducts"],
-        alert: 'لطفا از بخش "محصولات" یک گزینه را انتخاب نمایید'
-    },
     innovation: {
         fields: [
             "BusinessModels", "OptimizationOfOrganization", "MotivatingEmployees",
             "FinancialStructue", "KnowledgeManagment", "InformationTechnology",
             "MarketingAndBranding", "InteractAndCommunicating",
-            "ImprovePerformance","OtherInovations",
-        ],
-        alert: 'لطفا از بخش "نوآوری و بهبود سازمانی" حداقل یک گزینه انتخاب نمایید'
+            "ImprovePerformance", "OtherInovations"
+        ]
     },
     ideaGoal: {
         fields: [
             "IncreaseIncome", "IncreaseEffectiveness", "AccelerationOfProcesses",
             "FacilitateProcesses", "CreatingMotivationWorkplace", "PromoteEmployerBrand",
             "ReduceBusinessThreats", "ReduceBusinessSafetyRisks", "ReduceWaste",
-            "QualityImprovement", "ReducingFoodSafetyRisks","OtherImprovement",
-        ],
-        alert: 'لطفا از بخش "هدف ایده/نوآوری" حداقل یک گزینه انتخاب نمایید'
+            "QualityImprovement", "ReducingFoodSafetyRisks", "OtherImprovement"
+        ]
     }
 };
+//----------------------------------------------------------
 
+//----------------------------------------------------------
+//--  تعریف ثابت ها برای همه اینپوتها و پیغام هشدار مناسب--
+//----------------------------------------------------------
 const requiredFields = [
-    { selector: "#txtIdeaSubject", message: "لطفا عنوان ایده را وارد کنید" },
-    { selector: "#txtFullDescription", message: "لطفا شرح کامل ایده را وارد کنید" }
+    "#txtIdeaSubject",
+    "#txtFullDescription"
 ];
 
+// فیلدهای الزامی اضافی
 const additionalValidations = [
-    { selector: "#txtResponsibleForImplementation", message: "لطفا مسئول اجرا ایده را وارد کنید" },
-    { selector: "#txtReasonForResponsible", message: "علت انتخاب مسئول اجرا ایده را وارد کنید" }
+    "#txtResponsibleForImplementation",
+    "#txtReasonForResponsible"
 ];
+
+// مپ بین فیلد و لیبل خطا
+const fieldLabelMap = {
+    "#txtIdeaSubject": "#lblRequireSubject",
+    "#txtSubject": "#lblRequireSubject",
+    "#txtFullDescription": "#lblRequireFullDescription",
+    "#txtImprovePerformance": "#lblRequireImprovePerformance",
+    "#txtImplementation": "#lblRequireImplementation",
+    "#txtImplementationIdea": "#lblRequireImplementationIdea",
+    "#txtReasonForResponsible": "#lblRequireReasonForResponsible",
+    "#txtResponsibleForImplementation": "#lblRequireImplementation",
+    "#cmbIdeaGenerators": "#lblRequireIdeatorInfo", // پیام خاص
+    "gbxInnovation": "#lblRequireImprovePerformance",
+    "gbxGoal": "#lblRequireImplementationIdea",
+    "#cmbIdeaType": "#lblIdeaTypes"
+};
+
+// نام گروهها به ID پنل
+const groupPanels = {
+    innovation: "gbxInnovation",
+    ideaGoal: "gbxGoal"
+};
 //----------------------------------------------------
+
+
+
 $(function(){
 	$form = (function()
 	{
@@ -63,6 +87,7 @@ $(function(){
 	 	   changeDialogTitle("ثبت ایده / پیشنهادات");
 		}
 		//******************************************************************************************************	
+
 		function createControls()
 		{
 
@@ -143,17 +168,23 @@ $(function(){
 		}
 		//******************************************************************************************************
 		//-----------------------------------
-		//	انتخاب یک گزینه برای محصولات
+		//	انتخاب یک گزینه  از نوع ایده
 		//-----------------------------------
-		const productGroup = ["chbNewProduct", "chbImprovementCurrentProducts"];
-		// هندلر: فقط یکی از این دو تا همیشه میتونه تیک باشه
-		productGroup.forEach(id => {
-		    $(`#${id}`).on('change', function() {
-		        if ($(this).is(':checked')) {
-		            // بقیه تو گروه رو ردکن (جز خودت)
-		            productGroup.forEach(otherId => {
-		                if (otherId !== id) $(`#${otherId}`).prop('checked', false);
-		            });
+		$(function () {
+		    $("#cmbIdeaType").on("change", function () {
+		        const selectedValue = $(this).val();
+		
+		        // بررسی attribute IdeaType
+		        const ideaTypeNumber = $(this).find(":selected").attr("IdeaType");
+		
+		        if (ideaTypeNumber === "2" || ideaTypeNumber === "3") {
+		            // غیرفعال کردن کل گروه
+		            $("#gbxInnovation").find("input, select, textarea, button").prop("disabled", true);
+		            $("#gbxInnovation").addClass("group-disabled");
+		        } else {
+		            // فعال کردن دوباره
+		            $("#gbxInnovation").find("input, select, textarea, button").prop("disabled", false);
+		            $("#gbxInnovation").removeClass("group-disabled");
 		        }
 		    });
 		});
