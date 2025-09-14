@@ -8,7 +8,7 @@ var pk;
 //-- تعریف ثابت ها برای پر کردن اینپوتها
 //--------------------------------------
 const fieldMap = {
-  // Textboxes
+  // allTextboxes
   IdeaNo: "txtIdeaNo",
   IdeaSubject: "txtIdeaSubject",
   FullDescription: "txtFullDescription",
@@ -18,12 +18,8 @@ const fieldMap = {
   OtherInovations: "txtOtherInovations",
   AdditionalInformation: "txtOtherImprovement",
   CreatedDate: "txtRegistrationDate",
-	
-  // Checkbox1
-  NewProduct: "chbNewProduct",
-  ImprovementCurrentProducts: "chbImprovementCurrentProducts",
 
-  // Checkbox2
+  // CheckboxGroup2
   BusinessModels: "chbBusinessModels",
   OptimizationOfOrganization: "chbOptimizationOfOrganization",
   MotivatingEmployees: "chbMotivatingEmployees",
@@ -34,7 +30,7 @@ const fieldMap = {
   InteractAndCommunicating: "chbInteractAndCommunicating",
   ImprovePerformance: "chbImprovePerformance",
 
-  // Checkbox3
+  // CheckboxGroup3
   IncreaseIncome: "chbIncreaseIncome",
   IncreaseEffectiveness: "chbIncreaseEffectiveness",
   AccelerationOfProcesses: "chbAccelerationOfProcesses",
@@ -81,13 +77,6 @@ $(function() {
 
     //*************************        BUILD         ****************************
     function build() {
-      $("body").css({overflow: "hidden"}).attr({scroll: "no"});
-      $("#frmLoanRequest").css({
-        top: "0",
-        left: "0",
-        width: $(document).width() + "px",
-        height: $(document).height() + "px"
-      });
       //Set the new dialog title
       changeDialogTitle("مشاهده ایده / پیشنهاد");
     }
@@ -121,7 +110,7 @@ $(function() {
 	      const $tblBody = $("#tblIdeatorInfo tbody");
 	      $tblBody.find("tr:not(.row-header):not(.row-template)").remove();
 	
-	      // اسامی ایده پردازان
+	      //افزودن اسامی ایده پردازان
 	      const ideatorPromises = userIdIdeasList.map(function(userId) {
 	        return getUserInfoPromise({ Where: "UserId = " + userId }).then(response => {
 	          if ($.trim(response) !== "") {
@@ -140,7 +129,14 @@ $(function() {
 	          }
 	        });
 	      });
-	
+			//افزودن نوع ایده یا پیشنهاد در کمبوباکس
+			if (data.IdeaType) {
+		    $("#cmbIdeaType")
+		        .val(
+		            $("#cmbIdeaType option[ideatype='" + String(data.IdeaType).trim() + "']").val()
+		        )
+		        .prop("disabled", true);
+			}
 	      // ایده پرداز اصلی
 	      const creatorPromise = getUserInfoPromise({ Where: "UserId = " + creatorUserId }).then(response => {
 	        if ($.trim(response) !== "") {
@@ -165,7 +161,6 @@ $(function() {
 	      hideLoading();
 	    });
 	}
-	  
     //*********************************************************************************
     function getPK() {
       return pk;
@@ -198,6 +193,7 @@ $(function() {
   $form.init();
 
 });
+
 
 //#endregion
 
