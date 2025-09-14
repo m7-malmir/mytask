@@ -621,7 +621,7 @@ $("#btnRegister").on("click", function (e) {
             jsonArray: JSON.stringify(jsonArray)
         };
 		alert(JSON.stringify(sp_params));
-     /*   FormManager.insertMeetingMinuteManagment(
+    /*   FormManager.insertMeetingMinuteManagment(
             sp_params,
             function (data) {
                 if (data["Success"] == 0) {
@@ -636,7 +636,7 @@ $("#btnRegister").on("click", function (e) {
                 alert(err.details);
             }
         );
-*/
+    */
     } catch (err) {
         if (err.message !== "StopValidation") throw err;
     }

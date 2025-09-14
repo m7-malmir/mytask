@@ -512,3 +512,85 @@ $(function () {
         };
     }());
 });
+
+
+CommitteeDescription
+IsRaisedInCommittee
+
+
+
+
+
+
+
+
+
+list.push({
+    Id:                            get("Id"),
+    MeetingMinuteNo:               get("MeetingMinuteNo"),
+    ActorIdCreator:                get("ActorIdCreator"),
+    CreatedDate:            	   get("CreatedDate"),
+    MeetingStartDate:          	get("MeetingStartDate"),
+    MeetingStartTime:   		   get("MeetingStartTime"),
+    MeetingEndTime:   			 get("MeetingEndTime"),
+    ProcessStatus:     			get("ProcessStatus"),
+    RejectStatus: 				 get("RejectStatus"),
+    SubjectMeeting:                get("SubjectMeeting"),
+    MeetingAgenda:                 get("MeetingAgenda"),
+    MeetingRoomId:                 get("MeetingRoomId"),
+    UserPresent:                   get("UserPresent"),
+    UserAbsent:                    get("UserAbsent")
+    
+});
+
+
+tblMinutesOfMeeting
+
+$("#btnShowDocs").click(function(){
+	let ideaRequestId = $form.getPK();
+
+    $.showModalForm({
+	   registerKey: "ZJM.IRM.CostShowDocument",
+            params:{
+		        IdeaRequestId: $("#txtIdeaNo").val(),
+			}
+        },
+        function(retVal) {
+            if (retVal.Result) {
+
+            }
+        }
+    );
+});
+
+
+var params = window.dialogArguments || window.arguments;
+
+if (params && params.CostRequestNo) {
+    $("#txtCostRequestNo").val(params.CostRequestNo);
+    $("#lblCostRequestID").text(params.CostRequestId);
+    $("#txtRequestTitle").val(params.Title);
+}
+
+    if(typeof dialogArguments !== "undefined") {
+        if(primaryKeyName in dialogArguments) {
+            $("#lblCostRequestID").text(dialogArguments[primaryKeyName]);
+            inEditMode = true;
+        }
+    else {
+        $("#lblCostRequestID").text(params.CostRequestId);
+        inEditMode = true;
+    }
+
+    CurrentDocumentId = dialogArguments["DocumentId"];
+    CurrentUserActorId = dialogArguments["WorkItem"]["ActorId"];
+    InboxId = dialogArguments["WorkItem"]["InboxId"];
+
+}
+
+
+
+
+
+
+
