@@ -1,0 +1,31 @@
+GroupOneValueSQL: function(settingid,expected,callback,errorback) {
+	 	 showLoading();
+	 	 var params = {UnitWorkflowId: $form.getPK(), SettingId:settingid, Expected: expected};
+	 	 qCheckEditOneSettingParty.Execute(params,
+	 	 	 function(data){
+	 	 	 	 hideLoading();
+	 	 	 	 var xmlvar = $.xmlDOM(data);
+	 	 	 	 var err = xmlvar.find("row").find('col[name="count"]').text();
+	 	 	 	 var name =  xmlvar.find("row").find('col[name="name"]').text();
+	 	 	 	 var expected =  xmlvar.find("row").find('col[name="expected"]').text();
+	 	 	 	 //var str = 'این شاخص قبلا برای '+err+' شخص ('+(err>1?'ازجمله ':'')+name+') با مقدار '+expected+' ثبت شده است.';
+	 	 	 	 var str = 'این شاخص تیمی بوده و مقدار مورد انتظار آن باید '+expected+' باشد';
+	 	 	 	 if(err>0){
+	 	 	 	 	 errorback(str);
+	 	 	 	 }else{
+	 	 	 	 	 callback();
+	 	 	 	 }
+	 	 	 },
+	 	 	 function(err){
+	 	 	 	 hideLoading();
+	 	 	 	 alert(err);
+	 	 	 }
+	 	 	 
+	 	 );
+	 }
+
+-----------------------------------------------------------------------
+     select count(i.Id) 'count', max(i.Name) 'name', max(i.ExpectedDefault) 'expected'
+FROM   [ZJM_PMS].[KPI_Indicators] i 
+WHERE  i.Id = (SELECT Indicator FROM [ZJM_PMS].[SET_Settings] WHERE Id = @SettingId) AND i.Party = 2 And i.ExpectedDefault <> @Expected
+-----------------------------------------------------------

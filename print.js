@@ -28,3 +28,49 @@
             ]
         }
     ];
+
+
+      ,[MeetingMinuteNo]
+      ,[ActorIdCreator]
+      ,[CreatedDate]
+      ,[MeetingStartDate]
+      ,[MeetingStartTime]
+      ,[MeetingEndTime]
+      ,[ProcessStatus]
+      ,[RejectStatus]
+      ,[SubjectMeeting]
+      ,[MeetingAgenda]
+      ,[MeetingRoomId]
+      ,[UserPresent]
+      ,[UserAbsent]
+
+
+
+
+
+
+
+    meetingMinuteNo=list[0].MeetingMinuteNo;
+    actorIdCreator=list[0].ActorIdCreator;
+    meetingStartDate=list[0].MeetingStartDate;
+    meetingStartTime=list[0].MeetingStartTime;
+    meetingEndTime=list[0].MeetingEndTime;
+    subjectMeeting=list[0].SubjectMeeting;
+    meetingAgenda=list[0].MeetingAgenda;
+    meetingRoomId=list[0].MeetingRoomId;
+    userPresent=list[0].UserPresent;
+    userAbsent=list[0].UserAbsent;
+
+    $("#txtActorIdCreator").val(actorIdCreator);
+    $("#txtMeetingDate").val(meetingStartDate);
+    // MeetingStartTime=05:50
+    //$("#txtMeetingStartTime").val(05);
+    //$("#txtMinMeetingStartTime").val(50);
+    // meetingEndTime=06:30
+    //$("#txtHourMeetingEndTime").val(06);
+    //$("#txtminMeetingEndTime").val(30);
+    //$("#meetingRoomId").val(meetingRoomId);
+    $("#txtSubjectMeeting").val(subjectMeeting);
+    $("#txtMeetingAgenda").val(meetingAgenda);
+    $("#txtPresentActorId").val(userPresent);
+    $("#txtAbsentActorId").val(userAbsent);
