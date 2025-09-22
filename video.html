@@ -1,36 +1,350 @@
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-  <meta charset="UTF-8">
-  <title>نمایش تصویر از HEX</title>
-</head>
-<body style="direction: rtl; font-family: sans-serif;">
-  <h2>خروجی تصویر از رشته HEX</h2>
-  <div id="image-container"></div>
+var $form;
+var currentActorId;
+var isInTestMode = false;
+var html_;
+var ProcessStatus;
+var Items = [];
+$(function(){
+	$form = (function()
+	{
+	
+		var pk,
+			inEditMode = false,
+			readMeetingMinuteManagmentDetail = FormManager.readMeetingMinuteManagmentDetail,
+			readMeetingMinuteManagment = FormManager.readMeetingMinuteManagment,
+			primaryKeyName = "Id";
+		// ========================= Init =========================	
+		function init()
+		{
+			build();
+			bindEvents();
+			createControls();
+				
+		}
+        // ======================== Build =========================	
+		function build()
+		{
+			$("body").css({overflow: "hidden"}).attr({scroll: "no"});
+			$("#frmLoanRequest").css({top: "0", left: "0", width: $(document).width() + "px", height: $(document).height() + "px"});
+						
+			//Set the new dialog title
+	 	   changeDialogTitle("ثبت صورتجلسه");
+		}
+		// ====================== Bind Events ======================
+	   function bindEvents() {
+		   //------------------------------------------------------------------
+		   //--------------------کلیک ----------------------
+		   //------------------------------------------------------------------
+function bindRowEvents($row, itemIndex) {
+    $row.find(".delete").on("click", function () {
+        if (confirm("آیا از حذف این مصوبه اطمینان دارید؟")) {
+            Items.splice(itemIndex, 1);
+            $row.remove();
+            reindexRows();
+            showEmptyMessage();
+            logItems();
+        }
+    });
 
-  <script>
-MinutesOfMeeting
-    // تبدیل هگز به آرایه بایت‌ها
-    function hexToBytes(hex) {
-      const bytes = [];
-      for (let c = 0; c < hex.length; c += 2) {
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-      }
-      return new Uint8Array(bytes);
+    $row.find(".edit").on("click", function () {
+        var item = Items[itemIndex];
+        var editPopup = $('<div style="direction:rtl;" class="ui-form">' +
+            '<label style="text-align:right;display:block;margin-bottom:5px;">لطفاً متن جدید صورتجلسه را وارد کنید:</label>' +
+        '</div>');
+        var editInput = $("<textarea>").addClass("edit-input form-control")
+            .css({ height: "60px", "font-size": "10pt", resize: "none" })
+            .val(item.Title);
+        editPopup.append(editInput);
+        
+        editPopup.dialog({
+            modal: true,
+            width: 400,
+            title: "ویرایش مصوبه",
+            buttons: [
+                {
+                    text: "ذخیره",
+                    click: function () {
+                        var newText = $(this).find(".edit-input").val().trim();
+                        if (newText) {
+                            item.Title = newText;
+                            $row.find("td").eq(4).text(newText);
+                            logItems();
+                            $(this).dialog("close");
+                        } else {
+                            alert("لطفاً متن جدید را وارد کنید");
+                        }
+                    }
+                },
+                { text: "انصراف", click: function () { $(this).dialog("close"); } }
+            ]
+        });
+    });
+}
+
+function addRowToTable(item) {
+    var $template = $("#tblMinuteManagment .row-template");
+    var $row = $template.clone().removeClass("row-template").addClass("data-row").show();
+
+    var itemIndex = Items.length - 1; // آخرین آیتم اضافه‌شده
+    $row.data("item-index", itemIndex); // نگهداری ایندکس واقعی
+
+    $row.find("td").eq(1).text(itemIndex + 1);
+    $row.find("td").eq(2).html(ICON_DELETE);
+    $row.find("td").eq(3).html(ICON_EDIT);
+    $row.find("td").eq(4).text(item.Title || "-");
+    $row.find("td").eq(5).text(item.UserName || "-");
+    $row.find("td").eq(6).text(item.DisplayDate || "-");
+
+    bindRowEvents($row, itemIndex);
+    $template.before($row);
+    showEmptyMessage();
+}
+
+function reindexRows() {
+    $("#tblMinuteManagment tr.data-row").each(function (i) {
+        $(this).find("td").eq(1).text(i + 1); // ستون ردیف
+        $(this).data("item-index", i); // ایندکس جدید
+    });
+}
+
+	   }
+
+		// ==================== createControls ====================	
+		
+		function createControls() {
+			
+    try {
+        const parentUrl = window.parent?.location?.href;
+        const url = new URL(parentUrl);
+        isInTestMode = url.searchParams.get("icantestmode") === "1";
+    } catch {
+        isInTestMode = false;
     }
 
-    // ساخت Blob از بایت‌ها
-    const byteArray = hexToBytes(hexData);
-    const blob = new Blob([byteArray], { type: "image/jpeg" });
+    const params = window.dialogArguments || window.arguments || {};
+    const meetingMinuteId = params.MeetingMinuteId || null;
 
-    // ساخت URL و نمایش تصویر
-    const imgURL = URL.createObjectURL(blob);
-    const img = document.createElement("img");
-    img.src = imgURL;
-    img.style.maxWidth = "500px";
-    img.style.border = "2px solid #333";
+    showLoading();
 
-    document.getElementById("image-container").appendChild(img);
-  </script>
-</body>
-</html>
+    // دریافت Actor و اطلاعات کاربر
+    UserService.GetCurrentActor(true, function (data) {
+        const xmlActor = $.xmlDOM(data);
+        currentActorId = xmlActor.find('actor').attr('pk');
+
+        BS_GetUserInfo.Read({ Where: "ActorId = " + currentActorId }, function (data) {
+            if ($.trim(data) !== "") {
+                const dataXml = $.xmlDOM(data);
+                fullName = dataXml.find("row:first > col[name='fullName']").text();
+                actorId = dataXml.find("col[name='ActorId']").text();
+                $("#txtFullName").val(fullName).prop('disabled', true);
+                $("#txtActorIdCreator").val(actorId).prop('disabled', true);
+            }
+
+            // داده‌گذاری کمبوها
+            $("#cmbUserPresent").data("actor-field", "#txtPresentActorId").data("role-field", null);
+            $("#cmbUserAbsent").data("actor-field", "#txtAbsentActorId").data("role-field", null);
+            $("#cmbResponsibleForAction").data("actor-field", "#txtResponsibleActorId").data("role-field", null);
+
+            // Promise کمبوها
+            const combosPromise = Promise.all([
+                fillComboWithService($("#cmbUserPresent"), BS_GetUserInfo, "انتخاب شخص"),
+                fillComboWithService($("#cmbUserAbsent"), BS_GetUserInfo, "انتخاب غایبین"),
+                fillComboWithService($("#cmbResponsibleForAction"), BS_GetUserInfo, "شخص مسئول", true)
+            ]).then(() => {
+                setComboSelectionFromHidden($("#cmbUserPresent"));
+                setComboSelectionFromHidden($("#cmbUserAbsent"));
+                setComboSelectionFromHidden($("#cmbResponsibleForAction"));
+            });
+
+			 // Promise اطلاعات جلسه
+			let meetingPromise = Promise.resolve();
+			if (meetingMinuteId) {
+			    meetingPromise = new Promise((resolve) => {
+			        const readParams = { WHERE: "Id = '" + meetingMinuteId + "'" };
+			        FormManager.readMeetingMinuteManagment(readParams,
+			            function (list) {
+			                try {
+			                    if (list && list.length) {
+			                        const item = list[0];
+			                        $("#txtActorIdCreator").val(item.ActorIdCreator);
+			                        $("#txtMeetingDate").val(item.MeetingStartDate);
+			
+			                        if (item.MeetingStartTime && item.MeetingEndTime) {
+			                            const [stH, stM] = item.MeetingStartTime.split(':');
+			                            const [enH, enM] = item.MeetingEndTime.split(':');
+			                            $("#txtMeetingStartTime").val(stH || "");
+			                            $("#txtMinMeetingStartTime").val(stM || "");
+			                            $("#txtHourMeetingEndTime").val(enH || "");
+			                            $("#txtminMeetingEndTime").val(enM || "");
+			                        }
+			
+			                        $("#cmbMeetingRoomId").val(item.MeetingRoomId).trigger("change");
+			                        $("#txtSubjectMeeting").val(item.SubjectMeeting);
+			                        $("#txtMeetingAgenda").val(item.MeetingAgenda);
+			                        $("#txtPresentActorId").val(item.UserPresent);
+			                        $("#txtAbsentActorId").val(item.UserAbsent);
+			                    }
+			                } finally {
+			                    resolve();
+			                }
+			            },
+			            function (error) {
+			                alert('خطا در جلسه: ' + (error?.erroMessage || error?.message || 'نامشخص'));
+			                resolve();
+			            }
+			        );
+			    });
+			}
+// آیکون‌ها
+const ICON_DELETE = '<img src="Images/delete.png" title="حذف" class="delete" style="cursor:pointer;" />';
+const ICON_EDIT   = '<img src="Images/edit.png" title="ویرایش" class="edit" style="cursor:pointer;" />';
+
+let detailsPromise = Promise.resolve();
+let actorLookup = {}; // ActorId → Name
+
+UserService.GetCurrentActor({}, function (response) {
+    const actors = Array.isArray(response) ? response :
+        Array.isArray(response.Items) ? response.Items : [];
+
+    actors.forEach(actor => {
+        actorLookup[String(actor.Id)] = actor.Name;
+    });
+
+    console.log("actorLookup after GetCurrentActor:", actorLookup);
+
+    if (meetingMinuteId) {
+        detailsPromise = new Promise((resolve) => {
+            const readParamsDetail = {
+                WHERE: "MeetingManagmentId = '" + meetingMinuteId + "'"
+            };
+
+            FormManager.readMeetingMinuteManagmentDetail(
+                readParamsDetail,
+                function (detailList) {
+                    try {
+
+
+                        const tbody = $("#tblMinuteManagment tbody");
+                        tbody.find("tr.data-row").remove();
+                        Items.length = 0;
+
+                        if (Array.isArray(detailList) && detailList.length) {
+                            detailList.forEach((srvItem, idx) => {
+                                const responsibleId = String(srvItem.ResponsibleForAction || "").trim();
+
+
+                                if (responsibleId && !actorLookup[responsibleId]) {
+                                    console.log(`بازیگر ${responsibleId} در actorLookup نیست، درخواست به BS_GetUserInfo.Read ارسال شد`);
+
+                                    BS_GetUserInfo.Read(
+                                        { Where: "ActorId = '" + responsibleId + "'" },
+                                        function (data) {
+
+
+                                            if (typeof data === "string") {
+                                                const xmlDoc = new DOMParser().parseFromString(data, "text/xml");
+                                                const fullNameNode = xmlDoc.querySelector("col[name='fullName']");
+                                                actorLookup[responsibleId] = fullNameNode ? fullNameNode.textContent.trim() : "-";
+                                            } else {
+                                                const info = Array.isArray(data) ? data[0] : data?.Items?.[0] || {};
+                                                actorLookup[responsibleId] = info.FullName || info.Name || "-";
+                                            }
+
+                                            addRowToTable({
+                                                ...srvItem,
+                                                ResponsibleForActionName: actorLookup[responsibleId]
+                                            }, idx + 1);
+                                        },
+                                        function (err) {
+                                            console.error(`خطا در BS_GetUserInfo.Read برای ${responsibleId}:`, err);
+                                            actorLookup[responsibleId] = "-";
+                                            addRowToTable({
+                                                ...srvItem,
+                                                ResponsibleForActionName: "-"
+                                            }, idx + 1);
+                                        }
+                                    );
+                                } else {
+                                    const newItem = {
+                                        Id: srvItem.Id || "",
+                                        MeetingManagmentId: srvItem.MeetingManagmentId || "",
+                                        Title: srvItem.Title || "-",
+                                        ActionDeadLineDate: srvItem.ActionDeadLineDate || "",
+                                        ResponsibleForActionName: actorLookup[responsibleId] || "-"
+                                    };
+
+                                    Items.push(newItem);
+                                    addRowToTable(newItem, idx + 1);
+                                }
+                            });
+                        }
+
+                        if (typeof showEmptyMessage === "function") {
+                            showEmptyMessage();
+                        }
+                        if (typeof logItems === "function") {
+                            logItems();
+                        }
+                    } finally {
+                        resolve();
+                    }
+                },
+                function (error) {
+                    console.error("خطا در جزئیات:", error);
+                    resolve();
+                }
+            );
+        });
+    }
+});
+
+function addRowToTable(item, index) {
+    console.log(`افزودن به جدول ردیف ${index}:`, item);
+    const $template = $("#tblMinuteManagment tbody tr.row-template").clone();
+    $template.removeClass("row-template")
+        .addClass("data-row")
+        .attr("data-row", index)
+        .show();
+
+    $template.find("td").eq(1).text(Items.length);
+    $template.find("td").eq(2).html(ICON_DELETE);
+    $template.find("td").eq(3).html(ICON_EDIT);
+    $template.find("td").eq(4).text(item.Title);
+    $template.find("td").eq(5).text(item.ResponsibleForActionName || "-");
+    $template.find("td").eq(6).text(formatMiladiToShamsi(item.ActionDeadLineDate));
+
+    $("#tblMinuteManagment tbody").append($template);
+}
+
+
+
+            // اجرای همزمان همه
+            Promise.all([combosPromise, meetingPromise, detailsPromise])
+                .finally(() => hideLoading());
+        });
+
+    }, function (err) {
+        hideLoading();
+        $ErrorHandling.Erro(err, "خطا در سرویس getCurrentActor");
+    });
+}
+
+		//******************************************************************************************************	
+		function getPK()
+		{
+			return pk;
+		}
+		//******************************************************************************************************	
+		function isInEditMode()
+		{
+			return inEditMode;
+		}
+		//******************************************************************************************************	
+		return {
+			init: init,
+			getPK: getPK,
+			isInEditMode: isInEditMode
+		};
+	}());
+	$form.init();
+});
