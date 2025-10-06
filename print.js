@@ -1,76 +1,1694 @@
-    const data = [
-        {
-            id: 1,
-            title: "صورتجلسه شماره ۱ - جلسه استراتژیک",
-            status: "approved",
-            history: [
-                { name: "علی", action: "رد", comment: "نیاز به اصلاح بند ۵", date: "1404/05/28" },
-                { name: "مریم", action: "رد", comment: "متن مبهم است", date: "1404/05/29" },
-                { name: "حسین", action: "رد", comment: "اشتباه تایپی", date: "1404/05/30" },
+function commafy(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+/*****************************************************************************************/
+function rcommafy(x) {
+    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
+	a=parseInt(a,10);
+	return a
+}
 
-                { name: "علی", action: "تایید", comment: "", date: "1404/06/01" },
-                { name: "مریم", action: "تایید", comment: "", date: "1404/06/02" },
-                { name: "حسین", action: "تایید", comment: "", date: "1404/06/03" }
-            ]
-        },
-        {
-            id: 2,
-            title: "صورتجلسه شماره ۲ - جلسه پروژه X",
-            status: "pending",
-            history: [
-                { name: "علی", action: "رد", comment: "نیاز به اصلاح در بند ۲", date: "1404/06/02" },
-                { name: "دبیر جلسه", action: "رد", comment: "تصحیح بند ۲", date: "1404/06/03" },
-                { name: "مریم", action: "رد", comment: "ارجاع به پیوست ناقص", date: "1404/06/04" },
+//******************************************************************************************************
+function ErrorMessage(message,data) {
+	$.alert(message);
+	console.log('Data: '+list);
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleError(err,methodName) {
+	console.error('Error On '+methodName, err); // چاپ خطا در کنسول
+	alert('Error On '+ methodName +', '+ err);
+	hideLoading();
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleRunWorkflowResponse(xmlString) {
+  // Parse XML string
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, "application/xml");
 
-                { name: "علی", action: "تایید", comment: "", date: "1404/06/05" },
-                { name: "دبیر جلسه", action: "تایید", comment: "", date: "1404/06/06" },
-                { name: "مریم", action: "تایید", comment: "", date: "1404/06/07" }
-            ]
+  // Get hasError and errorMessage values
+  const hasErrorNode = xmlDoc.querySelector("hasError");
+  const errorMessageNode = xmlDoc.querySelector("errorMessage");
+
+  const hasError = hasErrorNode && hasErrorNode.textContent.trim().toLowerCase() === "true";
+  const errorMessage = errorMessageNode ? errorMessageNode.textContent.trim() : "Unknown error";
+
+  if (hasError) {
+    console.error("خطا در اجرای فرآیند:", errorMessage);
+    alert("خطا در اجرای فرآیند: " + errorMessage);
+  } else {
+
+	$.alert("درخواست شما با موفقیت ارسال شد", "", "rtl", function() {
+		hideLoading();
+		closeWindow({ OK: true, Result: null });
+		 myHideLoading();
+	});
+  }
+}
+//******************************************************************************************************
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        if ($titleSpan.length > 0) {
+            $titleSpan.text(title);
+
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
         }
-    ];
+    } catch (e) {
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+//******************************************************************************************************//***************************showLoading*********************************************
+function showLoading() {
+    let $box = $('#loadingBoxTweaked');
+    if (!$box.length) {
+        $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+
+        // spinner css فقط یکبار اضافه شود
+        if (!$('#loadingSpinnerStyle').length) {
+            $('<style id="loadingSpinnerStyle">')
+                .html(`
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                `)
+                .appendTo('head');
+        }
+        $('body').append($box);
+    } else {
+        $box.show();
+    }
+}
+//******************************************************************************************************
+function hideLoading() {
+    $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
+}
+//******************************************************************************************************
+
+// تابع Hidden Fields بر اساس ActorId
+function updateHiddenFields($combo, actorId, roleId, isAdd) {
+    const actorField = $combo.data("actor-field");
+    const roleField = $combo.data("role-field");
+
+    // مدیریت ActorId
+    let actorIds = $(actorField).val().split(",").filter(Boolean);
+    if (isAdd) {
+        if (!actorIds.includes(actorId)) actorIds.push(actorId);
+    } else {
+        actorIds = actorIds.filter(id => id !== actorId);
+    }
+    $(actorField).val(actorIds.join(","));
+
+    // مدیریت RoleId (در صورت وجود)
+    if (roleField) {
+        let roleIds = $(roleField).val().split(",").filter(Boolean);
+        if (isAdd) {
+            if (!roleIds.includes(roleId)) roleIds.push(roleId);
+        } else {
+            roleIds = roleIds.filter(id => id !== roleId);
+        }
+        $(roleField).val(roleIds.join(","));
+    }
+}
+
+//-------------------------------------------------------------------------------------------
+// تابع پر کردن کمبو بر اساس ActorId
+function fillComboWithService($combo, service, placeholderText, singleSelect = false) {
+    return new Promise(resolve => {
+        service.Read({}, function (data) {
+            const xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
+			const list = xmlData.find("row").map(function () {
+			    const fullName = $(this).find("col[name='fullName']").text();
+			    const roleName = $(this).find("col[name='RoleName']").text(); // اسم ستون سمت کاربر
+			    return {
+			        id: $(this).find("col[name='ActorId']").text(),
+			        text: roleName 
+			            ? `${fullName} - ${roleName}`
+			            : fullName,
+			        actorId: $(this).find("col[name='ActorId']").text(),
+			        roleId: $(this).find("col[name='RoleId']").text()
+			    };
+			}).get();
 
 
-      ,[MeetingMinuteNo]
-      ,[ActorIdCreator]
-      ,[CreatedDate]
-      ,[MeetingStartDate]
-      ,[MeetingStartTime]
-      ,[MeetingEndTime]
-      ,[ProcessStatus]
-      ,[RejectStatus]
-      ,[SubjectMeeting]
-      ,[MeetingAgenda]
-      ,[MeetingRoomId]
-      ,[UserPresent]
-      ,[UserAbsent]
+            $combo.empty().select2({
+                data: list,
+                placeholder: placeholderText || "انتخاب مورد",
+                dir: "rtl",
+                multiple: !singleSelect,
+                closeOnSelect: singleSelect,
+                scrollAfterSelect: false
+            });
+
+            // رویداد انتخاب/حذف
+            $combo
+                .off("select2:select").on("select2:select", e => {
+                    const d = e.params.data;
+                    if (singleSelect) {
+                        $($combo.data("actor-field")).val(d.actorId);
+                    } else {
+                        updateHiddenFields($combo, d.actorId, d.roleId, true);
+                    }
+                })
+                .off("select2:unselect").on("select2:unselect", e => {
+                    const d = e.params.data;
+                    if (singleSelect) {
+                        $($combo.data("actor-field")).val("");
+                    } else {
+                        updateHiddenFields($combo, d.actorId, d.roleId, false);
+                    }
+                });
+            resolve();  
+        }, function (err) {
+            alert("Service titles read error: " + err);
+            resolve(); 
+        });
+    });
+}
+//-------------------------------------------------
+
+
+
+//تابع جدید برای پیدا کردن افراد حاضر و غایب وقتی ئیتا لود میشود
+function setComboSelectionFromHidden($combo) {
+    const actorField = $combo.data("actor-field");
+    if (!actorField) return;
+
+    // 1 - گرفتن ActorIdها از hidden
+    const actorIds = $(actorField).val().split(",").filter(Boolean);
+
+    if (actorIds.length === 0) return;
+
+    // 2 - انتخاب در select2
+    $combo.val(actorIds).trigger("change");
+}
+
+//---------------------------------------------------------------------------------------------
+
+
+
+
+// ====================== Utility Functions ======================
+
+function safeShamsiDate(miladiDate) {
+    if (!miladiDate || typeof miladiDate !== "string" || !miladiDate.trim()) return "";
+    if (miladiDate.startsWith("0001") || miladiDate.startsWith("1900")) return "";
+    return formatMiladiToShamsi(miladiDate);
+}
+
+function getFileIcon(fileType, fileContent) {
+    switch (fileType.toLowerCase()) {
+        case ".doc":
+        case ".docx":
+            return "https://cdn.iconscout.com/icon/free/png-64/microsoft-word-28-761688.png";
+        case ".xls":
+        case ".xlsx":
+            return "https://cdn.iconscout.com/icon/free/png-64/microsoft-excel-29-761701.png";
+        case ".ppt":
+        case ".pptx":
+            return "https://cdn.iconscout.com/icon/free/png-64/microsoft-powerpoint-30-761705.png";
+        case ".pdf":
+            return "https://cdn.iconscout.com/icon/free/png-64/adobe-pdf-5646849-4691213.png";
+        case ".png":
+        case ".jpg":
+        case ".jpeg":
+        case ".gif":
+            return "data:image/png;base64," + fileContent;
+        default:
+            return "https://cdn-icons-png.flaticon.com/64/337/337946.png";
+    }
+}
+
+// ====================== Item Management ======================
+
+
+ function handleNewMinuteItem(result, $rowFromEdit) {
+    console.group(" Handle New Minute Item");
+    console.log("Raw result from submit:", result);
+
+    const uniqueId = (result.Id && String(result.Id).trim())
+        ? String(result.Id).trim()
+        : null;
+
+    if (!uniqueId) {
+        console.error("⚠ رکورد بدون Id – عملیات لغو شد (هیچ آپدیتی انجام نشد).");
+        console.groupEnd();
+        return;
+    }
+
+    const actorIds = (result.ResponsibleForAction || "").trim();
+    const actorNames = (result.ResponsibleForActionName || "-").trim();
+
+    const newItem = {
+        Id: uniqueId,
+        Title: result.Title || "-",
+        ResponsibleForAction: actorIds,
+        ResponsibleForActionName: actorNames,
+        ActorForAction: actorIds,
+        ActionDeadLineDate: result.ActionDeadLineDate,
+        DisplayDate: result.DisplayDate || "-"
+    };
+
+    console.log("NewItem to store ->", newItem);
+
+    const existingIndex = MeetingMinutesData.Items.findIndex(it => String(it.Id) === uniqueId);
+
+    if (existingIndex >= 0) {
+        // آپدیت رکورد موجود
+        MeetingMinutesData.Items[existingIndex] = newItem;
+
+        let $row = $("#tblMinuteManagment tbody tr.data-row").filter(`[data-rowid="${uniqueId}"]`);
+        if (!$row.length && $rowFromEdit?.length) $row = $rowFromEdit;
+
+        if ($row.length) {
+            let tds = $row.find("td");
+            tds.eq(2).text(newItem.Title);
+            tds.eq(3).text(newItem.ResponsibleForActionName);
+            tds.eq(4).text(newItem.DisplayDate)
+                      .attr("data-gdate", newItem.ActionDeadLineDate)
+                      .attr("data-jdate", newItem.DisplayDate);
+            tds.eq(5).attr("data-ids", newItem.ResponsibleForAction);
+        }
+    } else {
+        // اضافه کردن رکورد جدید
+        MeetingMinutesData.Items.push(newItem);
+        addRowToTable(newItem);
+    }
+    console.groupEnd();
+}
+
+
+
+function addRowToTable(item) {
+    const $template = $("#tblMinuteManagment tbody tr.row-template").first().clone();
+    $template.removeClass("row-template").addClass("data-row").show();
+
+    $template.attr("data-rowid", String(item.Id));
+    $template.find("td").eq(0).html(`<input type="radio" name="selectedRowId" value="${item.Id}" />`);
+    $template.find("td").eq(1).text(item.Id || "");
+    $template.find("td").eq(2).text(item.Title || "-");
+    $template.find("td").eq(3).text(item.ResponsibleForActionName || "-");
+    $template.find("td").eq(4)
+        .text(item.DisplayDate || "-")
+        .attr("data-gdate", item.ActionDeadLineDate || "")
+        .attr("data-jdate", item.DisplayDate || "");
+    $template.find("td").eq(5)
+        .text("-")
+        .attr("data-ids", item.ResponsibleForAction || "");
+
+    $("#tblMinuteManagment tbody").append($template);
+}
 
 
 
 
 
 
+function updateMinuteItem($row, newData) {
+    let tds = $row.find("td");
+    tds.eq(2).text(newData.Title || "");
+    tds.eq(3).text(newData.ResponsibleActorName || "");
+    tds.eq(4).text(newData.ActionDeadLineJDate || "")
+              .attr("data-gdate", newData.ActionDeadLineDate || "");
+    tds.eq(5).text(newData.ResponsibleActorId || "");
+}
 
-    meetingMinuteNo=list[0].MeetingMinuteNo;
-    actorIdCreator=list[0].ActorIdCreator;
-    meetingStartDate=list[0].MeetingStartDate;
-    meetingStartTime=list[0].MeetingStartTime;
-    meetingEndTime=list[0].MeetingEndTime;
-    subjectMeeting=list[0].SubjectMeeting;
-    meetingAgenda=list[0].MeetingAgenda;
-    meetingRoomId=list[0].MeetingRoomId;
-    userPresent=list[0].UserPresent;
-    userAbsent=list[0].UserAbsent;
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function deleteMinuteItem(selectedId) {
+    const index = MeetingMinutesData.Items.findIndex(item => String(item.Id) === String(selectedId));
+    if (index > -1) {
+        MeetingMinutesData.Items.splice(index, 1);
+        $("#tblMinuteManagment tbody tr").has(`input[name='selectedRowId'][value='${selectedId}']`).remove();
+    }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    $("#txtActorIdCreator").val(actorIdCreator);
-    $("#txtMeetingDate").val(meetingStartDate);
-    // MeetingStartTime=05:50
-    //$("#txtMeetingStartTime").val(05);
-    //$("#txtMinMeetingStartTime").val(50);
-    // meetingEndTime=06:30
-    //$("#txtHourMeetingEndTime").val(06);
-    //$("#txtminMeetingEndTime").val(30);
-    //$("#meetingRoomId").val(meetingRoomId);
-    $("#txtSubjectMeeting").val(subjectMeeting);
-    $("#txtMeetingAgenda").val(meetingAgenda);
-    $("#txtPresentActorId").val(userPresent);
-    $("#txtAbsentActorId").val(userAbsent);
+
+
+// ====================== Attachment Management ======================
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function getFileIconClass(fileType) {
+    let type = fileType.toLowerCase();
+    if (type.includes(".")) {
+        type = type.split(".").pop();
+    }
+    if (type.includes("/")) {
+        type = type.split("/").pop();
+    }
+
+    if (["xls", "xlsx", "csv"].includes(type)) return "fas fa-file-excel";  // اکسل
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(type)) return "fas fa-file-image";  // تصویر
+    if (["pdf"].includes(type)) return "fas fa-file-pdf";  // پی‌دی اف
+    if (["doc", "docx"].includes(type)) return "fas fa-file-word";  // ورد
+    if (["ppt", "pptx"].includes(type)) return "fas fa-file-powerpoint"; // پاورپوینت
+
+    return "fas fa-file"; // پیش فرض
+}
+function addAttachmentToFieldset(file) {
+    const $container = $("#gbxDocuments");
+    const iconClass = getFileIconClass(file.FileType);
+
+    const $item = $(`
+        <div data-file-id="${file.FileId}" title="${file.FileName}"
+            style="
+                display:inline-flex;
+                flex-direction:column;
+                align-items:center;
+                width:40px;
+                margin: 15px 10px 0px 5px;
+                padding:3px;
+                border:1px solid #ccc;
+                border-radius:4px;
+                background:#fff;
+                position:relative;
+                font-family:Tahoma;
+                font-size:8pt;">
+            
+            <button class="remove-btn" title="حذف"
+                style="
+                    position:absolute;
+                    top:-5px;
+                    right:-5px;
+                    background:#f33;
+                    color:#fff;
+                    border:none;
+                    border-radius:50%;
+                    cursor:pointer;
+                    width: 17px;
+                    height: 17px;
+                    line-height: 19px;
+                    font-size: 15px;
+                    padding: 0;">×</button>
+            
+            <a href="javascript:void(0)" class="download-link" style="text-decoration:none;">
+                <i class="${iconClass}" style="font-size:35px; color:#555;"></i>
+            </a>
+        </div>
+    `);
+
+    // رویداد حذف فایل
+    $item.find(".remove-btn").on("click", function () {
+        const fileId = $item.data("file-id");
+        removeAttachment(fileId, $item);
+    });
+
+    // رویداد دانلود فقط برای همین آیتم
+    $item.find(".download-link").on("click", function (e) {
+        e.preventDefault();
+        downloadBase64(file.FileContent, file.FileSubject, file.FileType);
+    });
+
+    $container.append($item);
+}
+
+// ====== Download a Base64 string as a file based on its type =======
+function downloadBase64(hexString, fileName, fileType) {
+    const mimeTypes = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".pdf": "application/pdf",
+        ".doc": "application/msword",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".xls": "application/vnd.ms-excel",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    };
+
+    // If the format is not valid, default to png.
+    const mimeType = mimeTypes[fileType.toLowerCase()] || "application/octet-stream";
+
+    const dataUrl = `data:${mimeType};base64,${hexString}`;
+
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = fileName || ("download" + fileType);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function removeAttachment(fileId, $element) {
+    $.confirm("آیا نسبت به حذف این سند مطمئن هستید؟", "حذف اطلاعات", "rtl", function (result) {
+        if (result === "OK") {
+            const params = { Where: "FileId = '" + fileId + "'" };
+            showLoading();
+            FormManager.deleteAttachedFile(
+                params,
+                function () {
+                    hideLoading();
+                    $element.remove();
+                    $.alert("حذف با موفقیت انجام شد", "حذف شد", "rtl");
+                },
+                function (error) {
+                    hideLoading();
+                    $.alert("حذف با خطا مواجه شد.", "خطا", "rtl");
+                    console.error(error);
+                }
+            );
+        }
+    });
+}
+
+//تابع فراخوانی فایلهای مرتیط با صورتجلسه
+function loadAttachments(meetingMinuteId) {
+    return new Promise((resolve, reject) => {
+        if (!meetingMinuteId) {
+            return resolve(); // ادامه اجرای زنجیره متوقف نشه
+        }
+
+        const readParams = { WHERE: "SystemId = 3 AND DocumentId = '" + meetingMinuteId + "'" };
+        
+        FormManager.readAttachedFile(
+            readParams,
+            function (list) {
+                if (list && list.length) {
+                    list.forEach(file => addAttachmentToFieldset(file));
+                    console.debug(`Loaded ${list.length} attachments.`);
+                } else {
+                    console.debug("No attachments found for this meeting.");
+                }
+                resolve(); 
+            },
+            function (error) {
+                if (error && (error.erroMessage || error.message)) {
+                    alert('خطا در خواندن فایل ها: ' + (error.erroMessage || error.message));
+                    reject(error);
+                } else {
+                    console.debug("No file found, but this is not an error.");
+                    resolve();
+                }
+            }
+        );
+    });
+}
+
+//==========================================================
+function miladiFormattedForAttr(miladiStr) {
+    if (!miladiStr) return "";
+
+    let cleanDate = miladiStr.split("T")[0].split(" ")[0].trim();
+    let gy, gm, gd;
+
+    if (cleanDate.includes("/")) {
+        // فرمت MM/DD/YYYY
+        let [m, d, y] = cleanDate.split("/").map(Number);
+        return `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+    } else if (cleanDate.includes("-")) {
+        // فرمت YYYY-MM-DD
+        let [y, m, d] = cleanDate.split("-").map(Number);
+        return `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+    }
+
+    // اگر هیچ‌کدوم نبود
+    return "";
+}
+// ====================== Data Loading ======================
+function loadMeetingData(meetingMinuteId) {
+    return new Promise((resolve) => {
+        //if (!meetingMinuteId) return resolve();
+
+        const readParams = { WHERE: "Id = '" + meetingMinuteId + "'" };
+        FormManager.readMeetingMinuteManagment(readParams,
+            function (list) {
+                if (list && list.length) {
+                    const item = list[0];
+                    $("#txtActorIdCreator").val(item.ActorIdCreator);
+                    $("#txtMeetingDate")
+				    .val(formatMiladiToShamsi(item.MeetingStartDate) || "")
+					.data("gdate", miladiFormattedForAttr(item.MeetingStartDate) || "")
+					.attr("gdate", miladiFormattedForAttr(item.MeetingStartDate) || "");
+ 
+                    if (item.MeetingStartTime && item.MeetingEndTime) {
+                        const [stH, stM] = item.MeetingStartTime.split(':');
+                        const [enH, enM] = item.MeetingEndTime.split(':');
+                        $("#txtMeetingStartTime").val(stH || "");
+                        $("#txtMinMeetingStartTime").val(stM || "");
+                        $("#txtHourMeetingEndTime").val(enH || "");
+                        $("#txtminMeetingEndTime").val(enM || "");
+                    }
+                    $("#cmbMeetingRoomId").val(item.MeetingRoomId).trigger("change");
+                    $("#txtSubjectMeeting").val(item.SubjectMeeting);
+                    $("#txtMeetingAgenda").val(item.MeetingAgenda);
+                    $("#txtPresentActorId").val(item.UserPresent);
+                    $("#txtAbsentActorId").val(item.UserAbsent);
+                }
+                resolve();
+            },
+            function () { resolve(); }
+        );
+    });
+}
+
+function loadMeetingDetails(meetingMinuteId, actorLookup) {
+    return new Promise((resolve) => {
+        if (!meetingMinuteId) return resolve();
+
+        const readParamsDetail = { WHERE: "MeetingManagmentId = '" + meetingMinuteId + "'" };
+
+        FormManager.readMeetingMinuteManagmentDetail(
+            readParamsDetail,
+            function (detailList) {
+                $("#tblMinuteManagment tbody tr.data-row").remove();
+                MeetingMinutesData.Items.length = 0;
+
+                if (Array.isArray(detailList) && detailList.length) {
+                    const updatePromises = [];
+
+detailList.forEach((srvItem, idx) => {
+    const responsibleIds = String(srvItem.ResponsibleForAction || "")
+        .split(",").map(id => id.trim()).filter(Boolean);
+
+    console.log(`[Debug] Loop index=${idx} | cleanItem.Id=${srvItem.Id} | responsibleIds=`, responsibleIds);
+
+    const cleanItem = {
+        Id: srvItem.Id,
+        Title: srvItem.Title || "-",
+        ActionDeadLineDate: srvItem.ActionDeadLineDate || "",
+        DisplayDate: safeShamsiDate(srvItem.ActionDeadLineDate || ""),
+        ResponsibleForAction: responsibleIds.join(","),
+        ResponsibleForActionName: "-"
+    };
+
+    MeetingMinutesData.Items.push(cleanItem);
+    addRowToTable(cleanItem, idx + 1);
+
+    const p = getNameForIds(responsibleIds, actorLookup)
+        .then(namesArray => {
+        
+            const joinedNames = namesArray.filter(n => !!n && n !== "-").join(", ") || "-";
+
+            const idxItem = MeetingMinutesData.Items.findIndex(it => it.Id === cleanItem.Id);
+            if (idxItem >= 0) {
+                MeetingMinutesData.Items[idxItem].ResponsibleForActionName = joinedNames;
+            }
+
+            const $row = $("#tblMinuteManagment tbody tr.data-row")
+                .filter(`[data-rowid="${cleanItem.Id}"]`);
+
+            if ($row.length) {
+                $row.find("td").eq(3).text(joinedNames);
+                $row.find("td").eq(5).attr("data-ids", cleanItem.ResponsibleForAction);
+            } else {
+            }
+
+            console.log(`[UpdateTable] RowId=${cleanItem.Id} → ${joinedNames}`);
+            return joinedNames;
+        });
+
+    updatePromises.push(p);
+});
+
+
+                    Promise.all(updatePromises).then(() => {
+    alert("All promises resolved");
+    resolve();
+});
+                } else {
+                    resolve();
+                }
+            },
+            () => resolve()
+        );
+    });
+}
+
+// نگه داشتن کش داخل getNameForIds
+function getNameForIds(ids, actorLookup) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return Promise.resolve([]); // همیشه یک Promise برگردون
+    }
+
+    const promises = ids.map(responsibleId => {
+        if (actorLookup[responsibleId]) {
+            console.log(`[getNameForIds] from cache: ${responsibleId} → ${actorLookup[responsibleId]}`);
+            return Promise.resolve(actorLookup[responsibleId]);
+        }
+
+        console.log(`[getNameForIds] live request for ActorId=${responsibleId}`);
+		actorLookup = {};
+        return new Promise(resolve => {
+            BS_GetUserInfo.Read(
+                { Where: "ActorId = '" + responsibleId + "'" },
+                function (data) {
+                    let name = "-";
+                    if (typeof data === "string") {
+                        const xmlDoc = new DOMParser().parseFromString(data, "text/xml");
+                        const fullNameNode = xmlDoc.querySelector("col[name='fullName']");
+                        name = fullNameNode ? fullNameNode.textContent.trim() : "-";
+                    } else if (Array.isArray(data) && data.length) {
+                        name = data[0].FullName || data[0].Name || "-";
+                    }
+                    actorLookup[responsibleId] = name;
+                    console.log(`[BS_GetUserInfo.Read] ذخیره شد: ${name}`);
+                    resolve(name);
+                },
+                function () {
+                    actorLookup[responsibleId] = "-";
+                    console.warn(`[BS_GetUserInfo.Read] خطا برای ActorId=${responsibleId}`);
+                    resolve("-");
+                }
+            );
+        });
+    });
+
+    return Promise.all(promises);
+}
+
+
+
+
+
+//===================================================================================
+//======================================== ثبت و ویرایش =============================
+//===================================================================================
+
+
+//=================================================================================== توابع کمکی 
+function checkRequired(selector, msg, focusSelect2 = false) {
+    let el = $(selector), val = el.val();
+    if (!val || (typeof val === "string" && !val.trim())) {
+        $.alert(msg, "", "rtl");
+        focusSelect2 ? el.select2('open') : el.focus();
+        throw new Error("StopValidation");
+    }
+}
+
+function checkNumberRange(selector, min, max, msg) {
+    let num = parseInt($(selector).val(), 10);
+    if (isNaN(num) || num < min || num > max) {
+		$.alert(msg, "", "rtl");
+        //alert(msg);
+        $(selector).focus();
+        throw new Error("StopValidation");
+    }
+    return num;
+}
+
+function validateNotFuture(gdate, $input) {
+    let y, m, d;
+    if (gdate.includes("-")) [y, m, d] = gdate.split("-").map(Number);
+    else [m, d, y] = gdate.split("/").map(Number);
+
+    const meetingDateObj = new Date(y, m - 1, d);
+    const todayObj = new Date();
+    todayObj.setHours(0, 0, 0, 0);
+    meetingDateObj.setHours(0, 0, 0, 0);
+
+    if (meetingDateObj.getTime() > todayObj.getTime()) {
+		$.alert("تاریخ انتخابی جلسه نمی تواند بزرگتر از امروز باشد.", "", "rtl");
+        $input.focus();
+        throw new Error("StopValidation");
+    }
+}
+
+function validatePresentAbsent() {
+    const parseIds = sel => ($(sel).val() || "")
+        .split(",").map(id => id.trim()).filter(Boolean);
+
+    const dup = parseIds("#txtPresentActorId")
+        .filter(id => parseIds("#txtAbsentActorId").includes(id));
+
+    if (dup.length) {
+		$.alert("یک شخص نمی تواند در هر دو لیست حاضرین و غایبین باشد!", "", "rtl");
+        throw new Error("StopValidation");
+    }
+}
+
+
+/* =================== توابع مشترک برای ثبت  =================== */
+
+// گرفتن تاریخ میلادی با استفاده از توابع خودت
+function getMeetingGDate($input) {
+    let meetingGDate = $input.attr("gdate") || $input.data("gdate");
+    if (!meetingGDate) {
+        const jdate = $input.attr("data-jdate") || $input.val();
+        if (jdate) {
+            const [jy, jm, jd] = jdate.split("/").map(Number);
+            const [gy, gm, gd] = shamsi_be_miladi(jy, jm, jd);
+            meetingGDate = `${gy}/${String(gm).padStart(2, '0')}/${String(gd).padStart(2, '0')}`;
+            $input.attr("data-gdate", meetingGDate)
+                  .attr("gdate", meetingGDate)
+                  .data("gdate", meetingGDate);
+        }
+    }
+    return meetingGDate;
+}
+
+// ولیدیشن فرم و برگرداندن ساعات
+function validateMeetingForm($meetingDateInput, meetingGDate) {
+    checkRequired("#txtSubjectMeeting", "موضوع جلسه را وارد کنید.");
+    checkRequired("#cmbMeetingRoomId", "اتاق جلسه را انتخاب کنید.");
+    checkRequired("#txtMeetingDate", "تاریخ جلسه را انتخاب کنید.");
+
+    const selectedDate = new Date(meetingGDate.replace(/\//g, "-"));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate > today) {
+		$.alert("انتخاب تاریخ آینده مجاز نیست. لطفاً امروز یا روزهای قبل را انتخاب کنید.", "", "rtl");
+        $meetingDateInput.val("").attr("data-gdate", "").attr("data-jdate", "").attr("gdate", "");
+        throw new Error("StopValidation");
+    }
+
+    const sHour = checkNumberRange("#txtMeetingStartTime", 1, 23, "ساعت شروع باید بین 1 تا 23 باشد.");
+    const sMin = checkNumberRange("#txtMinMeetingStartTime", 0, 59, "دقیقه شروع باید بین 0 تا 59 باشد.");
+    const eHour = checkNumberRange("#txtHourMeetingEndTime", 1, 23, "ساعت پایان باید بین 1 تا 23 باشد.");
+    const eMin = checkNumberRange("#txtminMeetingEndTime", 0, 59, "دقیقه پایان باید بین 0 تا 59 باشد.");
+
+    if (eHour < sHour || (eHour === sHour && eMin <= sMin)) {
+		$.alert("زمان پایان نمی تواند قبل یا مساوی زمان شروع باشد.", "", "rtl");
+        $("#txtHourMeetingEndTime").focus();
+        throw new Error("StopValidation");
+    }
+
+    checkRequired("#cmbUserPresent", "حداقل یک نفر شرکت‌کننده حاضر انتخاب کنید.", true);
+    checkRequired("#txtMeetingAgenda", "دستور جلسه را وارد کنید.");
+
+    if ($("#tblMinuteManagment tr.data-row").length === 0) {
+		$.alert("حداقل یک مصوبه باید وارد شود.", "", "rtl");
+        throw new Error("StopValidation");
+    }
+
+    validatePresentAbsent();
+
+    return { sHour, sMin, eHour, eMin };
+}
+
+// جمع‌آوری آیتم‌ها با توجه به حالت
+function commafy(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+/*****************************************************************************************/
+function rcommafy(x) {
+    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
+	a=parseInt(a,10);
+	return a
+}
+
+//******************************************************************************************************
+function ErrorMessage(message,data) {
+	$.alert(message);
+	console.log('Data: '+list);
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleError(err,methodName) {
+	console.error('Error On '+methodName, err); // چاپ خطا در کنسول
+	alert('Error On '+ methodName +', '+ err);
+	hideLoading();
+	myHideLoading();
+}
+//******************************************************************************************************
+function handleRunWorkflowResponse(xmlString) {
+  // Parse XML string
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+
+  // Get hasError and errorMessage values
+  const hasErrorNode = xmlDoc.querySelector("hasError");
+  const errorMessageNode = xmlDoc.querySelector("errorMessage");
+
+  const hasError = hasErrorNode && hasErrorNode.textContent.trim().toLowerCase() === "true";
+  const errorMessage = errorMessageNode ? errorMessageNode.textContent.trim() : "Unknown error";
+
+  if (hasError) {
+    console.error("خطا در اجرای فرآیند:", errorMessage);
+    alert("خطا در اجرای فرآیند: " + errorMessage);
+  } else {
+
+	$.alert("درخواست شما با موفقیت ارسال شد", "", "rtl", function() {
+		hideLoading();
+		closeWindow({ OK: true, Result: null });
+		 myHideLoading();
+	});
+  }
+}
+//******************************************************************************************************
+function changeDialogTitle (title, onSuccess, onError) {
+    try {
+        var $titleSpan = window.parent
+            .$(window.frameElement)         // this iframe
+            .closest('.ui-dialog')          // find the dialog box
+            .find('.ui-dialog-title');      // find the title span
+
+        if ($titleSpan.length > 0) {
+            $titleSpan.text(title);
+
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            if (typeof onError === 'function') {
+                onError('Dialog title not found');
+            } else {
+                console.warn('Dialog title not found');
+            }
+        }
+    } catch (e) {
+        if (typeof onError === 'function') {
+            onError(e);
+        } else {
+            console.error("Cannot reach parent document", e);
+        }
+    }
+}
+//******************************************************************************************************//***************************showLoading*********************************************
+function showLoading() {
+    let $box = $('#loadingBoxTweaked');
+    if (!$box.length) {
+        $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+
+        // spinner css فقط یکبار اضافه شود
+        if (!$('#loadingSpinnerStyle').length) {
+            $('<style id="loadingSpinnerStyle">')
+                .html(`
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                `)
+                .appendTo('head');
+        }
+        $('body').append($box);
+    } else {
+        $box.show();
+    }
+}
+//******************************************************************************************************
+function hideLoading() {
+    $('#loadingBoxTweaked').fadeOut(180, function () { $(this).remove(); });
+}
+//******************************************************************************************************
+
+// تابع Hidden Fields بر اساس ActorId
+function updateHiddenFields($combo, actorId, roleId, isAdd) {
+    const actorField = $combo.data("actor-field");
+    const roleField = $combo.data("role-field");
+
+    // مدیریت ActorId
+    let actorIds = $(actorField).val().split(",").filter(Boolean);
+    if (isAdd) {
+        if (!actorIds.includes(actorId)) actorIds.push(actorId);
+    } else {
+        actorIds = actorIds.filter(id => id !== actorId);
+    }
+    $(actorField).val(actorIds.join(","));
+
+    // مدیریت RoleId (در صورت وجود)
+    if (roleField) {
+        let roleIds = $(roleField).val().split(",").filter(Boolean);
+        if (isAdd) {
+            if (!roleIds.includes(roleId)) roleIds.push(roleId);
+        } else {
+            roleIds = roleIds.filter(id => id !== roleId);
+        }
+        $(roleField).val(roleIds.join(","));
+    }
+}
+
+//-------------------------------------------------------------------------------------------
+// تابع پر کردن کمبو بر اساس ActorId
+function fillComboWithService($combo, service, placeholderText, singleSelect = false) {
+    return new Promise(resolve => {
+        service.Read({}, function (data) {
+            const xmlData = $.xmlDOM ? $.xmlDOM(data) : $(data);
+			const list = xmlData.find("row").map(function () {
+			    const fullName = $(this).find("col[name='fullName']").text();
+			    const roleName = $(this).find("col[name='RoleName']").text(); // اسم ستون سمت کاربر
+			    return {
+			        id: $(this).find("col[name='ActorId']").text(),
+			        text: roleName 
+			            ? `${fullName} - ${roleName}`
+			            : fullName,
+			        actorId: $(this).find("col[name='ActorId']").text(),
+			        roleId: $(this).find("col[name='RoleId']").text()
+			    };
+			}).get();
+
+
+            $combo.empty().select2({
+                data: list,
+                placeholder: placeholderText || "انتخاب مورد",
+                dir: "rtl",
+                multiple: !singleSelect,
+                closeOnSelect: singleSelect,
+                scrollAfterSelect: false
+            });
+
+            // رویداد انتخاب/حذف
+            $combo
+                .off("select2:select").on("select2:select", e => {
+                    const d = e.params.data;
+                    if (singleSelect) {
+                        $($combo.data("actor-field")).val(d.actorId);
+                    } else {
+                        updateHiddenFields($combo, d.actorId, d.roleId, true);
+                    }
+                })
+                .off("select2:unselect").on("select2:unselect", e => {
+                    const d = e.params.data;
+                    if (singleSelect) {
+                        $($combo.data("actor-field")).val("");
+                    } else {
+                        updateHiddenFields($combo, d.actorId, d.roleId, false);
+                    }
+                });
+            resolve();  
+        }, function (err) {
+            alert("Service titles read error: " + err);
+            resolve(); 
+        });
+    });
+}
+//-------------------------------------------------
+
+
+
+//تابع جدید برای پیدا کردن افراد حاضر و غایب وقتی ئیتا لود میشود
+function setComboSelectionFromHidden($combo) {
+    const actorField = $combo.data("actor-field");
+    if (!actorField) return;
+
+    // 1 - گرفتن ActorIdها از hidden
+    const actorIds = $(actorField).val().split(",").filter(Boolean);
+
+    if (actorIds.length === 0) return;
+
+    // 2 - انتخاب در select2
+    $combo.val(actorIds).trigger("change");
+}
+
+//---------------------------------------------------------------------------------------------
+
+
+
+
+// ====================== Utility Functions ======================
+
+function safeShamsiDate(miladiDate) {
+    if (!miladiDate || typeof miladiDate !== "string" || !miladiDate.trim()) return "";
+    if (miladiDate.startsWith("0001") || miladiDate.startsWith("1900")) return "";
+    return formatMiladiToShamsi(miladiDate);
+}
+
+function getFileIcon(fileType, fileContent) {
+    switch (fileType.toLowerCase()) {
+        case ".doc":
+        case ".docx":
+            return "https://cdn.iconscout.com/icon/free/png-64/microsoft-word-28-761688.png";
+        case ".xls":
+        case ".xlsx":
+            return "https://cdn.iconscout.com/icon/free/png-64/microsoft-excel-29-761701.png";
+        case ".ppt":
+        case ".pptx":
+            return "https://cdn.iconscout.com/icon/free/png-64/microsoft-powerpoint-30-761705.png";
+        case ".pdf":
+            return "https://cdn.iconscout.com/icon/free/png-64/adobe-pdf-5646849-4691213.png";
+        case ".png":
+        case ".jpg":
+        case ".jpeg":
+        case ".gif":
+            return "data:image/png;base64," + fileContent;
+        default:
+            return "https://cdn-icons-png.flaticon.com/64/337/337946.png";
+    }
+}
+
+// ====================== Item Management ======================
+
+function handleNewMinuteItem(result, $rowFromEdit) {
+
+
+    const uniqueId = result.Id != null
+        ? String(result.Id)
+        : `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    // جدا کردن IDها و اسم‌ها
+    const actorIds = (result.ResponsibleForAction || "").trim(); 
+    const actorNames = (result.ResponsibleForActionName || "-").trim();
+
+    console.log("Parsed Values:");
+    console.log("  UniqueId:", uniqueId);
+    console.log("  Actor IDs [ResponsibleForAction]:", actorIds);
+    console.log("  Actor Names [ResponsibleForActionName]:", actorNames);
+
+    const newItem = {
+        Id: result.Id,
+        Title: result.Title,
+        ResponsibleForAction: result.ResponsibleForAction,
+        ResponsibleForActionName: result.ResponsibleForActionName,
+        ActorForAction: result.ResponsibleForAction, // کپی IDها برای استفاده داخلی
+        ActionDeadLineDate: result.ActionDeadLineDate,
+        DisplayDate: result.DisplayDate
+    };
+
+    console.log("NewItem to store ->", newItem);
+
+    const existingIndex = MeetingMinutesData.Items.findIndex(
+        it => String(it.Id) === uniqueId
+    );
+
+    if (existingIndex >= 0) {
+        console.log(` Editing existing item at index ${existingIndex}`);
+        MeetingMinutesData.Items[existingIndex] = newItem;
+
+        let $row = $("#tblMinuteManagment tbody tr.data-row")
+            .filter(`[data-rowid="${uniqueId}"]`);
+        if (!$row.length && $rowFromEdit?.length) {
+            $row = $rowFromEdit;
+        }
+        if ($row.length) {
+            let tds = $row.find("td");
+            tds.eq(2).text(newItem.Title);
+            tds.eq(3).text(newItem.ResponsibleForActionName); // اسم‌ها
+            tds.eq(4).text(newItem.DisplayDate).attr("data-gdate", newItem.ActionDeadLineDate);
+            tds.eq(5).text(newItem.ActorForActionName); // اسم‌ها
+        }
+    } else {
+        console.log(" Adding new item to table");
+        MeetingMinutesData.Items.push(newItem);
+        addRowToTable(newItem, MeetingMinutesData.Items.length);
+    }
+    console.groupEnd();
+}
+
+
+
+
+
+function addRowToTable(item) {
+    const $template = $("#tblMinuteManagment tbody tr.row-template").first().clone();
+    $template.removeClass("row-template").addClass("data-row").show();
+
+    $template.attr("data-rowid", String(item.Id));
+    $template.find("td").eq(0).html(`<input type="radio" name="selectedRowId" value="${item.Id}" />`);
+    $template.find("td").eq(1).text(item.Id);
+    $template.find("td").eq(2).text(item.Title || "-");
+    $template.find("td").eq(4)
+        .text(item.DisplayDate || "-")
+        .attr("data-gdate", item.ActionDeadLineDate || "");
+    $template.find("td").eq(5)
+        .text(item.ActorForActionName || "-")                // اسم‌ها
+        .attr("data-ids", item.ActorForAction || "");         // IDها سالم
+
+    $("#tblMinuteManagment tbody").append($template);
+}
+
+
+function updateMinuteItem($row, newData) {
+    let tds = $row.find("td");
+    tds.eq(2).text(newData.Title || "");
+    tds.eq(3).text(newData.ResponsibleActorName || "");
+    tds.eq(4).text(newData.ActionDeadLineJDate || "")
+              .attr("data-gdate", newData.ActionDeadLineDate || "");
+    tds.eq(5).text(newData.ResponsibleActorId || "");
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function deleteMinuteItem(selectedId) {
+    const index = MeetingMinutesData.Items.findIndex(item => String(item.Id) === String(selectedId));
+    if (index > -1) {
+        MeetingMinutesData.Items.splice(index, 1);
+        $("#tblMinuteManagment tbody tr").has(`input[name='selectedRowId'][value='${selectedId}']`).remove();
+    }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+// ====================== Attachment Management ======================
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function getFileIconClass(fileType) {
+    let type = fileType.toLowerCase();
+    if (type.includes(".")) {
+        type = type.split(".").pop();
+    }
+    if (type.includes("/")) {
+        type = type.split("/").pop();
+    }
+
+    if (["xls", "xlsx", "csv"].includes(type)) return "fas fa-file-excel";  // اکسل
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(type)) return "fas fa-file-image";  // تصویر
+    if (["pdf"].includes(type)) return "fas fa-file-pdf";  // پی‌دی اف
+    if (["doc", "docx"].includes(type)) return "fas fa-file-word";  // ورد
+    if (["ppt", "pptx"].includes(type)) return "fas fa-file-powerpoint"; // پاورپوینت
+
+    return "fas fa-file"; // پیش فرض
+}
+function addAttachmentToFieldset(file) {
+    const $container = $("#gbxDocuments");
+    const iconClass = getFileIconClass(file.FileType);
+
+    const $item = $(`
+        <div data-file-id="${file.FileId}" title="${file.FileName}"
+            style="
+                display:inline-flex;
+                flex-direction:column;
+                align-items:center;
+                width:40px;
+                margin: 15px 10px 0px 5px;
+                padding:3px;
+                border:1px solid #ccc;
+                border-radius:4px;
+                background:#fff;
+                position:relative;
+                font-family:Tahoma;
+                font-size:8pt;">
+            
+            <button class="remove-btn" title="حذف"
+                style="
+                    position:absolute;
+                    top:-5px;
+                    right:-5px;
+                    background:#f33;
+                    color:#fff;
+                    border:none;
+                    border-radius:50%;
+                    cursor:pointer;
+                    width: 17px;
+                    height: 17px;
+                    line-height: 19px;
+                    font-size: 15px;
+                    padding: 0;">×</button>
+            
+            <a href="javascript:void(0)" class="download-link" style="text-decoration:none;">
+                <i class="${iconClass}" style="font-size:35px; color:#555;"></i>
+            </a>
+        </div>
+    `);
+
+    // رویداد حذف فایل
+    $item.find(".remove-btn").on("click", function () {
+        const fileId = $item.data("file-id");
+        removeAttachment(fileId, $item);
+    });
+
+    // رویداد دانلود فقط برای همین آیتم
+    $item.find(".download-link").on("click", function (e) {
+        e.preventDefault();
+        downloadBase64(file.FileContent, file.FileSubject, file.FileType);
+    });
+
+    $container.append($item);
+}
+
+// ====== Download a Base64 string as a file based on its type =======
+function downloadBase64(hexString, fileName, fileType) {
+    const mimeTypes = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".pdf": "application/pdf",
+        ".doc": "application/msword",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".xls": "application/vnd.ms-excel",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    };
+
+    // If the format is not valid, default to png.
+    const mimeType = mimeTypes[fileType.toLowerCase()] || "application/octet-stream";
+
+    const dataUrl = `data:${mimeType};base64,${hexString}`;
+
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = fileName || ("download" + fileType);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function removeAttachment(fileId, $element) {
+    $.confirm("آیا نسبت به حذف این سند مطمئن هستید؟", "حذف اطلاعات", "rtl", function (result) {
+        if (result === "OK") {
+            const params = { Where: "FileId = '" + fileId + "'" };
+            showLoading();
+            FormManager.deleteAttachedFile(
+                params,
+                function () {
+                    hideLoading();
+                    $element.remove();
+                    $.alert("حذف با موفقیت انجام شد", "حذف شد", "rtl");
+                },
+                function (error) {
+                    hideLoading();
+                    $.alert("حذف با خطا مواجه شد.", "خطا", "rtl");
+                    console.error(error);
+                }
+            );
+        }
+    });
+}
+
+//تابع فراخوانی فایلهای مرتیط با صورتجلسه
+function loadAttachments(meetingMinuteId) {
+    return new Promise((resolve, reject) => {
+        if (!meetingMinuteId) {
+            return resolve(); // ادامه اجرای زنجیره متوقف نشه
+        }
+
+        const readParams = { WHERE: "SystemId = 3 AND DocumentId = '" + meetingMinuteId + "'" };
+        
+        FormManager.readAttachedFile(
+            readParams,
+            function (list) {
+                if (list && list.length) {
+                    list.forEach(file => addAttachmentToFieldset(file));
+                    console.debug(`Loaded ${list.length} attachments.`);
+                } else {
+                    console.debug("No attachments found for this meeting.");
+                }
+                resolve(); 
+            },
+            function (error) {
+                if (error && (error.erroMessage || error.message)) {
+                    alert('خطا در خواندن فایل ها: ' + (error.erroMessage || error.message));
+                    reject(error);
+                } else {
+                    console.debug("No file found, but this is not an error.");
+                    resolve();
+                }
+            }
+        );
+    });
+}
+
+//==========================================================
+function miladiFormattedForAttr(miladiStr) {
+    if (!miladiStr) return "";
+
+    let cleanDate = miladiStr.split("T")[0].split(" ")[0].trim();
+    let gy, gm, gd;
+
+    if (cleanDate.includes("/")) {
+        // فرمت MM/DD/YYYY
+        let [m, d, y] = cleanDate.split("/").map(Number);
+        return `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+    } else if (cleanDate.includes("-")) {
+        // فرمت YYYY-MM-DD
+        let [y, m, d] = cleanDate.split("-").map(Number);
+        return `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+    }
+
+    // اگر هیچ‌کدوم نبود
+    return "";
+}
+// ====================== Data Loading ======================
+function loadMeetingData(meetingMinuteId) {
+    return new Promise((resolve) => {
+        if (!meetingMinuteId) return resolve();
+
+        const readParams = { WHERE: "Id = '" + meetingMinuteId + "'" };
+        FormManager.readMeetingMinuteManagment(readParams,
+            function (list) {
+                if (list && list.length) {
+                    const item = list[0];
+                    $("#txtActorIdCreator").val(item.ActorIdCreator);
+                    $("#txtMeetingDate")
+                        .val(formatMiladiToShamsi(item.MeetingStartDate) || "")
+                        .data("gdate", miladiFormattedForAttr(item.MeetingStartDate) || "")
+                        .attr("gdate", miladiFormattedForAttr(item.MeetingStartDate) || "");
+
+                    if (item.MeetingStartTime && item.MeetingEndTime) {
+                        const [stH, stM] = item.MeetingStartTime.split(":");
+                        const [enH, enM] = item.MeetingEndTime.split(":");
+                        $("#txtMeetingStartTime").val(stH || "");
+                        $("#txtMinMeetingStartTime").val(stM || "");
+                        $("#txtHourMeetingEndTime").val(enH || "");
+                        $("#txtminMeetingEndTime").val(enM || "");
+                    }
+                    $("#cmbMeetingRoomId").val(item.MeetingRoomId).trigger("change");
+                    $("#txtSubjectMeeting").val(item.SubjectMeeting);
+                    $("#txtMeetingAgenda").val(item.MeetingAgenda);
+                    $("#txtPresentActorId").val(item.UserPresent);
+                    $("#txtAbsentActorId").val(item.UserAbsent);
+                }
+                resolve();
+            },
+            function () { resolve(); }
+        );
+    });
+}
+
+// تضمینی: گرفتن نام مسئولین بر اساس IDها
+function getNameForIds(ids, actorLookup) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return Promise.resolve([]);
+    }
+
+    const promises = ids.map(responsibleId => {
+        if (actorLookup[responsibleId]) {
+            console.log(`[getNameForIds] cache hit: ${responsibleId} → ${actorLookup[responsibleId]}`);
+            return Promise.resolve(actorLookup[responsibleId]);
+        }
+
+        console.log(`[getNameForIds] request to service for ActorId=${responsibleId}`);
+        return new Promise(resolve => {
+            BS_GetUserInfo.Read(
+                { Where: "ActorId = '" + responsibleId + "'" },
+                function (data) {
+                    let name = "-";
+                    if (typeof data === "string") {
+                        const xmlDoc = new DOMParser().parseFromString(data, "text/xml");
+                        const fullNameNode = xmlDoc.querySelector("col[name='fullName']");
+                        name = fullNameNode ? fullNameNode.textContent.trim() : "-";
+                    } else if (Array.isArray(data) && data.length) {
+                        name = data[0].FullName || data[0].Name || "-";
+                    }
+                    actorLookup[responsibleId] = name;
+                    console.log(`[BS_GetUserInfo.Read] saved: ${name}`);
+                    resolve(name);
+                },
+                function () {
+                    console.warn(`[BS_GetUserInfo.Read] error for ActorId=${responsibleId}`);
+                    actorLookup[responsibleId] = "-";
+                    resolve("-");
+                }
+            );
+        });
+    });
+
+    return Promise.all(promises);
+}
+
+function loadMeetingDetails(meetingMinuteId, actorLookup) {
+    return new Promise((resolve) => {
+        if (!meetingMinuteId) return resolve();
+
+        const readParamsDetail = { WHERE: "MeetingManagmentId = '" + meetingMinuteId + "'" };
+        FormManager.readMeetingMinuteManagmentDetail(
+            readParamsDetail,
+            function (detailList) {
+                console.log("[readMeetingMinuteManagmentDetail] RAW:", detailList);
+                $("#tblMinuteManagment tbody tr.data-row").remove();
+                MeetingMinutesData.Items.length = 0;
+
+                if (Array.isArray(detailList) && detailList.length) {
+                    const rowPromises = [];
+
+                    detailList.forEach((srvItem, idx) => {
+                        const responsibleIds = String(srvItem.ResponsibleForAction || "")
+                            .split(",")
+                            .map(id => id.trim())
+                            .filter(Boolean);
+
+                        console.log("Row IDs:", responsibleIds);
+
+                        const cleanItem = {
+                            Id: srvItem.Id,
+                            Title: srvItem.Title || "-",
+                            ActionDeadLineDate: srvItem.ActionDeadLineDate || "",
+                            DisplayDate: safeShamsiDate(srvItem.ActionDeadLineDate || ""),
+                            ResponsibleForAction: responsibleIds.join(","),
+                            ResponsibleForActionName: "-"
+                        };
+
+                        MeetingMinutesData.Items.push(cleanItem);
+                        // نمایش سریع با placeholder
+                        addRowToTable(cleanItem, idx + 1);
+
+                        const p = getNameForIds(responsibleIds, actorLookup)
+                            .then(namesArray => {
+                                const joinedNames = namesArray.filter(n => n && n !== "-").join(", ") || "-";
+
+                                const itemIndex = MeetingMinutesData.Items.findIndex(it => it.Id === cleanItem.Id);
+                                if (itemIndex >= 0) {
+                                    MeetingMinutesData.Items[itemIndex].ResponsibleForActionName = joinedNames;
+                                }
+
+                                const $row = $("#tblMinuteManagment tbody tr.data-row")
+                                    .filter(`[data-rowid="${cleanItem.Id}"]`);
+                                if ($row.length) {
+                                    $row.find("td").eq(3).text(joinedNames);
+                                    $row.find("td").eq(5).attr("data-ids", cleanItem.ResponsibleForAction);
+                                }
+                            });
+                        rowPromises.push(p);
+                    });
+
+                    console.log("rowPromises length =", rowPromises.length);
+                    Promise.all(rowPromises).then(() => {
+                        resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            },
+            () => resolve()
+        );
+    });
+}
+
+
+//===================================================================================
+//======================================== ثبت و ویرایش =============================
+//===================================================================================
+
+
+//=================================================================================== توابع کمکی 
+function checkRequired(selector, msg, focusSelect2 = false) {
+    let el = $(selector), val = el.val();
+    if (!val || (typeof val === "string" && !val.trim())) {
+        $.alert(msg, "", "rtl");
+        focusSelect2 ? el.select2('open') : el.focus();
+        throw new Error("StopValidation");
+    }
+}
+
+function checkNumberRange(selector, min, max, msg) {
+    let num = parseInt($(selector).val(), 10);
+    if (isNaN(num) || num < min || num > max) {
+		$.alert(msg, "", "rtl");
+        //alert(msg);
+        $(selector).focus();
+        throw new Error("StopValidation");
+    }
+    return num;
+}
+
+function validateNotFuture(gdate, $input) {
+    let y, m, d;
+    if (gdate.includes("-")) [y, m, d] = gdate.split("-").map(Number);
+    else [m, d, y] = gdate.split("/").map(Number);
+
+    const meetingDateObj = new Date(y, m - 1, d);
+    const todayObj = new Date();
+    todayObj.setHours(0, 0, 0, 0);
+    meetingDateObj.setHours(0, 0, 0, 0);
+
+    if (meetingDateObj.getTime() > todayObj.getTime()) {
+		$.alert("تاریخ انتخابی جلسه نمی تواند بزرگتر از امروز باشد.", "", "rtl");
+        $input.focus();
+        throw new Error("StopValidation");
+    }
+}
+
+function validatePresentAbsent() {
+    const parseIds = sel => ($(sel).val() || "")
+        .split(",").map(id => id.trim()).filter(Boolean);
+
+    const dup = parseIds("#txtPresentActorId")
+        .filter(id => parseIds("#txtAbsentActorId").includes(id));
+
+    if (dup.length) {
+		$.alert("یک شخص نمی تواند در هر دو لیست حاضرین و غایبین باشد!", "", "rtl");
+        throw new Error("StopValidation");
+    }
+}
+
+
+/* =================== توابع مشترک برای ثبت  =================== */
+
+// گرفتن تاریخ میلادی با استفاده از توابع خودت
+function getMeetingGDate($input) {
+    let meetingGDate = $input.attr("gdate") || $input.data("gdate");
+    if (!meetingGDate) {
+        const jdate = $input.attr("data-jdate") || $input.val();
+        if (jdate) {
+            const [jy, jm, jd] = jdate.split("/").map(Number);
+            const [gy, gm, gd] = shamsi_be_miladi(jy, jm, jd);
+            meetingGDate = `${gy}/${String(gm).padStart(2, '0')}/${String(gd).padStart(2, '0')}`;
+            $input.attr("data-gdate", meetingGDate)
+                  .attr("gdate", meetingGDate)
+                  .data("gdate", meetingGDate);
+        }
+    }
+    return meetingGDate;
+}
+
+// ولیدیشن فرم و برگرداندن ساعات
+function validateMeetingForm($meetingDateInput, meetingGDate) {
+    checkRequired("#txtSubjectMeeting", "موضوع جلسه را وارد کنید.");
+    checkRequired("#cmbMeetingRoomId", "اتاق جلسه را انتخاب کنید.");
+    checkRequired("#txtMeetingDate", "تاریخ جلسه را انتخاب کنید.");
+
+    const selectedDate = new Date(meetingGDate.replace(/\//g, "-"));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate > today) {
+		$.alert("انتخاب تاریخ آینده مجاز نیست. لطفاً امروز یا روزهای قبل را انتخاب کنید.", "", "rtl");
+        $meetingDateInput.val("").attr("data-gdate", "").attr("data-jdate", "").attr("gdate", "");
+        throw new Error("StopValidation");
+    }
+
+    const sHour = checkNumberRange("#txtMeetingStartTime", 1, 23, "ساعت شروع باید بین 1 تا 23 باشد.");
+    const sMin = checkNumberRange("#txtMinMeetingStartTime", 0, 59, "دقیقه شروع باید بین 0 تا 59 باشد.");
+    const eHour = checkNumberRange("#txtHourMeetingEndTime", 1, 23, "ساعت پایان باید بین 1 تا 23 باشد.");
+    const eMin = checkNumberRange("#txtminMeetingEndTime", 0, 59, "دقیقه پایان باید بین 0 تا 59 باشد.");
+
+    if (eHour < sHour || (eHour === sHour && eMin <= sMin)) {
+		$.alert("زمان پایان نمی تواند قبل یا مساوی زمان شروع باشد.", "", "rtl");
+        $("#txtHourMeetingEndTime").focus();
+        throw new Error("StopValidation");
+    }
+
+    checkRequired("#cmbUserPresent", "حداقل یک نفر شرکت‌کننده حاضر انتخاب کنید.", true);
+    checkRequired("#txtMeetingAgenda", "دستور جلسه را وارد کنید.");
+
+    if ($("#tblMinuteManagment tr.data-row").length === 0) {
+		$.alert("حداقل یک مصوبه باید وارد شود.", "", "rtl");
+        throw new Error("StopValidation");
+    }
+
+    validatePresentAbsent();
+
+    return { sHour, sMin, eHour, eMin };
+}
+
+// جمع‌آوری آیتم‌ها با توجه به حالت
+function collectMeetingItems(isEditMode) {
+    if (isEditMode) {
+        return $("#tblMinuteManagment tr.data-row").map(function () {
+            const tds = $(this).find("td");
+            let rawActorIds = tds.eq(5).attr("data-ids") || null; // گرفتن IDها از data-attribute
+            return {
+                Title: (tds.eq(2).text() || "").trim() || null,
+                ResponsibleForAction: rawActorIds,
+                ActionDeadLineDate: tds.eq(4).attr("data-gdate") || null
+            };
+        }).get();
+    } else {
+        return MeetingMinutesData.Items.map(it => ({
+            Title: it.Title || null,
+            ActionDeadLineDate: it.ActionDeadLineDate?.trim() || null,
+            ResponsibleForAction: it.ResponsibleForAction?.trim() || null
+        }));
+    }
+}
+
+
+// ساخت JSON نهایی
+function buildMeetingJson(meetingGDate, timeData, items) {
+    return {
+        ActorIdCreator: parseInt($("#txtActorIdCreator").val(), 10),
+        MeetingStartDate: meetingGDate,
+        MeetingStartTime: `${String(timeData.sHour).padStart(2, '0')}:${String(timeData.sMin).padStart(2, '0')}`,
+        MeetingEndTime: `${String(timeData.eHour).padStart(2, '0')}:${String(timeData.eMin).padStart(2, '0')}`,
+        SubjectMeeting: $("#txtSubjectMeeting").val().trim(),
+        MeetingAgenda: $("#txtMeetingAgenda").val().trim(),
+        MeetingRoomId: Number($("#cmbMeetingRoomId").val()),
+        UserPresent: $("#txtPresentActorId").val()?.trim() || "",
+        UserAbsent: $("#txtAbsentActorId").val()?.trim() || "",
+        Items: items,
+        Files: $("#gbxDocuments > div").map(function () {
+            return $(this).data("file-id");
+        }).get()
+    };
+}
+
+
+
+
+// ساخت JSON نهایی
+function buildMeetingJson(meetingGDate, timeData, items) {
+    return {
+        ActorIdCreator: parseInt($("#txtActorIdCreator").val(), 10),
+        MeetingStartDate: meetingGDate,
+        MeetingStartTime: `${String(timeData.sHour).padStart(2, '0')}:${String(timeData.sMin).padStart(2, '0')}`,
+        MeetingEndTime: `${String(timeData.eHour).padStart(2, '0')}:${String(timeData.eMin).padStart(2, '0')}`,
+        SubjectMeeting: $("#txtSubjectMeeting").val().trim(),
+        MeetingAgenda: $("#txtMeetingAgenda").val().trim(),
+        MeetingRoomId: Number($("#cmbMeetingRoomId").val()),
+        UserPresent: $("#txtPresentActorId").val()?.trim() || "",
+        UserAbsent: $("#txtAbsentActorId").val()?.trim() || "",
+        Items: items,
+        Files: $("#gbxDocuments > div").map(function () {
+            return $(this).data("file-id");
+        }).get()
+    };
+}
+	
+	
+	function loadActorLookup() {
+    BS_GetUserInfo.Read({}, function (data) {
+        const $xml = $.xmlDOM ? $.xmlDOM(data) : $(data);
+        $xml.find("row").each(function () {
+            const id = $(this).find("col[name='ActorId']").text().trim();
+            const fullName = $(this).find("col[name='fullName']").text().trim();
+            actorLookup[id] = fullName;
+        });
+        console.log(" actorLookup loaded:", actorLookup);
+    }, function (err) {
+        console.error(" Error loading actorLookup:", err);
+    });
+}
+
