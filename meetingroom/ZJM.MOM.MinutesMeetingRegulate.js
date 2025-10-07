@@ -105,7 +105,6 @@ $(function(){
 
 //#endregion EDN ready.js 
 
-
 //#region common.js
 function commafy(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -1120,7 +1119,6 @@ $("#cmbUserPresent").on("select2:unselect", function (e) {
 
 //#endregion EDN common.js 
 
-
 //#region formmanger.js
 var FormManager = {
 	
@@ -1370,4 +1368,152 @@ var FormManager = {
 
 //#endregion EDN momMinutesMeeting_Add.js 
 
+//#region btnRegister.js
+$("#btnRegister").on("click", function (e) {
+    e.preventDefault();
 
+    const meetingMinuteId = Number($("#lblMeetingMinuteId").text().trim());
+    const isEditMode = Number.isInteger(meetingMinuteId) && meetingMinuteId > 0;
+
+    try {
+        const $meetingDateInput = $("#txtMeetingDate");
+
+        // گرفتن تاریخ میلادی از فیلد
+        const meetingGDate = getMeetingGDate($meetingDateInput);
+
+        // ولیدیشن کل فرم
+        const timeData = validateMeetingForm($meetingDateInput, meetingGDate);
+
+        // --- جمع‌آوری آیتم ها از آرایه سالم مودال، نه از جدول ---
+        const items = (MeetingMinutesData.Items || []).map(it => ({
+            Id: it.Id || null,
+            Title: (it.Title || "").trim() || null,
+            ResponsibleForAction: (it.ResponsibleForAction || "").trim() || null,
+            ActionDeadLineDate: (it.ActionDeadLineDate || "").trim() || null
+        }));
+
+        // ساخت JSON نهایی
+        const jsonArray = buildMeetingJson(meetingGDate, timeData, items);
+
+        // پارامتر نهایی برای SP
+        const sp_params = isEditMode
+            ? { Id: meetingMinuteId, jsonArray: JSON.stringify(jsonArray) }
+            : { jsonArray: JSON.stringify(jsonArray) };
+
+        alert(JSON.stringify(sp_params));
+
+        // انتخاب متد مناسب
+        const method = isEditMode
+            ? FormManager.updateMeetingMinuteManagment
+            : FormManager.insertMeetingMinuteManagment;
+
+        method(sp_params, function (data) {
+            if (data.Success === 0) {
+                $.alert("SP Error: " + data.Message, "خطا", "rtl");
+                return;
+            }
+            alert(JSON.stringify(data));
+        }, function (err) {
+            alert(err.details);
+        });
+
+    } catch (err) {
+        if (err.message !== "StopValidation") throw err;
+    }
+});
+
+//#endregion end btnRegister.js
+
+//#region momMeetingMinutes_Add.js
+$("#momMeetingMinutes_Add").off("click").on("click", function () {
+    const presentIds = ($("#txtPresentActorId").val() || "").split(",").map(id => id.trim()).filter(id => id);
+    const absentIds = ($("#txtAbsentActorId").val() || "").split(",").map(id => id.trim()).filter(id => id);
+
+    $.showModalForm(
+        {
+            registerKey: "ZJM.MOM.MinutesMeetingApprovals",
+            params: { 
+                editItem: MeetingMinutesData,
+                presentIds: presentIds,
+                absentIds: absentIds
+            }
+        },
+        function (retVal) {
+            if (retVal && retVal.OK && retVal.Result) {
+                handleNewMinuteItem(retVal.Result);
+            } else {
+                console.warn("داده معتبر نیست:", retVal);
+            }
+        }
+    );
+});
+
+//#endregion momMeetingMinutes_Add.js
+
+
+//#region momMeetingMinutes_Edit.js
+$("#momMeetingMinutes_Edit").off("click").on("click", function () {
+    let $row = $("#tblMinuteManagment input[name='selectedRowId']:checked").closest("tr");
+    if ($row.length === 0) {
+        alert("هیچ ردیفی برای ویرایش انتخاب نشده است.");
+        return;
+    }
+
+    // اطمینان از وجود data-jdate روی جدول
+    let tds = $row.find("td");
+    let jDate = tds.eq(4).attr("data-jdate");
+    if (!jDate) {
+        // اگر نبود، از متن ستون استفاده کن
+        jDate = (tds.eq(4).text() || "").trim();
+        tds.eq(4).attr("data-jdate", jDate);
+    }
+
+    let gDate = tds.eq(4).attr("data-gdate") || "";
+
+    let itemData = {
+        Id: (tds.eq(1).text() || "").trim(),
+        Title: (tds.eq(2).text() || "").trim(),
+        ResponsibleActorName: (tds.eq(3).text() || "").trim(),
+        ActionDeadLineJDate: jDate,
+        ActionDeadLineDate: gDate,
+        ResponsibleActorId: (tds.eq(5).attr("data-ids") || "").trim()
+    };
+
+    const presentIds = ($("#txtPresentActorId").val() || "")
+        .split(",").map(id => id.trim()).filter(Boolean);
+    const absentIds = ($("#txtAbsentActorId").val() || "")
+        .split(",").map(id => id.trim()).filter(Boolean);
+
+    // تضمین لود کش قبل از باز کردن مودال
+    if (Object.keys(actorLookup).length === 0) {
+        console.log(" actorLookup empty, loading first...");
+        loadActorLookup(function () {
+            openEditModal(itemData, presentIds, absentIds);
+        });
+    } else {
+        openEditModal(itemData, presentIds, absentIds);
+    }
+});
+
+function openEditModal(itemData, presentIds, absentIds) {
+    $.showModalForm(
+        {
+            registerKey: "ZJM.MOM.MinutesMeetingApprovals",
+            params: { 
+                meetingData: MeetingMinutesData,
+                editItem: itemData,
+                presentIds: presentIds,
+                absentIds: absentIds,
+                actorLookup: actorLookup 
+            }
+        },
+        function (retVal) {
+            console.log(" retVal from modal:", retVal);
+            if (retVal && retVal.OK && retVal.Result) {
+                handleNewMinuteItem(retVal.Result, $("#tblMinuteManagment tbody tr[data-rowid='" + itemData.Id + "']"));
+            }
+        }
+    );
+}
+
+//#endregion EDN momMeetingMinutes_Edit.js 
