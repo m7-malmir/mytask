@@ -1517,3 +1517,30 @@ function openEditModal(itemData, presentIds, absentIds) {
 }
 
 //#endregion EDN momMeetingMinutes_Edit.js 
+
+
+//#region momMeetingMinutes_Delete.js
+$("#momMeetingMinutes_Delete").click(function () {
+    const $selectedRadio = $("#tblMinuteManagment input[name='selectedRowId']:checked");
+
+    if ($selectedRadio.length === 0) {
+        $.alert("لطفاً یک مصوبه را انتخاب کنید.", "توجه", "rtl");
+        return;
+    }
+
+    const rowId = $selectedRadio.val(); // آیدی یکتا
+    const $selectedRow = $selectedRadio.closest("tr.data-row");
+
+$.alert("آیا از حذف این مصوبه مطمئن هستید؟", "حذف", "rtl", function () {
+    // حذف از آرایه فقط همون یک مورد
+    MeetingMinutesData.Items = MeetingMinutesData.Items.filter(item => String(item.Id) !== String(rowId));
+
+    // حذف از جدول
+    $selectedRow.remove();
+
+    console.log("After delete:", MeetingMinutesData.Items);
+});
+
+});
+
+//#endregion EDN momMeetingMinutes_Delete.js 

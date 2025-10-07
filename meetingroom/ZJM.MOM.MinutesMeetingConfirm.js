@@ -1,3 +1,4 @@
+//#region Ready.js
 // ===================== Public variables =====================
 var $form;
 var currentActorId;
@@ -12,7 +13,7 @@ var MeetingMinutesData = {
 $(function(){
     $form = (function(){
         var pk, inEditMode = false;
-		
+		// ==================== init ============================
         function init(){
 			if(typeof dialogArguments !== "undefined")
 			{
@@ -34,6 +35,7 @@ $(function(){
 	      build();
 	      createControls();
         }
+		// ==================== build ============================
 	    function build() {
 	      //Set the new dialog title
 	      changeDialogTitle("بررسی مصوبات وتایید اعضا جلسه");
@@ -41,6 +43,7 @@ $(function(){
         function bindEvents(){
 
         }
+		// ==================== createControls ====================
 		function createControls(){
 			
 			showLoading();
@@ -120,3 +123,151 @@ $(function(){
 
     $form.init();
 });
+
+//#endregion EDN Ready.js 
+
+//#region formmanager.js
+var FormManager = {
+	
+//******************************************************************************************************
+	readMeetingMinuteManagment: function(jsonParams, onSuccess, onError)
+	{
+	  BS_vw_MM_MeetingMinuteManagment.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                  list.push
+	                  ({
+						Id: $(this).find("col[name='Id']").text(),
+		                MeetingMinuteNo: $(this).find("col[name='MeetingMinuteNo']").text(),
+						fullName: $(this).find("col[name='fullName']").text(),
+						CreatedDate: $(this).find("col[name='CreatedDate']").text(),
+						MeetingStartTime: $(this).find("col[name='MeetingStartTime']").text(),
+						MeetingStartTime: $(this).find("col[name='MeetingStartTime']").text(),
+					    MeetingEndTime: $(this).find("col[name='MeetingEndTime']").text(),
+					    SubjectMeeting: $(this).find("col[name='SubjectMeeting']").text(),
+					    MeetingAgenda: $(this).find("col[name='MeetingAgenda']").text(),
+					    Title: $(this).find("col[name='Title']").text(),
+						UserPresent: $(this).find("col[name='UserPresent']").text(),
+						UserAbsent: $(this).find("col[name='UserAbsent']").text()
+	                  });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+//******************************************************************************************************
+	readMeetingMinuteManagmentDetail: function(jsonParams, onSuccess, onError)
+	{
+	  BS_MM_MeetingMinuteManagmentDetail.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                  list.push
+	                  ({
+						Id: $(this).find("col[name='Id']").text(),
+		                MeetingManagmentId: $(this).find("col[name='MeetingManagmentId']").text(),
+						Title: $(this).find("col[name='Title']").text(),
+						ActionDeadLineDate: $(this).find("col[name='ActionDeadLineDate']").text(),
+						ResponsibleForAction: $(this).find("col[name='ResponsibleForAction']").text()
+	                  });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+//******************************************************************************************************
+	readAttachedFile: function(jsonParams, onSuccess, onError)
+	{
+	   BS_Office_AttachedFile.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                  list.push
+	                  ({
+						  
+			                FileId:          $(this).find("col[name='FileId']").text(),
+							DocumentId:      $(this).find("col[name='DocumentId']").text(),
+							FileSubject:     $(this).find("col[name='FileSubject']").text(),
+							FileName:        $(this).find("col[name='FileName']").text(),
+							FileType:        $(this).find("col[name='FileType']").text(),
+							FileContent:     $(this).find("col[name='FileContent']").text(),
+							SystemId:        $(this).find("col[name='SystemId']").text(),
+							ProccessStatus:  $(this).find("col[name='ProccessStatus']").text(),
+							Description:     $(this).find("col[name='Description']").text(),
+							CreatedDate:     $(this).find("col[name='CreatedDate']").text(),
+							CreatorUserId:   $(this).find("col[name='CreatorUserId']").text(),
+
+	                  });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+//******************************************************************************************************
+	updateMeetingMinuteManagmentDetailAction: function(jsonParams, onSuccess, onError)
+	{
+		 BS_MeetingMinuteManagmentDetailAction.Update(jsonParams
+			, function(data)
+			{
+				
+				var dataXml = null;
+				if($.trim(data) != "")
+				{
+					dataXml = $.xmlDOM(data);
+				}
+				if($.isFunction(onSuccess))
+				{
+					onSuccess(dataXml);
+				}
+			}, 
+		function(error) {
+				var methodName = "deleteEntity";
+
+	            if ($.isFunction(onError)) {
+					var erroMessage= "خطایی در سیستم رخ داده است. (Method: " + methodName + ")";
+					console.error("Error:", erroMessage);
+					console.error("Details:", error);
+	                
+	                onError({
+	                    message: erroMessage,
+	                    details: error
+	                });
+	            } else {
+	                console.error(erroMessage+ " (no onError callback provided):", error);
+	            }
+	        }
+		);
+	},
+
+};
+
+
+//#endregion EDN formmanager.js 
