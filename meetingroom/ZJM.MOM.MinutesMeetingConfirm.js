@@ -271,3 +271,148 @@ var FormManager = {
 
 
 //#endregion EDN formmanager.js 
+
+
+//#region  tblMinuteManagment.js
+$(function () {
+    tblMinutesMeeting = (function () {
+        // ====================== Variables ======================
+		const rowNumber = 15;
+		const meetingMinuteManagment = FormManager.readMeetingMinuteManagmentDetail;
+		let tblMinutesMeeting = null;
+        let element = null;
+        let rowPrimaryKeyName = "Id";
+        init();
+		
+        // ======================= Init ==========================
+        function init() {
+            element = $("#tblMinutesMeeting");   
+            bindEvents();  
+            load();        
+            //sortTable(element[0]);
+        }
+		
+        // ==================== Bind Events ======================
+		function bindEvents() {
+		    $("#tblMinuteManagment").on("click", ".comment-icon", function () {
+		        var recordId = $(this).data("id"); // گرفتن ID رکورد
+		
+		        $.showModalForm(
+		            {
+		                registerKey: "ZJM.MOM.MinutesMeetingHistoryDetails",
+		                params: { Id: recordId }
+		            },
+		            function (retVal) {
+		                tblMinutesMeeting.refresh();
+		            }
+		        );
+		    });
+		}
+	
+        // ====================== Add Row ========================
+		function addRow(rowInfo, rowIndex) {
+		    var tempRow = $("#tblMinuteManagment").find("tr.row-template").first().clone();
+		    tempRow.removeClass("row-template").addClass("row-data").show();
+		
+		    const tds = tempRow.find("td");
+		
+		    // 0: شماره ردیف
+		    tds.eq(0).text(rowIndex);
+		
+		    // 1: شناسه (hidden)
+		    tds.eq(1).text(rowInfo.Id || "");
+		
+		    // 2: متن صورتجلسه
+		    tds.eq(2).text(rowInfo.Title || "-");
+		
+		    // 3: اقدام کننده → گرفتن اسم ها
+		    const idsArray = String(rowInfo.ResponsibleForAction || "")
+		        .split(",")
+		        .map(id => id.trim())
+		        .filter(Boolean);
+		
+		    if (idsArray.length) {
+		        getNameForIds(idsArray).then(names => {
+		            tds.eq(3).text(names.join(", ") || "-");
+		        });
+		    } else {
+		        tds.eq(3).text("-");
+		    }
+		
+		    // 4: تاریخ اقدام
+			if (rowInfo.ActionDeadLineDate) {
+			    tds.eq(4).text(formatMiladiToShamsi(rowInfo.ActionDeadLineDate));
+			} else {
+			    tds.eq(4).text("-");
+			}
+		    // 5: ActorForAction (hidden)
+			// ستون نظرات → آیکن اینفو با کلاس و data-id
+			const infoIcon = $('<i class="fa fa-info-circle comment-icon" style="cursor:pointer;"></i>')
+			    .attr("data-id", rowInfo.Id || "");
+			tds.eq(5).empty().append(infoIcon);
+
+		
+		    // 6ستون تایید/رد → کمبو
+		    const confirmSelect = $('<select/>')
+		        .append('<option value="1" selected>تایید</option>')
+		        .append('<option value="0">رد</option>');
+		    tds.eq(6).empty().append(confirmSelect);
+		
+		    // 7ستون توضیحات → تکست‌باکس با شرط
+		    const descriptionInput = $('<textarea type="text" class="description-input" />');
+		    tds.eq(7).empty().append(descriptionInput);
+		
+		    // اضافه کردن قبل از تمپلیت
+		    $("#tblMinuteManagment tbody tr.row-template").before(tempRow);
+		}
+
+        // ======================== Load =========================
+		function load() {
+		    const pk = $form.getPK();
+		    if (!pk) return;
+		
+		    let params = { Where: `MeetingManagmentId = '${pk}'` };
+		
+		    meetingMinuteManagment(
+		        params,
+		        function (list) {
+		            if (Array.isArray(list) && list.length > 0) {
+		                $("#tblMinuteManagment").find("tr.no-data-row").remove();
+		
+		                list.forEach(function (row, index) {
+		                    addRow(row, index + 1); // شماره از 1 شروع میشه
+		                });
+		
+		                pagination($("#tblMinuteManagment"), rowNumber);
+		            } else {
+		                addNoDataRow($("#tblMinuteManagment"));
+		                console.warn('No data received.');
+		            }
+		        },
+		        function (error) {
+		            alert(error || "خطایی رخ داده است");
+		        }
+		    );
+		}
+
+        // ====================== Refresh ========================
+        function refresh() {
+            // Remove all rows with class 'row-data' directly
+            element.find("tr.row-data").remove();
+			
+            // Load data again
+            load();
+        }
+
+        // ======================= Return ========================
+        return {
+            refresh: refresh,
+            load: load,
+            readRows: meetingMinuteManagment
+        };
+    }());
+});
+//#endregion tblMinuteManagment.js
+
+
+
