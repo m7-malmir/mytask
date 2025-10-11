@@ -28,44 +28,60 @@ $(function(){
         // ====================== Bind Events ======================
         function bindEvents(){
 			
-            // Streamline workflow
 			$('#tblMinutesMeeting').on('click', 'a.workflow-link', function (e) {
-		    e.preventDefault();
-		
-		    const requestId = this.id;
-		    const params = { MeetingMinuteManagmentId: requestId };
-		
-		    FormManager.meetingMinuteManagmentFlowReceiver(
-		        params,
-		        function (data) {
-		            if (data.Success === 0) {
-		                $.alert("SP Error: " + data.Message, "خطا", "rtl");
-		                return;
-		            }
-		
-		            const contentXml = `<Content>
-		                <Id>${requestId}</Id>
-		                <IsInTestMode>${isInTestMode()}</IsInTestMode>
-		            </Content>`;
-		
-		            WorkflowService.RunWorkflow(
-		                "ZJM.MOM.MinutesOfMeeting",
-		                contentXml,
-		                true,
-		                function () {
-		                    tblMinutesMeeting.refresh();
-		                },
-		                function (err) {
-		                    handleError(err, "WorkflowService.RunWorkflow");
-		                }
-		            );
-		        },
-		        function (err) {
-		            alert(err?.details || err);
-		        }
-		    );
-		});
-
+			    e.preventDefault();
+			
+			    const requestId = this.id;
+			    const contentXml = `<Content>
+			        <Id>${requestId}</Id>
+			        <IsInTestMode>${isInTestMode()}</IsInTestMode>
+			    </Content>`;
+			
+			    //  SP1: دریافت اطلاعات (FlowReceiver)
+			    const flowParams = { MeetingMinuteManagmentId: requestId };
+			    FormManager.meetingMinuteManagmentFlowReceiver(
+			        flowParams,
+			        function (data) {
+			            if (data.Success === 0) {
+			                $.alert("SP Error: " + data.Message, "خطا", "rtl");
+			                return;
+			            }
+			
+			            //  بعد از موفقیت FlowReceiver → اجرای SP دوم (DetailAction)
+			            const detailParams = { Id: requestId };
+			            FormManager.meetingMinuteManagmentDetailAction(
+			                detailParams,
+			                function (detailData) {
+			                    if (detailData.Success === 0) {
+			                        $.alert("SP Detail Error: " + detailData.Message, "خطا", "rtl");
+			                        return;
+			                    }
+			
+			                    //  بعد از موفقیت هر دو SP، اجرای Workflow
+			                    WorkflowService.RunWorkflow(
+			                        "ZJM.MOM.MinutesOfMeeting",
+			                        contentXml,
+			                        true,
+			                        function () {
+			                            tblMinutesMeeting.refresh(); // ریفرش جدول بعد از اجرا
+			                        },
+			                        function (err) {
+			                            handleError(err, "WorkflowService.RunWorkflow");
+			                        }
+			                    );
+			                },
+			                function (errDetail) {
+			                    console.error("Error in DetailAction:", errDetail);
+			                    $.alert("خطا در اجرای SP دوم: " + (errDetail.message || errDetail), "", "rtl");
+			                }
+			            );
+			        },
+			        function (errFlow) {
+			            console.error("Error in FlowReceiver:", errFlow);
+			            $.alert("خطا در اجرای SP اول: " + (errFlow.message || errFlow), "", "rtl");
+			        }
+			    );
+			});
 
         }
 		
