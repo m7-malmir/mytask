@@ -441,11 +441,37 @@ const FormManager = (() => {
                         onSuccess(result);
                     }
                 },
-                error => handleError("deleteMeetingMinuteManagment", error, onError)
+                error => handleError("meetingMinuteManagmentFlowReceiver", error, onError)
+            );
+        },
+		//============================================================================
+		 meetingMinuteManagmentDetailAction(jsonParams, onSuccess, onError) {
+            SP_MM_MeetingMinuteManagmentDetailAction.Execute(
+                jsonParams,
+                data => {
+                    // پارس خروجی XML به آبجکت
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(data, "text/xml");
+
+                    const cols = xmlDoc.getElementsByTagName("col");
+                    const result = {};
+
+                    for (let i = 0; i < cols.length; i++) {
+                        const name = cols[i].getAttribute("name");
+                        const value = cols[i].textContent;
+                        result[name] = value;
+                    }
+
+                    if ($.isFunction(onSuccess)) {
+                        onSuccess(result);
+                    }
+                },
+                error => handleError("MeetingMinuteManagmentDetailAction", error, onError)
             );
         },
     };
 })();
+
 
 //#endregion EDN FormManager.js 
 
