@@ -168,9 +168,9 @@ var FormManager = {
 	   );
 	},
 //******************************************************************************************************
-	readMeetingMinuteManagmentDetail: function(jsonParams, onSuccess, onError)
+	readMeetingMinuteManagmentDetailAction: function(jsonParams, onSuccess, onError)
 	{
-	  BS_MM_MeetingMinuteManagmentDetail.Read(jsonParams
+	  BS_vw_MM_MeetingMinuteManagmentDetailAction.Read(jsonParams
 	       , function(data)
 	       {
 	           var list = [];
@@ -180,9 +180,14 @@ var FormManager = {
 	               { 
 	                  list.push
 	                  ({
-						Id: $(this).find("col[name='Id']").text(),
-		                MeetingManagmentId: $(this).find("col[name='MeetingManagmentId']").text(),
+						DetailActionId: $(this).find("col[name='DetailActionId']").text(),
+		                MeetingMinuteDetailId: $(this).find("col[name='MeetingMinuteDetailId']").text(),
+						ActorId: $(this).find("col[name='ActorId']").text(),
+		                IsAccepted: $(this).find("col[name='IsAccepted']").text(),
+						MeetingManagmentId: $(this).find("col[name='MeetingManagmentId']").text(),
 						Title: $(this).find("col[name='Title']").text(),
+						CreateDate: $(this).find("col[name='CreateDate']").text(),
+						IsLock: $(this).find("col[name='IsLock']").text(),
 						ActionDeadLineDate: $(this).find("col[name='ActionDeadLineDate']").text(),
 						ResponsibleForAction: $(this).find("col[name='ResponsibleForAction']").text()
 	                  });
@@ -191,7 +196,6 @@ var FormManager = {
 	           if($.isFunction(onSuccess))
 	           {
 	               onSuccess(list);
-	           
 	           }
 	       }, onError
 	   );
@@ -270,6 +274,7 @@ var FormManager = {
 	},
 
 };
+
 
 
 //#endregion EDN formmanager.js 
