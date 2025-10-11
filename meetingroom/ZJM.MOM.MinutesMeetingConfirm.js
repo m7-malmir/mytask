@@ -5,7 +5,7 @@ var currentActorId;
 var isInTestMode = false;
 var primaryKeyName;
 var pk;
-
+var actorLookup = {};
 var MeetingMinutesData = {
     Items: []
 };
@@ -124,7 +124,9 @@ $(function(){
     $form.init();
 });
 
+
 //#endregion EDN Ready.js 
+
 
 //#region formmanager.js
 var FormManager = {
