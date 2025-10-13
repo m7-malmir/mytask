@@ -1022,33 +1022,8 @@ $("#cmbUserPresent").on("select2:unselect", function (e) {
 
 
 
+MeetingMinuteDetailId
 
+MeetingManagmentId
 
-
-
-
-
-
-FormManager.updateMeetingMinuteManagmentDetailAction(list,
-				        function(status, list) { 
-							$.alert("انجام شد","","rtl",function(){
-							});
-				        },
-				        function(error) {
-				            console.log("خطای برگشتی:", error);
-				            $.alert("عملیات با خطا مواجه شد: " + (error.message || "خطای ناشناخته"), "", "rtl");
-				        }
-					);
-
-
-          	var hameshPopup = $(
-		'<div tabindex="1" style="direction:rtl;" class="ui-form">'+
-	     '<label tabindex="-1" style="text-align:right;" class="ui-form-label">لطفا دلیل مخالفت خود را بنویسید.</label>'+
-	    '</div>'
-	);
-	var commentInput = $("<textarea>", {type: "text"}).addClass("comment-input form-control").css({height:"60px","font-size":"8pt",resize:"none"});
-	hameshPopup.append(commentInput);
-
-
-
-
+Ma#123456
