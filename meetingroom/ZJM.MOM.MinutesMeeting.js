@@ -154,10 +154,12 @@ $(function () {
         function init() {
             element = $("#tblMinutesMeeting");   
             bindEvents();  
-            load();        
+            load();    
+			element.find("tr.row-template").hide();
+    
           //  sortTable(element[0]);
         }
-		
+
         // ==================== Bind Events ======================
         function bindEvents() {
            $("#tblMinutesMeeting").on("change", "input[name=MeetingMinuteId]", function () {
@@ -196,52 +198,42 @@ $(function () {
             // شناسه
             tds.eq(1).text(rowInfo.Id);
 			
-            // شماره درخواست 
-            tds.eq(2).html(`<a href="javascript:showMoadlWithTag(${args})">${rowInfo.MeetingMinuteNo}</a>`);
+            // شماره صورتجلسه 
+			if (rowInfo.ProcessStatus == 1) {
+               tds.eq(2).html(`<a href="javascript:showMoadlWithTag(${args})">${rowInfo.MeetingMinuteNo}</a>`);
+            } else {
+				tds.eq(2).html(`<a href="javascript:showReadOnlyWithTag(${args})">${rowInfo.MeetingMinuteNo}</a>`);
+            }
 			
-            // تاریخ درخواست
+            // تاریخ جلسه
             const [gmSD, gdSD, gySD] = rowInfo.CreatedDate.split('/').map(n => parseInt(n, 10));
             tds.eq(3).text(convertGregorianToJalali(gySD, gmSD, gdSD));
 			
-            // عنوان
+            // موضوع جلسه
             tds.eq(4).text(rowInfo.SubjectMeeting); 
-
-            // convert to true
-
-            let status, color;
 			
             if (rowInfo.ProcessStatus == 1) {
               color = "#FF0000";
               status = "ارسال";
             } 
             // مرحله جاری
-            tds.eq(6).addClass("process-column");		
-            tds.eq(6).text(rowInfo.ProcessTitle);
+			tds.eq(5).text(rowInfo.ProcessStatusTitle);
 			
-            // تعداد جزئیات درخواست
-            tds.eq(7).text(rowInfo.CostRequestDetailCount);   
-			
-            // مجموع هزینه	
-            tds.eq(8).text(formatNumber(rowInfo.SumRequestCostPrice));
-			
-            // مجموع هزینه تایید شده
-            tds.eq(9).text(formatNumber(rowInfo.SumConfirmCostPrice));
-			
-            // شماره مدرک فرایند  
-            tds.eq(10).text(rowInfo.InnerRegNumber);
+			//شماره مدرک فرآیند
+			tds.eq(6).text(rowInfo.InnerRegNumber);
 			
             // فرآیند	
             if (rowInfo.ProcessStatus == 1) {
-                tds.eq(5).html(`<a href="#" class="workflow-link" data-status="${rowInfo.ProcessStatus}" id="${args}">ارسال</a>`);
+                tds.eq(7).html(`<a href="#" class="workflow-link" data-status="${rowInfo.ProcessStatus}" id="${args}">ارسال</a>`);
             } else {
-                tds.eq(5).html(`<a href="#" class="workflow-link">گزارش</a>`);
+                tds.eq(7).html(`<a href="#" class="workflow-link">ارسال شده</a>`);
             }
 			
             // Add the row before the template
             element.children("tbody").children("tr.row-template").before(tempRow);
 			
             // Hide loading spinner
-            closeLoading();
+            //hideLoading();
         }
 
         // ======================== Load =========================
@@ -280,6 +272,7 @@ $(function () {
             meetingMinuteManagment(
                 params,
                 function (list) {
+					list = list.reverse();
                     if (Array.isArray(list) && list.length > 0) {
                         list.forEach(function (row, index) {
 							
@@ -290,20 +283,20 @@ $(function () {
                             addRow(row, index + 1);
                         });
 
-                      // Pagination the table
-                        pagination(element,rowNumber);
-						
+                        // Pagination the table
+						pagination(element, rowNumber);
+
                         // Close loading
-                        closeLoading();
+                        hideLoading();
                     } else {
-                        closeLoading();
+                        hideLoading();
                         addNoDataRow(element);
                         console.warn('No data received.');
                     }
-                    closeLoading();
+                    hideLoading();
                 },
                 function (error) {
-                    closeLoading();
+                    hideLoading();
                     alert(error || "خطایی رخ داده است");
                 }
             );
