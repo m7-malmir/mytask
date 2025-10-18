@@ -282,25 +282,30 @@ var FormManager = {
 
 //#region  tblMinuteManagment.js
 $(function () {
-    tblMinuteManagment = (function () {
+    tblMinutesMeeting = (function () {
         // ====================== Variables ======================
-        const rowNumber = 15;
-        const meetingMinuteManagment = FormManager.readMeetingMinuteManagmentDetail;
-        // let tblMinuteManagment = null;  ← حذف یا تغییر به نام دیگر
+		const rowNumber = 15;
+		const meetingMinuteManagment = FormManager.readMeetingMinuteManagmentDetailAction;
+		let tblMinutesMeeting = null;
         let element = null;
         let rowPrimaryKeyName = "Id";
         init();
 		
         // ======================= Init ==========================
         function init() {
-            element = $("#tblMinuteManagment");   
+            element = $("#tblMinutesMeeting");   
             bindEvents();  
             load();        
+            //sortTable(element[0]);
         }
 		
         // ==================== Bind Events ======================
-        function bindEvents() {
-            $("#tblMinuteManagment").on("click", ".comment-icon", function () {
+		function bindEvents() {
+			
+			//============================
+			// show modal
+			//============================
+			$("#tblMinuteManagment").on("click", ".comment-icon", function () {
                 const $row = $(this).closest("tr");
                 const recordId = $row.find("td").eq(2).text().trim();
         		console.log(recordId);
@@ -312,125 +317,195 @@ $(function () {
                     tblMinuteManagment.refresh();
                 });
             });
-
-			$(document).on("click", ".btn-review", function () {
-			    const $row = $(this).closest("tr");
-			    const MeetingMinuteDetailId = ($row.find("td").eq(2).text() || "").trim();
+			//============================
 			
-			    $.showModalForm(
-			        {
-			            registerKey: "ZJM.MOM.MinutesMeetingReviewPopup",
-			            params: {
-			                editItem: { MeetingMinuteDetailId },
-			                allUsers
-			            }
-			        },
-			        function (retVal) {
-			            tblMinuteManagment.refresh();
-			        }
-			    );
-			});
 
-        }
+			//============================
+			// // حالت تأیید
+			//============================
+		$("#tblMinuteManagment").on("change", ".confirm-select", function () {
+		    const $select = $(this);
+		    const val = $select.val();
+		    const $row = $select.closest("tr");
+		    const tds = $row.find("td");
+		    const detailActionId = tds.eq(1).text().trim(); // ستون دوم = DetailActionId
+		
+		    $descCell.empty(); // پاک کردن محتوای قبلی توضیحات
+		    // فقط اگر مقدار تایید انتخاب شده
+		    if (val === "1") {
+		        // ساخت پارامتر برای آپدیت SP
+		        const list = {
+					Description: "تایید",
+		            IsAccepted: 1,
+		            Where: "Id = '" + detailActionId + "'"
+		        };
+		
+		        // اجرای مستقیم درخواست
+		        FormManager.updateMeetingMinuteManagmentDetailAction(
+		            list,
+		            function () {
+		                $.alert("تأیید با موفقیت ثبت شد!", "", "rtl");
+		            },
+		            function (err) {
+		                // خطا
+		                console.error("خطا در تایید:", err);
+		                $descCell.text(" خطا در ثبت تایید");
+		                $.alert("خطا در ثبت تایید: " + (err.message || "خطای ناشناخته"), "", "rtl");
+		            }
+		        );
+		    } else if (val === "0") {
+			//============================
+			// // حالت رد
+			//============================
+			        const hameshPopup = $(`
+			            <div style="direction:rtl;text-align:right;" class="ui-form">
+			                <label style="font-size:9pt;">لطفاً دلیل مخالفت خود را بنویسید:</label><br>
+			            </div>
+			        `);
+			
+			        const commentInput = $("<textarea>")
+			            .addClass("comment-input form-control")
+			            .css({ height: "70px", fontSize: "9pt", resize: "none", width: "95%" });
+			
+			        hameshPopup.append(commentInput);
+			
+			        hameshPopup.dialog({
+			            modal: true,
+			            title: "دلیل رد مصوبه",
+			            width: 420,
+			            buttons: [
+			                {
+			                    text: "ثبت",
+			                    click: function () {
+			                        const reason = commentInput.val().trim();
+			                        if (!reason) {
+			                            $(this).notify("لطفاً دلیل رد را وارد نمایید", { position: "top" });
+			                            return;
+			                        }
+			
+			                        showLoading();
+			                        const reasonLabel = $('<label class="reject-reason-label"/>')
+			                            .text(reason)
+			                            .css({
+			                                fontSize: "inherit",
+			                                color: "#c00",
+			                                fontWeight: "600",
+			                                display: "inline-block",
+			                                padding: "2px 6px"
+			                            });
+			
+			                        $descCell.empty().append(reasonLabel);
+			
+			                        let list = { Description: reason, IsAccepted: 0 };
+			                        list = $.extend(list, { Where: "Id = '" + detailActionId + "'" });
+			
+			                        FormManager.updateMeetingMinuteManagmentDetailAction(
+			                            list,
+			                            function () {
+			                                hideLoading();
+			                                $.alert("دلیل رد ثبت شد", "", "rtl");
+			                            },
+			                            function (error) {
+			                                hideLoading();
+			                                console.error("خطا در رد:", error);
+			                                $.alert("خطا در ثبت دلیل رد: " + (error.message || "خطای ناشناخته"), "", "rtl");
+			                            }
+			                        );
+			
+			                        $(this).dialog("close");
+			                    }
+			                },
+			                {
+			                    text: "انصراف",
+			                    click: function () {
+			                        $(this).dialog("close");
+			                        $select.val("").trigger("change");
+			                    }
+			                }
+			            ]
+			        });
+			
+			    } else {
+			        // حالت نامشخص
+			        $descCell.empty();
+			    }
+			});	
+		}
 	
         // ====================== Add Row ========================
-		
-		function addRow(rowInfo, rowIndex) {
+
+		  function addRow(rowInfo, rowIndex) {
 		    const tempRow = $("#tblMinuteManagment").find("tr.row-template").first().clone();
 		    tempRow.removeClass("row-template").addClass("row-data").show();
-		
 		    const tds = tempRow.find("td");
 		
 		    //  شماره ردیف
 		    tds.eq(0).text(rowIndex).attr("align", "center");
 		
 		    //  شناسه اکشن (DetailActionId)
-		    tds.eq(1).text(rowInfo.DetailActionId || "").hide();
+		    tds.eq(1).text(rowInfo.DetailActionId || "");
 		
-		    //  شناسه جزییات مصوبه (MeetingMinuteDetailId)
-		    tds.eq(2).text(rowInfo.MeetingMinuteDetailId || "").hide();
+		    //  شناسه مصوبه (MeetingMinuteDetailId)
+		    tds.eq(2).text(rowInfo.MeetingMinuteDetailId || "");
 		
 		    //  شناسه جلسه (MeetingManagmentId)
-		    tds.eq(3).text(rowInfo.MeetingManagmentId || "").hide();
+		    tds.eq(3).text(rowInfo.MeetingManagmentId || "");
 		
-		    //  متن صورتجلسه
+		    //  متن صورتجلسه (Title)
 		    tds.eq(4).text(rowInfo.Title || "-");
 		
-		    //  اقدام‌کننده‌ها (مسئول‌ها)
-		    tds.eq(5).text(rowInfo.ResponsibleForActionName || "-");
+			// اقدام‌کننده‌ها (مسئول‌ها)
+			tds.eq(5).text(rowInfo.ResponsibleForActionName || "-");
+
 		
 		    //  تاریخ اقدام
-		    tds.eq(6).text(
-		        rowInfo.ActionDeadLineDate
-		            ? formatMiladiToShamsi(rowInfo.ActionDeadLineDate)
-		            : "-"
-		    );
+		    if (rowInfo.ActionDeadLineDate) {
+		        tds.eq(6).text(formatMiladiToShamsi(rowInfo.ActionDeadLineDate));
+		    } else {
+		        tds.eq(6).text("-");
+		    }
 		
-		    //  ستون نظرات → آیکن اینفو
+		    //  ستون نظرات (Comments)
 		    const infoIcon = $('<i class="fa fa-info-circle comment-icon" style="cursor:pointer;"></i>')
 		        .attr("data-id", rowInfo.DetailActionId || "");
 		    tds.eq(7).empty().append(infoIcon);
 		
-		    // ساخت المان گرافیکی تایید/رد (RejAcc)
-			const rejAccVal = (rowInfo.RejAcc || "-").trim();
+		    //  سلکتور تأیید / رد (Confirm)
+			const confirmSelect = $('<select class="confirm-select"/>')
+			    .append('<option value="">نامشخص</option>')
+			    .append('<option value="1">تأیید</option>')
+			    .append('<option value="0">رد</option>')
+			    .css({ fontSize: "inherit", height: "auto", padding: "2px 4px" });
 			
-			// اگر مقدار درست داره مثل "0-2"
-			if (rejAccVal.includes("-")) {
-			    const [leftVal, rightVal] = rejAccVal.split("-");
-			    const $rejAccContainer = $('<div style="display:flex;justify-content:center;gap:6px;width:100%"></div>');
-			   const rightBadge = $('<div></div>')
-			        .text(rightVal)
-			        .css({
-			            minWidth: "16px",
-			            height: "16px",
-			            borderRadius: "50%",    
-			            backgroundColor: "#5cc85c",// سبز 
-			            color: "#fff",
-			            fontSize: "9px",
-			            lineHeight: "16px",
-			            textAlign: "center"
-			        });
-			    const leftBadge = $('<div></div>')
-			        .text(leftVal)
-			        .css({
-			            minWidth: "16px",
-			            height: "16px",
-			            borderRadius: "50%",     
-			            backgroundColor: "#ff5c5c", // قرمز
-			            color: "#fff",
-			            fontSize: "9px",
-			            lineHeight: "16px",
-			            textAlign: "center"
-			        });
-				$rejAccContainer.append( rightBadge, leftBadge);
-			    tds.eq(8).empty().append($rejAccContainer);
+			// مقدار از دیتابیس
+			let isAccepted = rowInfo.IsAccepted;
+			
+			// اصلاح مقدار برای حالت‌های مختلف
+			if (isAccepted === true || isAccepted === "true" || isAccepted === 1 || isAccepted === "1") {
+			    isAccepted = "1";            // تأیید
+			} else if (isAccepted === false || isAccepted === "false" || isAccepted === 0 || isAccepted === "0") {
+			    isAccepted = "0";            // رد
 			} else {
-			    // اگر مقدار معتبر نیست
-			    tds.eq(8).text("-");
+			    isAccepted = "";             // نامشخص/null
 			}
-		
-		    //  ستون عملیات → دکمه بازنگری
-		    const reviewButton = $('<button type="button" class="btn-review">بازنگری</button>')
-		        .css({
-		            width: "100%",
-		            backgroundColor: "#DDEEFF",
-		            border: "1px solid #BED4DC",
-		            cursor: "pointer",
-		            fontSize: "9px"
-		        })
-		        .attr("data-id", rowInfo.DetailActionId || "");
-		
-		    tds.eq(9).empty().append(reviewButton);
 			
-			// اکتور ایدی
-			tds.eq(10).text(rowInfo.ResponsibleForAction || "").hide();
+			// مقدار را روی سلکتور ست کن بدون trigger change
+			confirmSelect.val(isAccepted);
 			
-		    // درج در جدول قبل از تمپلیت
+			// اضافه به ستون ۸ (Confirm)
+			tds.eq(8).empty().append(confirmSelect);
+		
+		
+		    //  ستون توضیحات (Description) ← باید اینجا input / label بیفته بعداً
+		    tds.eq(9).empty().text(rowInfo.DetailActionDescription || "");
+		
+		    // درج در جدول قبل از ردیف الگو
 		    $("#tblMinuteManagment tbody tr.row-template").before(tempRow);
 		}
 
 
         // ======================== Load =========================
+
 		function load() {
 		    const pk = $form.getPK();
 		
@@ -438,6 +513,7 @@ $(function () {
 		    if (!pk || !currentActorId) {
 		        return;
 		    }
+		
 		    //  پارامترهای امن برای SP
 		    let params = {
 		        Where: `MeetingManagmentId = '${pk}' AND ActorId = '${currentActorId}'`
@@ -473,16 +549,21 @@ $(function () {
 		        }
 		    );
 		}
-
+		
         // ====================== Refresh ========================
         function refresh() {
+            // Remove all rows with class 'row-data' directly
             element.find("tr.row-data").remove();
+			
+            // Load data again
             load();
         }
 
+        // ======================= Return ========================
         return {
-            refresh,
-            load
+            refresh: refresh,
+            load: load,
+            readRows: meetingMinuteManagment
         };
     }());
 });
