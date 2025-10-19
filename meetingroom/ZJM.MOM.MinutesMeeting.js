@@ -15,14 +15,12 @@ $(function(){
             build();
             createControls();
             bindEvents();
-			
             // Disable autocomplete for all input fields
             $('input[role="TextBox"], input[role="DatePicker"]').attr('autocomplete', 'off');
         }
-
         // ======================== Build =========================
         function build() {        
-            changeDialogTitle("مدیریت صورتجلسات");
+            changeDialogTitle("تدوین صورتجلسه");
         }
 
         // ====================== Bind Events ======================
@@ -30,7 +28,7 @@ $(function(){
 			
 			$('#tblMinutesMeeting').on('click', 'a.workflow-link', function (e) {
 			    e.preventDefault();
-			
+				showLoading();
 			    const requestId = this.id;
 			    const contentXml = `<Content>
 			        <Id>${requestId}</Id>
@@ -43,6 +41,7 @@ $(function(){
 			        flowParams,
 			        function (data) {
 			            if (data.Success === 0) {
+							hideLoading();
 			                $.alert("SP Error: " + data.Message, "خطا", "rtl");
 			                return;
 			            }
@@ -53,30 +52,35 @@ $(function(){
 			                detailParams,
 			                function (detailData) {
 			                    if (detailData.Success === 0) {
+									hideLoading();
 			                        $.alert("SP Detail Error: " + detailData.Message, "خطا", "rtl");
 			                        return;
 			                    }
-			
 			                    //  بعد از موفقیت هر دو SP، اجرای Workflow
 			                    WorkflowService.RunWorkflow(
 			                        "ZJM.MOM.MinutesOfMeeting",
 			                        contentXml,
 			                        true,
 			                        function () {
-			                            tblMinutesMeeting.refresh(); // ریفرش جدول بعد از اجرا
+										hideLoading();
+			                            tblMinutesMeeting.refresh(); 
+										
 			                        },
 			                        function (err) {
+										hideLoading();
 			                            handleError(err, "WorkflowService.RunWorkflow");
 			                        }
 			                    );
 			                },
 			                function (errDetail) {
+								hideLoading();
 			                    console.error("Error in DetailAction:", errDetail);
 			                    $.alert("خطا در اجرای SP دوم: " + (errDetail.message || errDetail), "", "rtl");
 			                }
 			            );
 			        },
 			        function (errFlow) {
+						hideLoading();
 			            console.error("Error in FlowReceiver:", errFlow);
 			            $.alert("خطا در اجرای SP اول: " + (errFlow.message || errFlow), "", "rtl");
 			        }
@@ -125,7 +129,6 @@ $(function(){
         function isInEditMode() {
             return inEditMode;
         }
-
         // ======================== return ========================
         return {
             init: init,
@@ -157,7 +160,6 @@ $(function () {
             load();    
 			element.find("tr.row-template").hide();
     
-          //  sortTable(element[0]);
         }
 
         // ==================== Bind Events ======================
@@ -193,6 +195,7 @@ $(function () {
             if (rowInfo.ProcessStatus == 1) {
                 tbCheckbox = `<input type='radio' id='MeetingMinuteId' name='MeetingMinuteId' class="pointer" value="${rowInfo.Id}">`;
             }
+
             tds.eq(0).html(tbCheckbox);
 			
             // شناسه
@@ -201,7 +204,7 @@ $(function () {
             // شماره صورتجلسه 
 			if (rowInfo.ProcessStatus == 1) {
                tds.eq(2).html(`<a href="javascript:showMoadlWithTag(${args})">${rowInfo.MeetingMinuteNo}</a>`);
-            } else {
+            } else { 
 				tds.eq(2).html(`<a href="javascript:showReadOnlyWithTag(${args})">${rowInfo.MeetingMinuteNo}</a>`);
             }
 			
@@ -226,14 +229,13 @@ $(function () {
             if (rowInfo.ProcessStatus == 1) {
                 tds.eq(7).html(`<a href="#" class="workflow-link" data-status="${rowInfo.ProcessStatus}" id="${args}">ارسال</a>`);
             } else {
-                tds.eq(7).html(`<a href="#" class="workflow-link">ارسال شده</a>`);
+				//to do
+                tds.eq(7).html(`<span  class="workflow-link">ارسال شده</span>`);
             }
 			
             // Add the row before the template
             element.children("tbody").children("tr.row-template").before(tempRow);
 			
-            // Hide loading spinner
-            //hideLoading();
         }
 
         // ======================== Load =========================
@@ -323,7 +325,6 @@ $(function () {
 
 //#region FormManager.js
 const FormManager = (() => {
-    // ======================= Private methods ========================
 
     // ===================== parseMeetingMinuteManagment ===================
     function parseMeetingMinuteManagment(data) {
@@ -343,7 +344,9 @@ const FormManager = (() => {
                 MeetingStartTime:   get("MeetingStartTime"),
                 MeetingEndTime:     get("MeetingEndTime"),
                 ProcessStatus:      get("ProcessStatus"),
-                RejectStatus:       get("RejectStatus"),
+				ProcessStatusTitle: get("ProcessStatusTitle"),
+				RejectStatus:       get("RejectStatus"),
+                InnerRegNumber:     get("InnerRegNumber"),
                 SubjectMeeting:     get("SubjectMeeting")
             });
         });
@@ -413,6 +416,7 @@ const FormManager = (() => {
             );
         },
 		//============================================================================
+		// اجرای ران وورکفلو و ارسال برای گیرنده ها
 		 meetingMinuteManagmentFlowReceiver(jsonParams, onSuccess, onError) {
             SP_MM_MeetingMinuteManagmentFlowReceiver.Execute(
                 jsonParams,
@@ -438,6 +442,7 @@ const FormManager = (() => {
             );
         },
 		//============================================================================
+		// حذف مصوبات جلسه برای پیش از حذف کلی صورتجلسه
 		 meetingMinuteManagmentDetailAction(jsonParams, onSuccess, onError) {
             SP_MM_MeetingMinuteManagmentDetailAction.Execute(
                 jsonParams,
@@ -465,12 +470,10 @@ const FormManager = (() => {
     };
 })();
 
-
 //#endregion EDN FormManager.js 
 
 //#region utility.js
 // =========================== sortTable ============================
-
 function sortTable(table){
     const headers = table.querySelectorAll(".row-header td");
 
@@ -518,63 +521,95 @@ function sortTable(table){
     }	
 }
 
-// ========================== pagination ============================
-function pagination(element, rowNumber){
+// ============================= pagination =============================
+function pagination(element, rowNumber) {
     const rowsPerPage = rowNumber;
     const $table = element;
     const $rows = $table.find("tbody tr.row-data");
     const totalRows = $rows.length;
     const totalPages = Math.ceil(totalRows / rowsPerPage);
-    let currentPage = 1; // Current page
+    let currentPage = 1;
 
-    const $pagination = $("#pagination");
-	const $rowPagination = $("#tscTablePagination");
-    $pagination.empty();
-	
-	// Hide pagination
-    if (totalPages <= 1) {
-        $pagination.hide();
-    	$rowPagination.hide();
-        return;
+    // --- گرفتن رفرنس‌ها ---
+    let $rowPagination = $("#tscTablePagination");       // نوار گرافیکی (در صورت وجود)
+    let $pagination = $("#pagination");                  // کانتینر دکمه‌ها (در صورت وجود)
+    let $label = $("#lblPagination");                    // اگر label جدا داری
+
+    // --- اگر هیچ‌کدام وجود نداشت، خودش بسازد ---
+    if ($rowPagination.length === 0) {
+        $rowPagination = $("<div id='tscTablePagination' style=\"" +
+            "position:absolute;width:1220px;height:25px;background-image:url(/Cache/Images/ZJM.MOM.MinutesMeeting/tscTablePagination.png);" +
+            "background-repeat:repeat-x;background-position:left top;font-family:Tahoma;font-size:8pt;direction:rtl;" +
+            "color:#fff !important;overflow:hidden;\"></div>");
+        $("body").append($rowPagination);
     }
 
-	// Show pagination
-    $pagination.show();
-	$rowPagination.show();
-	
-    // Display the specified page
+    if ($pagination.length === 0) {
+        $pagination = $("<div id='pagination' style=\"" +
+            "display:flex;justify-content:center;align-items:center;height:22px;margin:auto;color:#fff !important;direction:rtl;\"></div>");
+        $rowPagination.append($pagination);
+    }
+
+    // اگر label وجود دارد از آن استفاده کند و دکمه‌ها را داخلش بریزد
+    const $target = $label.length ? $label : $pagination;
+    $target.empty();
+
+    // اگر فقط یک صفحه، پنهانش کن
+    if (totalPages <= 1) {
+        $rowPagination.hide();
+        return;
+    }
+    $rowPagination.show();
+
+    // --- تابع page نمایش ---
     function showPage(page) {
         currentPage = page;
-
         $rows.hide();
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
         $rows.slice(start, end).show();
-
         renderButtons();
     }
 
-    // Generate page number + previous/next buttons
+    // --- ساخت دکمه‌ها (RTL درست، رنگ سفید، icons Font Awesome) ---
     function renderButtons() {
-        $pagination.empty();
+        $target.empty();
 
-        // Previous button
-        const prevDisabled = currentPage === 1 ? "disabled" : "";
-        $pagination.append(`<a href="#" class="prev" ${prevDisabled}><i style="font-family: 'Font Awesome 5 Pro'!important;" class="fas fa-chevron-double-right"></i></a>`);
+        const isRTL = $target.css("direction") === "rtl";
 
-        // Page number buttons
-        for (let i = 1; i <= totalPages; i++) {
-            const activeClass = currentPage === i ? "active" : "";
-            $pagination.append(`<a href="#" data-page="${i}" class="${activeClass}">${i}</a>`);
+        // آیکون‌ها (در فونت‌آوسام 5 یا 6 معمولاً پاسخ می‌دهند)
+        const iconPrev = `<i class="fas fa-chevron-double-left" style="color:#fff !important;font-family:'Font Awesome 5 Pro'!important;"></i>`;
+        const iconNext = `<i class="fas fa-chevron-double-right" style="color:#fff !important;font-family:'Font Awesome 5 Pro'!important;"></i>`;
+
+        const prevClass = currentPage === 1 ? "disabled" : "";
+        const nextClass = currentPage === totalPages ? "disabled" : "";
+
+        // در RTL جهت‌ها برعکس نشان داده می‌شود
+        if (isRTL) {
+            // Next (سمت راست)
+            $target.append(`<a href="#" class="next ${nextClass}" style="margin:0 6px;color:#fff !important;">${iconNext}</a>`);
+
+            // شماره صفحات از راست به چپ
+            for (let i = totalPages; i >= 1; i--) {
+                const activeClass = currentPage === i ? "active" : "";
+                $target.append(`<a href="#" data-page="${i}" class="${activeClass}" style="margin:0 6px;color:#fff !important;">${i}</a>`);
+            }
+
+            // Prev (سمت چپ)
+            $target.append(`<a href="#" class="prev ${prevClass}" style="margin:0 6px;color:#fff !important;">${iconPrev}</a>`);
+        } else {
+            // اگر جهت چپ به راست بود
+            $target.append(`<a href="#" class="prev ${prevClass}" style="margin:0 6px;color:#fff !important;">${iconPrev}</a>`);
+            for (let i = 1; i <= totalPages; i++) {
+                const activeClass = currentPage === i ? "active" : "";
+                $target.append(`<a href="#" data-page="${i}" class="${activeClass}" style="margin:0 6px;color:#fff !important;">${i}</a>`);
+            }
+            $target.append(`<a href="#" class="next ${nextClass}" style="margin:0 6px;color:#fff !important;">${iconNext}</a>`);
         }
-
-        // Next button
-        const nextDisabled = currentPage === totalPages ? "disabled" : "";
-        $pagination.append(`<a href="#" class="next" ${nextDisabled}><i style="font-family: 'Font Awesome 5 Pro'!important;" class="fas fa-chevron-double-left"></i></a>`);
     }
 
-    // Handle button clicks
-    $pagination.off("click").on("click", "a", function (e) {
+    // --- کلیک روی دکمه‌ها ---
+    $target.off("click").on("click", "a", function (e) {
         e.preventDefault();
         const $btn = $(this);
 
@@ -583,14 +618,14 @@ function pagination(element, rowNumber){
         } else if ($btn.hasClass("next") && currentPage < totalPages) {
             showPage(currentPage + 1);
         } else if ($btn.data("page")) {
-            showPage(parseInt($btn.data("page")));
+            const page = parseInt($btn.data("page"));
+            showPage(page);
         }
     });
 
-    // Start from the first page
+    // شروع از صفحه اول
     showPage(1);
 }
-
 // ========================= addNoDataRow ===========================
 function addNoDataRow($table) {
     var $headerRow = $table.find("tr.row-header").first();
@@ -616,6 +651,19 @@ function showMoadlWithTag(meetingMinuteId){
         }
     );
 }
+// ======================= showReadOnlyWithTag =========================
+function showReadOnlyWithTag(meetingMinuteId){
+    $.showModalForm({
+	   registerKey: "ZJM.MOM.MinutesMeetingReadOnly",
+			params:{
+			    MeetingMinuteId: meetingMinuteId,
+			}
+        },
+        function(retVal) {
+        	tblMinutesMeeting.refresh();
+        }
+    );
+}
 
 // ========================== styleDialog ===========================
 const styleDialog = (background, border, color) => {
@@ -627,6 +675,8 @@ const styleDialog = (background, border, color) => {
         });
     }, 0);
 };
+//********************************************************************************************
+
 
 //#endregion EDN utility.js 
 
@@ -713,6 +763,50 @@ function convertJalaliToGregorian(jy, jm, jd) {
     for (gm = 0; gm < 13 && gd > sal_a[gm]; gm++) gd -= sal_a[gm];
     return [gy,gm,gd];
 }
+// ========================= showLoading ============================
+function showLoading() {
+  let $box = $("#loadingBoxTweaked");
+  if (!$box.length) {
+    $box = $(`
+            <div id="loadingBoxTweaked"
+                style="position:fixed;inset:0;background:rgba(0,0,0,0.80);display:flex;align-items:center;justify-content:center;z-index:999999;">
+                <div class="spinner"></div>
+            </div>
+        `);
+
+    // spinner css فقط یکبار اضافه شود
+    if (!$("#loadingSpinnerStyle").length) {
+      $('<style id="loadingSpinnerStyle">')
+        .html(
+          `
+                .spinner {
+                    border: 7px solid #eee;
+                    border-top: 7px solid #1976d2;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                `
+        )
+        .appendTo("head");
+    }
+    $("body").append($box);
+  } else {
+    $box.show();
+  }
+}
+// ========================= closeLoading ============================
+function hideLoading() {
+  $("#loadingBoxTweaked").fadeOut(180, function () {
+    $(this).remove();
+  });
+}
+
 
 // ========================= closeLoading ============================
 //#endregion EDN commom.js 
@@ -767,5 +861,4 @@ $("#momMinutesMeeting_Delete").click(function () {
     });
 
 });
-
 //#endregion EDN momMinutesMeeting_Delete.js 
