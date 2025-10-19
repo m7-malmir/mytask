@@ -10,7 +10,8 @@ var actorLookup = {};
 $(function(){
     $form = (function(){
         var pk, inEditMode = false;
-		
+		var lastModalResult = null;
+		var meetingMinuteId = null;  
         function init(){
             build();
             bindEvents();
@@ -24,9 +25,9 @@ $(function(){
                 width: $(document).width() + "px",
                 height: $(document).height() + "px"
             });
-            changeDialogTitle("ثبت صورتجلسه");
+            changeDialogTitle("تدوین صورتجلسه");
         }
-		// ====================== Bind Events ======================
+		// ====================== Bind Events =====================
         function bindEvents(){
 			
             window.handleNewMinuteItem = handleNewMinuteItem;
@@ -72,7 +73,7 @@ $(function(){
 		            Promise.all([
 		                fillComboWithService($("#cmbUserPresent"), BS_GetUserInfo, "انتخاب شخص"),
 		                fillComboWithService($("#cmbUserAbsent"), BS_GetUserInfo, "انتخاب غایبین"),
-		                loadMeetingRoomsCombo() // اتاق جلسه قبل از لود داده بیاد
+		                loadMeetingRoomsCombo()
 		            ]).then(() => {
 		                let actorLookup = {};
 		                UserService.GetCurrentActor({}, function (resp) {
@@ -80,14 +81,14 @@ $(function(){
 		                        Array.isArray(resp.Items) ? resp.Items : [];
 		                    actors.forEach(a => actorLookup[String(a.Id)] = a.Name);
 		
-		                    // حالا داده جلسه بیاد و مقدار اتاق ست بشه
+		                    //  دیتا جلسه بیاد و مقدار اتاق ست میشود
 		                    Promise.all([
 		                        loadMeetingData(meetingMinuteId),
 		                        loadMeetingDetails(meetingMinuteId, actorLookup)
 		                    ]).then(() => {
 		                        setComboSelectionFromHidden($("#cmbUserPresent"));
 		                        setComboSelectionFromHidden($("#cmbUserAbsent"));
-		                        return loadAttachments(meetingMinuteId);
+		                        return loadOrRefreshAttachments(meetingMinuteId, { refresh: false });
 		                    }).finally(() => {
 		                        hideLoading();
 		                    });
@@ -97,9 +98,14 @@ $(function(){
 		    });
 		}
 
-        return { init };
-    })();
+		// گرفتن پارامز برای افزودن UI فایل
+		window.addAttachmentToFieldset = addAttachmentToFieldset;
+		window.removeAttachment = removeAttachment;
+		window.loadOrRefreshAttachments = loadOrRefreshAttachments;
 
+        return { init, loadOrRefreshAttachments };
+    })();
+	
     $form.init();
 });
 
@@ -229,7 +235,7 @@ function hideLoading() {
   });
 }
 //******************************************************************************************************
-// تابع Hidden Fields بر اساس ActorId
+// تابع برای فرستان اکتور ایدی ها
 function updateHiddenFields($combo, actorId, roleId, isAdd) {
   const actorField = $combo.data("actor-field");
   const roleField = $combo.data("role-field");
@@ -256,7 +262,7 @@ function updateHiddenFields($combo, actorId, roleId, isAdd) {
 }
 
 //*******************************************************************************************************
-// تابع پر کردن کمبو بر اساس ActorId
+// تابع پر کردن کمبو بر اساس ActorId همان select2
 function fillComboWithService($combo,service,placeholderText,singleSelect = false) {
 	  return new Promise((resolve) => {
 	    service.Read(
@@ -332,7 +338,7 @@ function setComboSelectionFromHidden($combo) {
 }
 
 //*******************************************************************************************************
-
+//پیدا کردن کلاس فونت اسوم برای نمایش نوع فایل
 function getFileIconClass(fileType) {
   let type = fileType.toLowerCase();
   if (type.includes(".")) {
@@ -442,6 +448,7 @@ function downloadBase64(hexString, fileName, fileType) {
 }
 
 //*******************************************************************************************************
+//حذف فایل در صفحه اصلی
 function removeAttachment(fileId, $element) {
   $.confirm(
     "آیا نسبت به حذف این سند مطمئن هستید؟",
@@ -470,41 +477,51 @@ function removeAttachment(fileId, $element) {
 }
 
 //*******************************************************************************************************
-//تابع فراخوانی فایلهای مرتیط با صورتجلسه
-function loadAttachments(meetingMinuteId) {
-  return new Promise((resolve, reject) => {
-    if (!meetingMinuteId) {
-      return resolve(); // ادامه اجرای زنجیره متوقف نشه
-    }
+//تابع فراخوانی فایلهای مرتیط با صورتجلسه به همراه رفرش پس از بسته شدن پاپ آپ
+function loadOrRefreshAttachments(meetingMinuteId, options = {}) {
+    return new Promise((resolve, reject) => {
+        if (!meetingMinuteId) return resolve();
 
-    const readParams = {
-      WHERE: "SystemId = 3 AND DocumentId = '" + meetingMinuteId + "'",
-    };
+        const readParams = {
+            WHERE: "SystemId = 3 AND DocumentId = '" + meetingMinuteId + "'",
+        };
 
-    FormManager.readAttachedFile(
-      readParams,
-      function (list) {
-        if (list && list.length) {
-          list.forEach((file) => addAttachmentToFieldset(file));
-          console.debug(`Loaded ${list.length} attachments.`);
-        } else {
-          console.debug("No attachments found for this meeting.");
-        }
-        resolve();
-      },
-      function (error) {
-        if (error && (error.erroMessage || error.message)) {
-          alert(
-            "خطا در خواندن فایل ها: " + (error.erroMessage || error.message)
-          );
-          reject(error);
-        } else {
-          console.debug("No file found, but this is not an error.");
-          resolve();
-        }
-      }
-    );
-  });
+        showLoading();
+
+        FormManager.readAttachedFile(
+            readParams,
+            function (list) {
+                const $container = $("#gbxDocuments");
+
+                // اگر refresh=true بود، محتوا قبلی پاک شود ولی legend حفظ گردد
+                if (options.refresh) {
+                    const $legends = $container.children("legend").clone(true);
+                    $container.empty().append($legends);
+                }
+
+                // اضافه کردن فایل‌ها (بدون تکرار در حالت refresh)
+                if (list && list.length) {
+                    list.forEach(file => addAttachmentToFieldset(file));
+                    console.debug(`${options.refresh ? 'Refreshed' : 'Loaded'} ${list.length} attachments.`);
+                } else {
+                    console.debug("No attachments found for " + (options.refresh ? "refresh." : "load."));
+                }
+
+                hideLoading();
+                resolve();
+            },
+            function (error) {
+                hideLoading();
+                if (error && (error.erroMessage || error.message)) {
+                    $.alert("خطا در خواندن فایل‌ها: " + (error.erroMessage || error.message), "", "rtl");
+                    reject(error);
+                } else {
+                    console.debug("No file found (this is not an error).");
+                    resolve();
+                }
+            }
+        );
+    });
 }
 
 //*******************************************************************************************************
@@ -529,6 +546,7 @@ function miladiFormattedForAttr(miladiStr) {
 }
 
 //*******************************************************************************************************
+//خواندن جزییات جلسه ثبت شده در حالت ویرایش مجدد صورتجلسه
 function loadMeetingDetails(meetingMinuteId, actorLookup) {
   return new Promise((resolve) => {
     if (!meetingMinuteId) return resolve();
@@ -551,12 +569,7 @@ function loadMeetingDetails(meetingMinuteId, actorLookup) {
               .split(",")
               .map((id) => id.trim())
               .filter(Boolean);
-
-            console.log(
-              `[Debug] Loop index=${idx} | cleanItem.Id=${srvItem.Id} | responsibleIds=`,
-              responsibleIds
-            );
-
+			  
             const cleanItem = {
               Id: srvItem.Id,
               Title: srvItem.Title || "-",
@@ -569,7 +582,7 @@ function loadMeetingDetails(meetingMinuteId, actorLookup) {
             MeetingMinutesData.Items.push(cleanItem);
             addRowToTable(cleanItem, idx + 1);
 
-            const p = getNameForIds(responsibleIds, actorLookup).then(
+            const selectedPerson = getNameForIds(responsibleIds, actorLookup).then(
               (namesArray) => {
                 const joinedNames =
                   namesArray.filter((n) => !!n && n !== "-").join(", ") || "-";
@@ -594,15 +607,11 @@ function loadMeetingDetails(meetingMinuteId, actorLookup) {
                     .attr("data-ids", cleanItem.ResponsibleForAction);
                 } else {
                 }
-
-                console.log(
-                  `[UpdateTable] RowId=${cleanItem.Id} → ${joinedNames}`
-                );
                 return joinedNames;
               }
             );
 
-            updatePromises.push(p);
+            updatePromises.push(selectedPerson);
           });
 
           Promise.all(updatePromises).then(() => {
@@ -641,6 +650,7 @@ function checkNumberRange(selector, min, max, msg) {
 }
 
 //*******************************************************************************************************
+//تابع برای فیلتر تاریخ مصوبه که نباید از روزهای اتی انتخاب شود
 function validateNotFuture(gdate, $input) {
   let y, m, d;
   if (gdate.includes("-")) [y, m, d] = gdate.split("-").map(Number);
@@ -698,7 +708,7 @@ function getMeetingGDate($input) {
 }
 
 //*******************************************************************************************************
-// ولیدیشن فرم و برگرداندن ساعات
+// ولیدیشن کل فرم و دادن پیغام مناسب به کاربر
 function validateMeetingForm($meetingDateInput, meetingGDate) {
   checkRequired("#txtSubjectMeeting", "موضوع جلسه را وارد کنید.");
   checkRequired("#cmbMeetingRoomId", "اتاق جلسه را انتخاب کنید.");
@@ -710,7 +720,7 @@ function validateMeetingForm($meetingDateInput, meetingGDate) {
 
   if (selectedDate > today) {
     $.alert(
-      "انتخاب تاریخ آینده مجاز نیست. لطفاً امروز یا روزهای قبل را انتخاب کنید.",
+      "انتخاب تاریخ آینده برای جلسه مجاز نیست. لطفاً امروز یا روزهای قبل را انتخاب کنید.",
       "",
       "rtl"
     );
@@ -726,25 +736,25 @@ function validateMeetingForm($meetingDateInput, meetingGDate) {
     "#cmbMeetingStartTime",
     1,
     23,
-    "ساعت شروع باید بین 1 تا 23 باشد."
+    "ساعت شروع باید بین 6 تا 23 باشد."
   );
   const sMin = checkNumberRange(
     "#cmbMinMeetingStartTime",
     0,
     59,
-    "دقیقه شروع باید بین 0 تا 59 باشد."
+    "دقیقه شروع باید بین 00 تا 45 باشد."
   );
   const eHour = checkNumberRange(
     "#cmbHourMeetingEndTime",
     1,
     23,
-    "ساعت پایان باید بین 1 تا 23 باشد."
+    "ساعت پایان باید بین 6 تا 23 باشد."
   );
   const eMin = checkNumberRange(
     "#cmbMinMeetingEndTime",
     0,
     59,
-    "دقیقه پایان باید بین 0 تا 59 باشد."
+    "دقیقه پایان باید بین 00 تا 45 باشد."
   );
 
   if (eHour < sHour || (eHour === sHour && eMin <= sMin)) {
@@ -755,7 +765,7 @@ function validateMeetingForm($meetingDateInput, meetingGDate) {
 
   checkRequired(
     "#cmbUserPresent",
-    "حداقل یک نفر شرکت‌کننده حاضر انتخاب کنید.",
+    "حداقل یک نفر شرکت کننده حاضر انتخاب کنید.",
     true
   );
   checkRequired("#txtMeetingAgenda", "دستور جلسه را وارد کنید.");
@@ -771,50 +781,21 @@ function validateMeetingForm($meetingDateInput, meetingGDate) {
 }
 
 //*******************************************************************************************************
-// ====================== Utility Functions ======================
+//تابع تبدیل میلادی موجود در دیت پیکر و تبدیل به شمسی
 function safeShamsiDate(miladiDate) {
   if (!miladiDate || typeof miladiDate !== "string" || !miladiDate.trim())
     return "";
   if (miladiDate.startsWith("0001") || miladiDate.startsWith("1900")) return "";
   return formatMiladiToShamsi(miladiDate);
 }
-
 //*******************************************************************************************************
-function getFileIcon(fileType, fileContent) {
-  switch (fileType.toLowerCase()) {
-    case ".doc":
-    case ".docx":
-      return "https://cdn.iconscout.com/icon/free/png-64/microsoft-word-28-761688.png";
-    case ".xls":
-    case ".xlsx":
-      return "https://cdn.iconscout.com/icon/free/png-64/microsoft-excel-29-761701.png";
-    case ".ppt":
-    case ".pptx":
-      return "https://cdn.iconscout.com/icon/free/png-64/microsoft-powerpoint-30-761705.png";
-    case ".pdf":
-      return "https://cdn.iconscout.com/icon/free/png-64/adobe-pdf-5646849-4691213.png";
-    case ".png":
-    case ".jpg":
-    case ".jpeg":
-    case ".gif":
-      return "data:image/png;base64," + fileContent;
-    default:
-      return "https://cdn-icons-png.flaticon.com/64/337/337946.png";
-  }
-}
-
-//*******************************************************************************************************
-// ====================== Item Management ======================
+// افزودن مصوبه جدید
 function handleNewMinuteItem(result, $rowFromEdit) {
-  console.group("Handle New Minute Item");
-  console.log("Raw result from submit:", result);
-
   const uniqueId =
     result.Id && String(result.Id).trim() ? String(result.Id).trim() : null;
 
   if (!uniqueId) {
     console.error(" رکورد بدون Id – عملیات لغو شد");
-    console.groupEnd();
     return;
   }
 
@@ -830,8 +811,6 @@ function handleNewMinuteItem(result, $rowFromEdit) {
     ActionDeadLineDate: result.ActionDeadLineDate,
     DisplayDate: result.DisplayDate || "-",
   };
-
-  console.log("NewItem to store ->", newItem);
 
   const existingIndex = MeetingMinutesData.Items.findIndex(
     (it) => String(it.Id) === uniqueId
@@ -862,10 +841,10 @@ function handleNewMinuteItem(result, $rowFromEdit) {
     MeetingMinutesData.Items.push(newItem);
     addRowToTable(newItem);
   }
-  console.groupEnd();
 }
 
 //*******************************************************************************************************
+// تابع افزودن در جدول مصوبات
 function addRowToTable(item) {
     const $template = $("#tblMinuteManagment tbody tr.row-template").first().clone();
     $template.removeClass("row-template").addClass("data-row").show();
@@ -890,6 +869,7 @@ function addRowToTable(item) {
 }
 
 //*******************************************************************************************************
+// ویرایش هر رکورد از جدول مصوبات
 function updateMinuteItem($row, newData) {
   let tds = $row.find("td");
   tds.eq(2).text(newData.Title || "");
@@ -902,6 +882,7 @@ function updateMinuteItem($row, newData) {
 }
 
 //*******************************************************************************************************
+//حذف یک رکورد از جدول مصوبات
 function deleteMinuteItem(selectedId) {
   const index = MeetingMinutesData.Items.findIndex(
     (item) => String(item.Id) === String(selectedId)
@@ -915,7 +896,7 @@ function deleteMinuteItem(selectedId) {
 }
 
 //*******************************************************************************************************
-// ====================== Data Loading ======================
+// بارگزاری اطلاعات جلسه برای حالت ویرایش	
 function loadMeetingData(meetingMinuteId) {
   return new Promise((resolve) => {
     if (!meetingMinuteId) return resolve();
@@ -956,7 +937,7 @@ function loadMeetingData(meetingMinuteId) {
 }
 
 //*******************************************************************************************************
-// تضمینی: گرفتن نام مسئولین بر اساس IDها
+// گرفتن اسامی حاضرین و غایبین نه کل یوزرهای آیکن!
 function getNameForIds(ids, actorLookup) {
   if (!Array.isArray(ids) || ids.length === 0) {
     return Promise.resolve([]);
@@ -964,15 +945,8 @@ function getNameForIds(ids, actorLookup) {
 
   const promises = ids.map((responsibleId) => {
     if (actorLookup[responsibleId]) {
-      console.log(
-        `[getNameForIds] cache hit: ${responsibleId} → ${actorLookup[responsibleId]}`
-      );
       return Promise.resolve(actorLookup[responsibleId]);
     }
-
-    console.log(
-      `[getNameForIds] request to service for ActorId=${responsibleId}`
-    );
     return new Promise((resolve) => {
       BS_GetUserInfo.Read(
         { Where: "ActorId = '" + responsibleId + "'" },
@@ -986,13 +960,9 @@ function getNameForIds(ids, actorLookup) {
             name = data[0].FullName || data[0].Name || "-";
           }
           actorLookup[responsibleId] = name;
-          console.log(`[BS_GetUserInfo.Read] saved: ${name}`);
           resolve(name);
         },
         function () {
-          console.warn(
-            `[BS_GetUserInfo.Read] error for ActorId=${responsibleId}`
-          );
           actorLookup[responsibleId] = "-";
           resolve("-");
         }
@@ -1004,7 +974,7 @@ function getNameForIds(ids, actorLookup) {
 }
 
 //*******************************************************************************************************
-// جمع‌آوری آیتم‌ها با توجه به حالت
+// جمع آوری آیتم ها با توجه به حالت ثبت یا ویرایش
 function collectMeetingItems(isEditMode) {
   if (isEditMode) {
     return $("#tblMinuteManagment tr.data-row")
@@ -1028,7 +998,7 @@ function collectMeetingItems(isEditMode) {
 }
 
 //*******************************************************************************************************
-// ساخت JSON نهایی
+// ساخت JSON نهایی برای ارسال در sp ثبت
 function buildMeetingJson(meetingGDate, timeData, items) {
   return {
     ActorIdCreator: parseInt($("#txtActorIdCreator").val(), 10),
@@ -1054,7 +1024,7 @@ function buildMeetingJson(meetingGDate, timeData, items) {
 }
 
 //*******************************************************************************************************
-
+//پیدا کردن اسامی حاضرین و غایبین
 function loadActorLookup(callback) {
     BS_GetUserInfo.Read({}, function (data) {
         const $xml = $.xmlDOM ? $.xmlDOM(data) : $(data);
@@ -1063,7 +1033,7 @@ function loadActorLookup(callback) {
             const fullName = $(this).find("col[name='fullName']").text().trim();
             actorLookup[id] = fullName;
         });
-        console.log(" actorLookup loaded:", actorLookup);
+       
         if (typeof callback === "function") callback();
     }, function (err) {
         console.error(" Error loading actorLookup:", err);
@@ -1071,13 +1041,14 @@ function loadActorLookup(callback) {
     });
 }
 //*******************************************************************************************************
+// پیدا کردن نام و ترکیب با مکان جلسات
 function loadMeetingRoomsCombo() {
     return new Promise((resolve, reject) => {
         FormManager.readMeetingRooms({}, function (list) {
             const $combo = $("#cmbMeetingRoomId");
-            $combo.empty(); // پاک کردن گزینه‌های قبلی
+            $combo.empty(); // پاک کردن گزینه های قبلی
 
-            // ساخت گزینه‌ها جدید
+            // ساخت گزینه ها جدید
             list.forEach(room => {
                  const textTitle = room.Title ? String(room.Title).trim() : "";
      			const textAddress = room.Address ? String(room.Address).trim() : "";
@@ -1101,13 +1072,14 @@ function loadMeetingRoomsCombo() {
 }
 
 //*******************************************************************************************************
+//افزودن فیلتر برای اینکه دبیر در جلسه جز حاضرین و اسامی باشد
 const secretaryId = $("#txtActorIdCreator").val(); 
 $("#cmbUserPresent").on("select2:unselect", function (e) {
     if (e.params.data.id === secretaryId) {
         // پیام هشدار
-        $.alert("دبیر جلسه را نمی‌توانید حذف کنید.", "", "rtl");
+        $.alert("دبیر جلسه را نمی توانید حذف کنید.", "", "rtl");
 
-        // برگرداندن دوباره گزینه به لیست انتخاب‌شده‌ها
+        // برگرداندن دوباره گزینه به لیست انتخاب شده ها
         var vals = $(this).val() || [];
         vals.push(secretaryId);
         // حذف مقادیر تکراری
@@ -1115,7 +1087,6 @@ $("#cmbUserPresent").on("select2:unselect", function (e) {
         $(this).val(vals).trigger("change");
     }
 });
-
 
 //#endregion EDN common.js 
 
@@ -1384,7 +1355,7 @@ $("#btnRegister").on("click", function (e) {
         // ولیدیشن کل فرم
         const timeData = validateMeetingForm($meetingDateInput, meetingGDate);
 
-        // --- جمع‌آوری آیتم ها از آرایه سالم مودال، نه از جدول ---
+        // --- جمع آوری آیتم ها از آرایه سالم مودال، نه از جدول ---
         const items = (MeetingMinutesData.Items || []).map(it => ({
             Id: it.Id || null,
             Title: (it.Title || "").trim() || null,
@@ -1394,29 +1365,28 @@ $("#btnRegister").on("click", function (e) {
 
         // ساخت JSON نهایی
         const jsonArray = buildMeetingJson(meetingGDate, timeData, items);
-
         // پارامتر نهایی برای SP
         const sp_params = isEditMode
             ? { Id: meetingMinuteId, jsonArray: JSON.stringify(jsonArray) }
             : { jsonArray: JSON.stringify(jsonArray) };
 
-        alert(JSON.stringify(sp_params));
-
-        // انتخاب متد مناسب
+        // انتخاب روش باتوجه به ویرایش یا ثبت
         const method = isEditMode
             ? FormManager.updateMeetingMinuteManagment
             : FormManager.insertMeetingMinuteManagment;
-
+		
         method(sp_params, function (data) {
             if (data.Success === 0) {
                 $.alert("SP Error: " + data.Message, "خطا", "rtl");
                 return;
             }
-            alert(JSON.stringify(data));
+			$.alert("صورتجلسه با موفقیت ثبت شد", "", "rtl", function () {
+	            	closeWindow({OK:true, Result:null});
+	        });
         }, function (err) {
             alert(err.details);
         });
-
+		
     } catch (err) {
         if (err.message !== "StopValidation") throw err;
     }
@@ -1441,8 +1411,6 @@ $("#momMeetingMinutes_Add").off("click").on("click", function () {
         function (retVal) {
             if (retVal && retVal.OK && retVal.Result) {
                 handleNewMinuteItem(retVal.Result);
-            } else {
-                console.warn("داده معتبر نیست:", retVal);
             }
         }
     );
@@ -1450,12 +1418,11 @@ $("#momMeetingMinutes_Add").off("click").on("click", function () {
 
 //#endregion momMeetingMinutes_Add.js
 
-
 //#region momMeetingMinutes_Edit.js
 $("#momMeetingMinutes_Edit").off("click").on("click", function () {
     let $row = $("#tblMinuteManagment input[name='selectedRowId']:checked").closest("tr");
     if ($row.length === 0) {
-        alert("هیچ ردیفی برای ویرایش انتخاب نشده است.");
+		$.alert("هیچ ردیفی برای ویرایش انتخاب نشده است.", "توجه", "rtl");
         return;
     }
 
@@ -1469,7 +1436,6 @@ $("#momMeetingMinutes_Edit").off("click").on("click", function () {
     }
 
     let gDate = tds.eq(4).attr("data-gdate") || "";
-
     let itemData = {
         Id: (tds.eq(1).text() || "").trim(),
         Title: (tds.eq(2).text() || "").trim(),
@@ -1486,7 +1452,6 @@ $("#momMeetingMinutes_Edit").off("click").on("click", function () {
 
     // تضمین لود کش قبل از باز کردن مودال
     if (Object.keys(actorLookup).length === 0) {
-        console.log(" actorLookup empty, loading first...");
         loadActorLookup(function () {
             openEditModal(itemData, presentIds, absentIds);
         });
@@ -1495,8 +1460,8 @@ $("#momMeetingMinutes_Edit").off("click").on("click", function () {
     }
 });
 
-function openEditModal(itemData, presentIds, absentIds) {
-    $.showModalForm(
+	function openEditModal(itemData, presentIds, absentIds) {
+    	$.showModalForm(
         {
             registerKey: "ZJM.MOM.MinutesMeetingApprovals",
             params: { 
@@ -1508,7 +1473,6 @@ function openEditModal(itemData, presentIds, absentIds) {
             }
         },
         function (retVal) {
-            console.log(" retVal from modal:", retVal);
             if (retVal && retVal.OK && retVal.Result) {
                 handleNewMinuteItem(retVal.Result, $("#tblMinuteManagment tbody tr[data-rowid='" + itemData.Id + "']"));
             }
@@ -1518,29 +1482,27 @@ function openEditModal(itemData, presentIds, absentIds) {
 
 //#endregion EDN momMeetingMinutes_Edit.js 
 
-
 //#region momMeetingMinutes_Delete.js
 $("#momMeetingMinutes_Delete").click(function () {
     const $selectedRadio = $("#tblMinuteManagment input[name='selectedRowId']:checked");
 
     if ($selectedRadio.length === 0) {
-        $.alert("لطفاً یک مصوبه را انتخاب کنید.", "توجه", "rtl");
+        $.alert("لطفاً یک مصوبه را برای حذف انتخاب کنید.", "توجه", "rtl");
         return;
     }
 
     const rowId = $selectedRadio.val(); // آیدی یکتا
     const $selectedRow = $selectedRadio.closest("tr.data-row");
 
-$.alert("آیا از حذف این مصوبه مطمئن هستید؟", "حذف", "rtl", function () {
-    // حذف از آرایه فقط همون یک مورد
-    MeetingMinutesData.Items = MeetingMinutesData.Items.filter(item => String(item.Id) !== String(rowId));
-
-    // حذف از جدول
-    $selectedRow.remove();
-
-    console.log("After delete:", MeetingMinutesData.Items);
-});
+	$.alert("آیا از حذف این مصوبه مطمئن هستید؟", "حذف", "rtl", function () {
+	    // حذف از آرایه فقط همون یک مورد
+	    MeetingMinutesData.Items = MeetingMinutesData.Items.filter(item => String(item.Id) !== String(rowId));
+	
+	    // حذف از جدول
+	    $selectedRow.remove();
+	});
 
 });
 
 //#endregion EDN momMeetingMinutes_Delete.js 
+
