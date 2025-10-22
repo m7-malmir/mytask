@@ -243,6 +243,7 @@ $(function () {
 			if (!currentActorId){
                 return;
             } 
+			
             let params; // filters with query params			
             if ($("#txtSearchValue").val() != "") {
                 let $selectedSearchField = $("#cmbSearchField option:selected");
@@ -255,7 +256,6 @@ $(function () {
                         params = {
                             Where: `ActorIdCreator = ${currentActorId} AND ${searchField} LIKE N'%${searchValue}%'`
                         };
-					
                         break;
                     case "number":
                     case "int":
@@ -263,13 +263,13 @@ $(function () {
                         params = {
                             Where: `ActorIdCreator = ${currentActorId} AND ${searchField} LIKE N'%${searchValue}%'`
                         };
-				
                         break;
                 }
             } else {
-                params = {
-                    Where: `ActorIdCreator = ${currentActorId}`
-                };
+                 params = {
+				    Where: `ActorIdCreator = ${currentActorId} AND ProcessStatus != '20'`
+				};
+
             }
             meetingMinuteManagment(
                 params,
@@ -391,6 +391,7 @@ const FormManager = (() => {
         },
 
         // ====================== deleteMeetingMinuteManagment ======================
+		//حذف کلی صورتجلسه
         deleteMeetingMinuteManagment(jsonParams, onSuccess, onError) {
             SP_MM_MeetingMinuteManagmentDelete.Execute(
                 jsonParams,
@@ -442,7 +443,7 @@ const FormManager = (() => {
             );
         },
 		//============================================================================
-		// حذف مصوبات جلسه برای پیش از حذف کلی صورتجلسه
+		// ارسال برای حاضرین و غایبین متنخب رد صورتجلسه
 		 meetingMinuteManagmentDetailAction(jsonParams, onSuccess, onError) {
             SP_MM_MeetingMinuteManagmentDetailAction.Execute(
                 jsonParams,
@@ -470,58 +471,10 @@ const FormManager = (() => {
     };
 })();
 
+
 //#endregion EDN FormManager.js 
 
 //#region utility.js
-// =========================== sortTable ============================
-function sortTable(table){
-    const headers = table.querySelectorAll(".row-header td");
-
-    headers.forEach((header, index) => {
-        // Only make data columns sortable, not the selection column
-        if (header.textContent.trim() !== "") {
-            header.classList.add("sortable");
-            header.addEventListener("click", function () {
-                sortTable(table, index);
-            });
-        }
-    });
-
-    function sortTable(table, columnIndex) {
-        const rowsArray = Array.from(table.querySelectorAll(".row-data"));
-        const headerCell = headers[columnIndex];
-        const isAsc = !headerCell.classList.contains("asc");
-
-        // Delete classes
-        headers.forEach(h => h.classList.remove("asc", "desc"));
-
-        rowsArray.sort((a, b) => {
-            let aText = a.cells[columnIndex].innerText.trim();
-            let bText = b.cells[columnIndex].innerText.trim();
-
-            // If it is a number, compare it to a number
-            let aNum = parseFloat(aText.replace(/,/g, ""));
-            let bNum = parseFloat(bText.replace(/,/g, ""));
-            if (!isNaN(aNum) && !isNaN(bNum)) {
-                return isAsc ? aNum - bNum : bNum - aNum;
-            }
-
-            // Textual comparison
-            return isAsc
-                ? aText.localeCompare(bText, 'fa', { numeric: true })
-                : bText.localeCompare(aText, 'fa', { numeric: true });
-        });
-
-        // Add a class to indicate the sort order
-        headerCell.classList.toggle("asc", isAsc);
-        headerCell.classList.toggle("desc", !isAsc);
-
-        // Reinsert rows
-        rowsArray.forEach(row => table.tBodies[0].appendChild(row));
-    }	
-}
-
-// ============================= pagination =============================
 function pagination(element, rowNumber) {
     const rowsPerPage = rowNumber;
     const $table = element;
@@ -530,38 +483,42 @@ function pagination(element, rowNumber) {
     const totalPages = Math.ceil(totalRows / rowsPerPage);
     let currentPage = 1;
 
-    // --- گرفتن رفرنس‌ها ---
-    let $rowPagination = $("#tscTablePagination");       // نوار گرافیکی (در صورت وجود)
-    let $pagination = $("#pagination");                  // کانتینر دکمه‌ها (در صورت وجود)
-    let $label = $("#lblPagination");                    // اگر label جدا داری
+    let $rowPagination = $("#tscTablePagination");
+    let $pagination = $("#pagination");
+    let $label = $("#lblPagination");
 
-    // --- اگر هیچ‌کدام وجود نداشت، خودش بسازد ---
+    // ساخت نوار اصلی صفحه‌بندی
     if ($rowPagination.length === 0) {
-        $rowPagination = $("<div id='tscTablePagination' style=\"" +
-            "position:absolute;width:1220px;height:25px;background-image:url(/Cache/Images/ZJM.MOM.MinutesMeeting/tscTablePagination.png);" +
-            "background-repeat:repeat-x;background-position:left top;font-family:Tahoma;font-size:8pt;direction:rtl;" +
-            "color:#fff !important;overflow:hidden;\"></div>");
+        $rowPagination = $(`
+            <div id="tscTablePagination"
+                 style="position:absolute;width:1220px;height:25px;
+                 background-image:url(/Cache/Images/ZJM.MOM.MinutesMeeting/tscTablePagination.png);
+                 background-repeat:repeat-x;background-position:left top;
+                 font-family:Tahoma;font-size:8pt;direction:rtl;color:#fff !important;overflow:hidden;">
+            </div>`);
         $("body").append($rowPagination);
     }
 
+    // ساخت چینش داخلی
     if ($pagination.length === 0) {
-        $pagination = $("<div id='pagination' style=\"" +
-            "display:flex;justify-content:center;align-items:center;height:22px;margin:auto;color:#fff !important;direction:rtl;\"></div>");
+        $pagination = $(`
+            <div id="pagination"
+                 style="display:flex;justify-content:center;align-items:center;
+                 height:22px;margin:auto;color:#fff !important;direction:rtl;">
+            </div>`);
         $rowPagination.append($pagination);
     }
 
-    // اگر label وجود دارد از آن استفاده کند و دکمه‌ها را داخلش بریزد
     const $target = $label.length ? $label : $pagination;
     $target.empty();
 
-    // اگر فقط یک صفحه، پنهانش کن
     if (totalPages <= 1) {
         $rowPagination.hide();
         return;
     }
     $rowPagination.show();
 
-    // --- تابع page نمایش ---
+    // ================== نمایش صفحات ==================
     function showPage(page) {
         currentPage = page;
         $rows.hide();
@@ -571,112 +528,112 @@ function pagination(element, rowNumber) {
         renderButtons();
     }
 
-    // --- ساخت دکمه‌ها (RTL درست، رنگ سفید، icons Font Awesome) ---
+    // ================== رندر دکمه‌ها ==================
     function renderButtons() {
         $target.empty();
 
-        const isRTL = $target.css("direction") === "rtl";
+        // تعیین جهت محیط بصری (داخل همیشه LTR برای جلوگیری از وارونگی دوباره)
+        $target.css({
+            "direction": "ltr",
+            "display": "flex",
+            "flex-direction": "row",
+            "justify-content": "center",
+            "align-items": "center"
+        });
 
-        // آیکون‌ها (در فونت‌آوسام 5 یا 6 معمولاً پاسخ می‌دهند)
+        // استخراج جهت خارجی RTL یا LTR از کل صفحه
+        const isRTL = $("body").css("direction") === "rtl";
+
         const iconPrev = `<i class="fas fa-chevron-double-left" style="color:#fff !important;font-family:'Font Awesome 5 Pro'!important;"></i>`;
         const iconNext = `<i class="fas fa-chevron-double-right" style="color:#fff !important;font-family:'Font Awesome 5 Pro'!important;"></i>`;
-
         const prevClass = currentPage === 1 ? "disabled" : "";
         const nextClass = currentPage === totalPages ? "disabled" : "";
 
-        // در RTL جهت‌ها برعکس نشان داده می‌شود
+        const startPage = Math.max(1, currentPage - 1);
+        const endPage = Math.min(totalPages, currentPage + 1);
+
+        function addPageButton(i) {
+            const activeClass = currentPage === i ? "active" : "";
+            $target.append(`<a href="#" data-page="${i}" class="${activeClass}" style="margin:0 6px;color:#fff !important;">${i}</a>`);
+        }
+        function addDots() {
+            $target.append(`<span style="margin:0 6px;color:#fff;">...</span>`);
+        }
+
+        // ===================== حالت RTL =====================
         if (isRTL) {
-            // Next (سمت راست)
-            $target.append(`<a href="#" class="next ${nextClass}" style="margin:0 6px;color:#fff !important;">${iconNext}</a>`);
+            // ترتیب عددی وارونه (۵ … ۳ ۲ ۱)
+            $target.append(`<a href="#" class="next ${nextClass}" style="margin:0 8px;color:#fff !important;">${iconNext}</a>`);
+            if (endPage < totalPages - 1) { addPageButton(totalPages); addDots(); }
+            for (let i = endPage; i >= startPage; i--) addPageButton(i);
+            if (startPage > 2) { addDots(); addPageButton(1); }
+            $target.append(`<a href="#" class="prev ${prevClass}" style="margin:0 8px;color:#fff !important;">${iconPrev}</a>`);
+        }
 
-            // شماره صفحات از راست به چپ
-            for (let i = totalPages; i >= 1; i--) {
-                const activeClass = currentPage === i ? "active" : "";
-                $target.append(`<a href="#" data-page="${i}" class="${activeClass}" style="margin:0 6px;color:#fff !important;">${i}</a>`);
-            }
-
-            // Prev (سمت چپ)
-            $target.append(`<a href="#" class="prev ${prevClass}" style="margin:0 6px;color:#fff !important;">${iconPrev}</a>`);
-        } else {
-            // اگر جهت چپ به راست بود
-            $target.append(`<a href="#" class="prev ${prevClass}" style="margin:0 6px;color:#fff !important;">${iconPrev}</a>`);
-            for (let i = 1; i <= totalPages; i++) {
-                const activeClass = currentPage === i ? "active" : "";
-                $target.append(`<a href="#" data-page="${i}" class="${activeClass}" style="margin:0 6px;color:#fff !important;">${i}</a>`);
-            }
-            $target.append(`<a href="#" class="next ${nextClass}" style="margin:0 6px;color:#fff !important;">${iconNext}</a>`);
+        // ===================== حالت LTR =====================
+        else {
+            // ترتیب عادی (1 2 … 5)
+            $target.append(`<a href="#" class="prev ${prevClass}" style="margin:0 8px;color:#fff !important;">${iconPrev}</a>`);
+            if (startPage > 2) { addPageButton(1); addDots(); }
+            for (let i = startPage; i <= endPage; i++) addPageButton(i);
+            if (endPage < totalPages - 1) { addDots(); addPageButton(totalPages); }
+            $target.append(`<a href="#" class="next ${nextClass}" style="margin:0 8px;color:#fff !important;">${iconNext}</a>`);
         }
     }
 
-    // --- کلیک روی دکمه‌ها ---
+    // ================== رویداد کلیک ==================
     $target.off("click").on("click", "a", function (e) {
         e.preventDefault();
         const $btn = $(this);
-
-        if ($btn.hasClass("prev") && currentPage > 1) {
-            showPage(currentPage - 1);
-        } else if ($btn.hasClass("next") && currentPage < totalPages) {
-            showPage(currentPage + 1);
-        } else if ($btn.data("page")) {
-            const page = parseInt($btn.data("page"));
-            showPage(page);
-        }
+        if ($btn.hasClass("prev") && currentPage > 1) showPage(currentPage - 1);
+        else if ($btn.hasClass("next") && currentPage < totalPages) showPage(currentPage + 1);
+        else if ($btn.data("page")) showPage(parseInt($btn.data("page")));
     });
 
-    // شروع از صفحه اول
     showPage(1);
 }
+
+
+
 // ========================= addNoDataRow ===========================
 function addNoDataRow($table) {
-    var $headerRow = $table.find("tr.row-header").first();
-    if ($headerRow.length) {
-        if ($table.find("tr.no-data-row").length === 0) {
-            var colCount = $headerRow.children("th, td").length;
-            var newRow = $("<tr class='no-data-row' style='height: 3rem; display: table-row;'><td colspan='" + colCount + "' style='text-align:center; width: 100px; border: solid 1px #BED4DC; font-size: 1.2rem;'>داده ای ثبت نشده است</td></tr>");
-            $headerRow.after(newRow);
-        }
+    const $headerRow = $table.find("tr.row-header").first();
+    if ($headerRow.length && !$table.find("tr.no-data-row").length) {
+        const colCount = $headerRow.children("th, td").length;
+        const newRow = $(`<tr class='no-data-row' style='height:3rem;display:table-row;'>
+            <td colspan='${colCount}' style='text-align:center;width:100px;border:solid 1px #BED4DC;font-size:1.2rem;'>داده‌ای ثبت نشده است</td>
+        </tr>`);
+        $headerRow.after(newRow);
     }
 }
 
 // ======================= showMoadlWithTag =========================
-function showMoadlWithTag(meetingMinuteId){
+function showMoadlWithTag(meetingMinuteId) {
     $.showModalForm({
-	   registerKey: "ZJM.MOM.MinutesMeetingRegulate",
-			params:{
-			    MeetingMinuteId: meetingMinuteId,
-			}
-        },
-        function(retVal) {
-        	tblMinutesMeeting.refresh();
-        }
-    );
+        registerKey: "ZJM.MOM.MinutesMeetingRegulate",
+        params: { MeetingMinuteId: meetingMinuteId }
+    }, function(retVal) {
+        tblMinutesMeeting.refresh();
+    });
 }
-// ======================= showReadOnlyWithTag =========================
-function showReadOnlyWithTag(meetingMinuteId){
+
+// ======================= showReadOnlyWithTag ======================
+function showReadOnlyWithTag(meetingMinuteId) {
     $.showModalForm({
-	   registerKey: "ZJM.MOM.MinutesMeetingReadOnly",
-			params:{
-			    MeetingMinuteId: meetingMinuteId,
-			}
-        },
-        function(retVal) {
-        	tblMinutesMeeting.refresh();
-        }
-    );
+        registerKey: "ZJM.MOM.MinutesMeetingReadOnly",
+        params: { MeetingMinuteId: meetingMinuteId }
+    }, function(retVal) {
+        tblMinutesMeeting.refresh();
+    });
 }
 
 // ========================== styleDialog ===========================
 const styleDialog = (background, border, color) => {
     setTimeout(() => {
-        $(".ui-dialog-titlebar").css({
-            background,
-            border,
-            color
-        });
+        $(".ui-dialog-titlebar").css({ background, border, color });
     }, 0);
 };
-//********************************************************************************************
-
+// ********************************************************************
 
 //#endregion EDN utility.js 
 
@@ -807,8 +764,6 @@ function hideLoading() {
   });
 }
 
-
-// ========================= closeLoading ============================
 //#endregion EDN commom.js 
 
 //#region momMinutesMeeting_Add.js
@@ -859,6 +814,5 @@ $("#momMinutesMeeting_Delete").click(function () {
             "white"
         );
     });
-
 });
 //#endregion EDN momMinutesMeeting_Delete.js 
