@@ -108,20 +108,9 @@ $(function(){
 	
     $form.init();
 });
-
 //#endregion EDN ready.js 
 
 //#region common.js
-function commafy(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-//******************************************************************************************************
-function rcommafy(x) {
-  a = x.replace(/\,/g, ""); // 1125, but a string, so convert it to number
-  a = parseInt(a, 10);
-  return a;
-}
-
 //******************************************************************************************************
 function ErrorMessage(message, data) {
   $.alert(message);
@@ -364,37 +353,9 @@ function addAttachmentToFieldset(file) {
   const iconClass = getFileIconClass(file.FileType);
 
   const $item = $(`
-        <div data-file-id="${file.FileId}" title="${file.FileName}"
-            style="
-                display:inline-flex;
-                flex-direction:column;
-                align-items:center;
-                width:40px;
-                margin: 15px 10px 0px 5px;
-                padding:3px;
-                border:1px solid #ccc;
-                border-radius:4px;
-                background:#fff;
-                position:relative;
-                font-family:Tahoma;
-                font-size:8pt;">
+        <div class="attach-file" data-file-id="${file.FileId}" title="${file.FileSubject}" >
             
-            <button class="remove-btn" title="حذف"
-                style="
-                    position:absolute;
-                    top:-5px;
-                    right:-5px;
-                    background:#f33;
-                    color:#fff;
-                    border:none;
-                    border-radius:50%;
-                    cursor:pointer;
-                    width: 17px;
-                    height: 17px;
-                    line-height: 19px;
-                    font-size: 15px;
-                    padding: 0;">×</button>
-            
+            <button class="remove-btn" title="حذف">×</button>
             <a href="javascript:void(0)" class="download-link" style="text-decoration:none;">
                 <i class="${iconClass}" style="font-size:35px; color:#555;"></i>
             </a>
@@ -789,96 +750,119 @@ function safeShamsiDate(miladiDate) {
   return formatMiladiToShamsi(miladiDate);
 }
 //*******************************************************************************************************
-// افزودن مصوبه جدید
-function handleNewMinuteItem(result, $rowFromEdit) {
-  const uniqueId =
-    result.Id && String(result.Id).trim() ? String(result.Id).trim() : null;
+//برای مودال مصوبات طولانی
+function truncateText(text, maxWords = 15) {
+    if (!text) return "-";
+    const words = text.trim().split(/\s+/);
+    return words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : text;
+}
+$("#tblMinuteManagment").off("click", ".minute-text-cell").on("click", ".minute-text-cell", function () {
+   const fullText = $(this).data("fulltext") || "-";
+   const fullTextPopup = $(`
+       <div style="direction:rtl;text-align:right;" class="ui-form">
+           <textarea readonly
+               style="height:120px;font-size:9pt;resize:none;width:98%;background-color:#f9f9f9;cursor:default;">${fullText}</textarea>
+       </div>
+   `);
 
-  if (!uniqueId) {
-    console.error(" رکورد بدون Id – عملیات لغو شد");
-    return;
-  }
+   fullTextPopup.dialog({
+       modal: true,
+       title: "متن کامل مصوبه",
+       width: 540,
+       buttons: [
+           {
+               text: "بستن",
+               click: function () {
+                   $(this).dialog("close");
+               }
+           }
+       ]
+   });
+});
+//***********************************************************************************************
+// ساخت سلول عنوان کوتاه سازی و ذخیره متن کامل
+function buildTitleCell($td, titleText) {
+    const fullText = String(titleText || "-").trim();
+    const shortText = truncateText(fullText, 12);
+    const wordCount = fullText.split(/\s+/).filter(Boolean).length;
 
-  const actorIds = (result.ResponsibleForAction || "").trim();
-  const actorNames = (result.ResponsibleForActionName || "-").trim();
+    const $span = $("<span>")
+        .text(shortText)
+        .attr("data-fulltext", fullText);
 
-  const newItem = {
-    Id: uniqueId,
-    Title: result.Title || "-",
-    ResponsibleForAction: actorIds,
-    ResponsibleForActionName: actorNames,
-    ActorForAction: actorIds,
-    ActionDeadLineDate: result.ActionDeadLineDate,
-    DisplayDate: result.DisplayDate || "-",
-  };
+    if (wordCount > 12) $span.addClass("minute-text-cell");
 
-  const existingIndex = MeetingMinutesData.Items.findIndex(
-    (it) => String(it.Id) === uniqueId
-  );
-
-  if (existingIndex >= 0) {
-    // ویرایش
-    MeetingMinutesData.Items[existingIndex] = newItem;
-
-    let $row = $("#tblMinuteManagment tbody tr.data-row").filter(
-      `[data-rowid="${uniqueId}"]`
-    );
-    if (!$row.length && $rowFromEdit?.length) $row = $rowFromEdit;
-
-    if ($row.length) {
-      let tds = $row.find("td");
-      tds.eq(2).text(newItem.Title);
-      tds.eq(3).text(newItem.ResponsibleForActionName);
-      tds
-        .eq(4)
-        .text(newItem.DisplayDate)
-        .attr("data-gdate", newItem.ActionDeadLineDate)
-        .attr("data-jdate", newItem.DisplayDate);
-      tds.eq(5).attr("data-ids", newItem.ResponsibleForAction);
-    }
-  } else {
-    // افزودن جدید
-    MeetingMinutesData.Items.push(newItem);
-    addRowToTable(newItem);
-  }
+    $td.empty().append($span);
 }
 
-//*******************************************************************************************************
-// تابع افزودن در جدول مصوبات
+//***********************************************************************************************
+// افزودن یا ویرایش مصوبه
+function handleNewMinuteItem(result, $rowFromEdit) {
+    const uniqueId = result.Id ? String(result.Id).trim() : null;
+    if (!uniqueId) return console.error("رکورد بدون Id – عملیات لغو شد");
+
+    const actorIds = (result.ResponsibleForAction || "").trim();
+    const actorNames = (result.ResponsibleForActionName || "-").trim();
+
+    const newItem = {
+        Id: uniqueId,
+        Title: result.Title || "-",
+        ResponsibleForAction: actorIds,
+        ResponsibleForActionName: actorNames,
+        ActorForAction: actorIds,
+        ActionDeadLineDate: result.ActionDeadLineDate,
+        DisplayDate: result.DisplayDate || "-",
+    };
+
+    const idx = MeetingMinutesData.Items.findIndex(it => String(it.Id) === uniqueId);
+    const $tbody = $("#tblMinuteManagment tbody");
+
+    if (idx >= 0) {
+        // --- ویرایش رکورد موجود ---
+        MeetingMinutesData.Items[idx] = newItem;
+
+        let $row = $tbody.find(`tr.data-row[data-rowid="${uniqueId}"]`);
+        if (!$row.length && $rowFromEdit?.length) $row = $rowFromEdit;
+        if (!$row.length) return;
+
+        const tds = $row.find("td");
+        buildTitleCell(tds.eq(2), newItem.Title);
+        tds.eq(3).text(newItem.ResponsibleForActionName);
+        tds.eq(4)
+           .text(newItem.DisplayDate)
+           .attr("data-gdate", newItem.ActionDeadLineDate)
+           .attr("data-jdate", newItem.DisplayDate);
+        tds.eq(5).attr("data-ids", newItem.ResponsibleForAction);
+    } else {
+        // --- افزودن رکورد جدید ---
+        MeetingMinutesData.Items.push(newItem);
+        addRowToTable(newItem);
+    }
+}
+
+//***********************************************************************************************
+// افزودن در جدول مصوبات
 function addRowToTable(item) {
-    const $template = $("#tblMinuteManagment tbody tr.row-template").first().clone();
-    $template.removeClass("row-template").addClass("data-row").show();
+    const $template = $("#tblMinuteManagment tbody tr.row-template").first().clone()
+        .removeClass("row-template").addClass("data-row").show()
+        .attr("data-rowid", String(item.Id));
 
-    $template.attr("data-rowid", String(item.Id));
+    const tds = $template.find("td");
+    tds.eq(0).html(`<input type="radio" name="selectedRowId" value="${item.Id}" />`);
+    tds.eq(1).text(item.Id);
 
-    $template.find("td").eq(0).html(
-        `<input type="radio" name="selectedRowId" value="${item.Id}" />`
-    );
-    $template.find("td").eq(1).text(item.Id);
-    $template.find("td").eq(2).text(item.Title || "-"); // عنوان مصوبه
-    $template.find("td").eq(3).text(item.ResponsibleForActionName || "-"); // نام مسئول
-  $template.find("td").eq(4)
-    .text(item.DisplayDate || "-")
-    .attr("data-gdate", item.ActionDeadLineDate || "")
-    .attr("data-jdate", item.DisplayDate || "");
-    $template.find("td").eq(5) // نفرات اجرا
-        .text(item.ResponsibleForActionName || "-") // ← متن نفرات
-        .attr("data-ids", item.ResponsibleForAction || ""); // آی‌دی نفرات
+    buildTitleCell(tds.eq(2), item.Title); // عنوان مصوبه
+
+    tds.eq(3).text(item.ResponsibleForActionName || "-");
+    tds.eq(4)
+       .text(item.DisplayDate || "-")
+       .attr("data-gdate", item.ActionDeadLineDate || "")
+       .attr("data-jdate", item.DisplayDate || "");
+    tds.eq(5)
+       .text(item.ResponsibleForActionName || "-")
+       .attr("data-ids", item.ResponsibleForAction || "");
 
     $("#tblMinuteManagment tbody").append($template);
-}
-
-//*******************************************************************************************************
-// ویرایش هر رکورد از جدول مصوبات
-function updateMinuteItem($row, newData) {
-  let tds = $row.find("td");
-  tds.eq(2).text(newData.Title || "");
-  tds.eq(3).text(newData.ResponsibleActorName || "");
-  tds
-    .eq(4)
-    .text(newData.ActionDeadLineJDate || "")
-    .attr("data-gdate", newData.ActionDeadLineDate || "");
-  tds.eq(5).text(newData.ResponsibleActorId || "");
 }
 
 //*******************************************************************************************************
@@ -1022,7 +1006,6 @@ function buildMeetingJson(meetingGDate, timeData, items) {
       .get(),
   };
 }
-
 //*******************************************************************************************************
 //پیدا کردن اسامی حاضرین و غایبین
 function loadActorLookup(callback) {
@@ -1355,7 +1338,7 @@ $("#btnRegister").on("click", function (e) {
         // ولیدیشن کل فرم
         const timeData = validateMeetingForm($meetingDateInput, meetingGDate);
 
-        // --- جمع آوری آیتم ها از آرایه سالم مودال، نه از جدول ---
+        // --- جمع‌آوری آیتم ها از آرایه سالم مودال ---
         const items = (MeetingMinutesData.Items || []).map(it => ({
             Id: it.Id || null,
             Title: (it.Title || "").trim() || null,
@@ -1365,6 +1348,7 @@ $("#btnRegister").on("click", function (e) {
 
         // ساخت JSON نهایی
         const jsonArray = buildMeetingJson(meetingGDate, timeData, items);
+
         // پارامتر نهایی برای SP
         const sp_params = isEditMode
             ? { Id: meetingMinuteId, jsonArray: JSON.stringify(jsonArray) }
@@ -1374,23 +1358,32 @@ $("#btnRegister").on("click", function (e) {
         const method = isEditMode
             ? FormManager.updateMeetingMinuteManagment
             : FormManager.insertMeetingMinuteManagment;
-		
-        method(sp_params, function (data) {
-            if (data.Success === 0) {
-                $.alert("SP Error: " + data.Message, "خطا", "rtl");
-                return;
+        showLoading();
+        method(
+            sp_params,
+            function (data) {
+			    hideLoading();
+			    if (data.Code != 200) {
+			        $.alert("SP Error: " + data.Message, "خطا", "rtl");
+			        return;
+			    } else {
+		            // پاسخ موفق
+				    $.alert("ثبت مصوبه با موفقیت انجام شد", "موفق", "rtl", function () {
+				        closeWindow({ OK: true, Result: null });
+				    });
+			    }
+			},
+            function (err) {
+                hideLoading();
+                alert(err.details);
             }
-			$.alert("صورتجلسه با موفقیت ثبت شد", "", "rtl", function () {
-	            	closeWindow({OK:true, Result:null});
-	        });
-        }, function (err) {
-            alert(err.details);
-        });
-		
+        );
     } catch (err) {
+        hideLoading(); // حتی در خطای غیر StopValidation خاموش شود
         if (err.message !== "StopValidation") throw err;
     }
 });
+
 
 //#endregion end btnRegister.js
 
@@ -1438,7 +1431,7 @@ $("#momMeetingMinutes_Edit").off("click").on("click", function () {
     let gDate = tds.eq(4).attr("data-gdate") || "";
     let itemData = {
         Id: (tds.eq(1).text() || "").trim(),
-        Title: (tds.eq(2).text() || "").trim(),
+        Title: (tds.eq(2).find("span").data("fulltext") || "").trim(),
         ResponsibleActorName: (tds.eq(3).text() || "").trim(),
         ActionDeadLineJDate: jDate,
         ActionDeadLineDate: gDate,
@@ -1485,12 +1478,10 @@ $("#momMeetingMinutes_Edit").off("click").on("click", function () {
 //#region momMeetingMinutes_Delete.js
 $("#momMeetingMinutes_Delete").click(function () {
     const $selectedRadio = $("#tblMinuteManagment input[name='selectedRowId']:checked");
-
     if ($selectedRadio.length === 0) {
         $.alert("لطفاً یک مصوبه را برای حذف انتخاب کنید.", "توجه", "rtl");
         return;
     }
-
     const rowId = $selectedRadio.val(); // آیدی یکتا
     const $selectedRow = $selectedRadio.closest("tr.data-row");
 
@@ -1506,3 +1497,82 @@ $("#momMeetingMinutes_Delete").click(function () {
 
 //#endregion EDN momMeetingMinutes_Delete.js 
 
+//#region pnlCompleteDocs.js
+$(function () {
+    var $pnlCompleteDocs = $('#pnlCompleteDocs');
+
+    // تنظیمات اولیه پنل آپلود
+    $pnlCompleteDocs.css({
+        width: '85px',
+        overflow: 'visible',
+        position: 'absolute'
+    });
+    // افزودن متن فقط اگر قبلاً وجود نداشته باشد
+    if ($('#lblUploadText').length === 0) {
+        $('<span>', {
+            id: 'lblUploadText',
+            text: 'بارگذاری فایل'
+        }).css({
+            position: 'absolute',
+            left: '20px',      // نمایش از سمت چپ آیکن
+            top: '4px',
+            fontSize: '8pt',
+            fontWeight: 'bold', // بولد
+            color: '#FFFFFF',   // سفید
+            fontFamily: 'Tahoma',
+            whiteSpace: 'nowrap'
+        }).appendTo($pnlCompleteDocs);
+    }
+
+    // رویداد کلیک برای باز کردن مودال آپلود فایل
+    $pnlCompleteDocs.on('click', function () {
+        const meetingMinuteId = $("#lblMeetingMinuteId").text().trim();
+
+        $.showModalForm(
+            {
+                registerKey: "ZJM.MOM.MinutesMeetingUploadDocument",
+                params: { MeetingMinuteId: meetingMinuteId }
+            },
+            function (retVal) {
+                try {
+                    if (retVal && retVal.successed && retVal.value) {
+                        // اگر value آرایه است، روی همه loop بزن
+                        const files = Array.isArray(retVal.value)
+                            ? retVal.value
+                            : [retVal.value];
+
+							files.forEach(uploadedFile => {
+						    // ساخته یک آبجکت استاندارد از اطلاعات فایل برگشتی از مودال
+						    const newFile = {
+						        FileId: uploadedFile?.id || uploadedFile,                  
+						        FileName: uploadedFile?.fileSubject || "نام فایل نامشخص",          
+						        FileType: uploadedFile?.type || ".png",                   
+						        FileContent: uploadedFile?.content || "",                    
+						        FileSubject: uploadedFile?.fileSubject || uploadedFile?.name || "" 
+						    };
+
+                            // توابع والد در همین صفحه فعلی هستند، نه در parent.parent
+                            if (typeof addAttachmentToFieldset === "function") {
+                                addAttachmentToFieldset(newFile);
+                            } else {
+                                console.warn("تابع addAttachmentToFieldset در همین فرم یافت نشد.");
+                            }
+                        });
+                    } else {
+                        console.warn("هیچ فایل جدیدی از مودال برگشت داده نشد یا عملیات ناموفق بود.");
+                    }
+
+                    if (typeof loadOrRefreshAttachments === "function") {
+                        loadOrRefreshAttachments(meetingMinuteId, { refresh: true });
+                    } else {
+                        console.warn("تابع loadOrRefreshAttachments در همین فرم یافت نشد.");
+                    }
+                } catch (err) {
+                    console.error("خطا در پردازش نتیجه مودال:", err);
+                }
+            }
+        );
+    });
+});
+
+//#endregion pnlCompleteDocs.js
