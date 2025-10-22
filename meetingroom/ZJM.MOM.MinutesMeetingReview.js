@@ -677,3 +677,118 @@ function truncateText(text, maxWords = 15) {
 }
 
 //#endregion Common.js
+
+//#region formmanager.js
+var FormManager = {
+//******************************************************************************************************
+	readMeetingMinuteManagment: function(jsonParams, onSuccess, onError)
+	{
+	  BS_vw_MM_MeetingMinuteManagment.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                  list.push
+	                  ({
+						Id: $(this).find("col[name='Id']").text(),
+		                MeetingMinuteNo: $(this).find("col[name='MeetingMinuteNo']").text(),
+						fullName: $(this).find("col[name='fullName']").text(),
+						CreatedDate: $(this).find("col[name='CreatedDate']").text(),
+						MeetingStartTime: $(this).find("col[name='MeetingStartTime']").text(),
+						MeetingStartTime: $(this).find("col[name='MeetingStartTime']").text(),
+					    MeetingEndTime: $(this).find("col[name='MeetingEndTime']").text(),
+					    SubjectMeeting: $(this).find("col[name='SubjectMeeting']").text(),
+					    MeetingAgenda: $(this).find("col[name='MeetingAgenda']").text(),
+					    Title: $(this).find("col[name='Title']").text(),
+						UserPresent: $(this).find("col[name='UserPresent']").text(),
+						UserAbsent: $(this).find("col[name='UserAbsent']").text(),
+						AllUsers: $(this).find("col[name='AllUsers']").text()
+	                  });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+//******************************************************************************************************
+	readMeetingMinuteManagmentDetail: function(jsonParams, onSuccess, onError)
+	{
+	  BS_vw_MM_MeetingMinuteManagmentDetailAction.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                  list.push
+	                  ({
+						DetailActionId: $(this).find("col[name='DetailActionId']").text(),
+		                MeetingMinuteDetailId: $(this).find("col[name='MeetingMinuteDetailId']").text(),
+						MeetingManagmentId: $(this).find("col[name='MeetingManagmentId']").text(),
+						ResponsibleForAction: $(this).find("col[name='ResponsibleForAction']").text(),
+						Title: $(this).find("col[name='Title']").text(),
+						ActionDeadLineDate: $(this).find("col[name='ActionDeadLineDate']").text(),
+						IsLock: $(this).find("col[name='IsLock']").text(),
+						ResponsibleForActionName: $(this).find("col[name='ResponsibleForActionName']").text(),
+						RejAcc: $(this).find("col[name='RejAcc']").text()
+	                  });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+//******************************************************************************************************
+	readAttachedFile: function(jsonParams, onSuccess, onError)
+	{
+	   BS_Office_AttachedFile.Read(jsonParams
+	       , function(data)
+	       {
+	           var list = [];
+	           var xmlvar = $.xmlDOM(data);
+	           xmlvar.find("row").each(
+	               function()
+	               { 
+	                  list.push
+	                  ({
+						  
+			                FileId:          $(this).find("col[name='FileId']").text(),
+							DocumentId:      $(this).find("col[name='DocumentId']").text(),
+							FileSubject:     $(this).find("col[name='FileSubject']").text(),
+							FileName:        $(this).find("col[name='FileName']").text(),
+							FileType:        $(this).find("col[name='FileType']").text(),
+							FileContent:     $(this).find("col[name='FileContent']").text(),
+							SystemId:        $(this).find("col[name='SystemId']").text(),
+							ProccessStatus:  $(this).find("col[name='ProccessStatus']").text(),
+							Description:     $(this).find("col[name='Description']").text(),
+							CreatedDate:     $(this).find("col[name='CreatedDate']").text(),
+							CreatorUserId:   $(this).find("col[name='CreatorUserId']").text(),
+
+	                  });
+	               }
+	           );
+	           if($.isFunction(onSuccess))
+	           {
+	               onSuccess(list);
+	           
+	           }
+	       }, onError
+	   );
+	},
+//******************************************************************************************************
+};
+
+
+//#endregion formmanager.js
