@@ -71,7 +71,7 @@ $(function(){
 			
 			FormManager.readMeetingMinuteManagment(
 			    { Where: "Id = " + pk },
-			    function (list) { // اینجا به خاطر منطق تابع شما، list آرایه ای از رکوردهاست
+			    function (list) { 
 			        if (!list || list.length === 0) {
 			            hideLoading();
 			            return;
@@ -87,10 +87,11 @@ $(function(){
 			        const Title = data.Title;
 			        const UserPresent = data.UserPresent;
 			        const UserAbsent = data.UserAbsent;
-			        const CreatedDate = data.CreatedDate; // اگر توی سرویس برگرده
+			        const CreatedDate = data.CreatedDate; 
 			
 			        // مقداردهی به فیلدها
 			        $("#txtFullName").val(fullName).prop("disabled", true);
+					$("#txtMeetingMinuteNo").val(MeetingMinuteNo).prop("disabled", true);
 			        $("#txtCreatedDate").val(formatMiladiToShamsi(CreatedDate)).prop("disabled", true);
 			        $("#txtMeetingStartTime").val(extractTime(MeetingStartTime)).prop("disabled", true);
 					$("#txtMeetingEndTime").val(extractTime(MeetingEndTime)).prop("disabled", true);
@@ -326,14 +327,12 @@ $(function () {
         let rowPrimaryKeyName = "Id";
 
         init();
-
         // ======================= Init ==========================
         function init() {
             element = $("#tblMinutesMeeting");
             bindEvents();
             load();
         }
-
         // ==================== Bind Events ======================
         function bindEvents() {
             // =========== نمایش نظرات در پاپ آپ هیستوری ================
@@ -450,15 +449,13 @@ $(function () {
                     $descCell.empty();
                 }
             });
-
-
             // ===================== پاپ آپ توضیحات طولانی =====================
             $("#tblMinuteManagment").off("click", ".minute-text-cell").on("click", ".minute-text-cell", function () {
 	                const fullText = $(this).data("fulltext") || "-";
 	                const fullTextPopup = $(`
 	                    <div style="direction:rtl;text-align:right;" class="ui-form">
 	                        <textarea readonly
-	                      style="height:180px;font-size:9pt;resize:none;width:98%;background-color:#f9f9f9;cursor:default;">${fullText}</textarea>
+	                      style="height:120px;font-size:9pt;resize:none;width:98%;background-color:#f9f9f9;cursor:default;">${fullText}</textarea>
 	                    </div>
 	                `);
 	
@@ -606,16 +603,6 @@ $(function () {
 //#endregion tblMinuteManagment.js
 
 //#region Common.js
-function commafy(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-/*****************************************************************************************/
-function rcommafy(x) {
-  a = x.replace(/\,/g, ""); // 1125, but a string, so convert it to number
-  a = parseInt(a, 10);
-  return a;
-}
-
 //******************************************************************************************************
 function ErrorMessage(message, data) {
   $.alert(message);
@@ -775,20 +762,7 @@ function addAttachmentToFieldset(file) {
   const iconClass = getFileIconClass(file.FileType);
 
   const $item = $(`
-        <div data-file-id="${file.FileId}" title="${file.FileName}"
-            style="
-                display:inline-flex;
-                flex-direction:column;
-                align-items:center;
-                width:40px;
-                margin: 15px 10px 0px 5px;
-                padding:3px;
-                border:1px solid #ccc;
-                border-radius:4px;
-                background:#fff;
-                position:relative;
-                font-family:Tahoma;
-                font-size:8pt;">
+        <div class="attach-file" data-file-id="${file.FileId}" title="${file.FileSubject}">
             <a href="javascript:void(0)" class="download-link" style="text-decoration:none;">
                 <i class="${iconClass}" style="font-size:35px; color:#555;"></i>
             </a>
@@ -796,10 +770,15 @@ function addAttachmentToFieldset(file) {
     `);
 
   // رویداد دانلود فقط برای همین آیتم
-  $item.find(".download-link").on("click", function (e) {
+$item.find(".download-link").on("click", function (e) {
     e.preventDefault();
+    e.stopPropagation(); // جلوگیری از رسیدن رویداد به المنت والد
+    if (!file.FileContent) {
+        console.warn("هیچ محتوای فایل وجود ندارد");
+        return;
+    }
     downloadBase64(file.FileContent, file.FileSubject, file.FileType);
-  });
+});
 
   $container.append($item);
 }
@@ -835,6 +814,7 @@ function downloadBase64(hexString, fileName, fileType) {
 }
 //*******************************************************************************************************
 // ====== گرفتن فرمت لازم برای نمایس انوع ایکن متناسب با نوع فایل =======
+
 function getFileIconClass(fileType) {
   let type = fileType.toLowerCase();
   if (type.includes(".")) {
@@ -853,18 +833,10 @@ function getFileIconClass(fileType) {
 
   return "fas fa-file"; 
 }
-//*******************************************************************************************************
-// ====== تبدیل تاریخ میلادی به شمسی با حذف تاریخ‌های پیش فرض=======
-function safeShamsiDate(miladiDate) {
-  if (!miladiDate || typeof miladiDate !== "string" || !miladiDate.trim())
-    return "";
-  if (miladiDate.startsWith("0001") || miladiDate.startsWith("1900")) return "";
-  return formatMiladiToShamsi(miladiDate);
-}
-//*******************************************************************************************************
 
-
+//*******************************************************************************************************
 // ========================== pagination ============================
+
 function pagination(element, rowNumber){
     const rowsPerPage = rowNumber;
     const $table = element;
@@ -936,8 +908,8 @@ function pagination(element, rowNumber){
     // Start from the first page
     showPage(1);
 }
-
-// ========================= addNoDataRow ===========================
+//*******************************************************************************************************
+//داده ای در جدول موجود نیست
 function addNoDataRow($table) {
     var $headerRow = $table.find("tr.row-header").first();
     if ($headerRow.length) {
@@ -948,7 +920,7 @@ function addNoDataRow($table) {
         }
     }
 }
-// end table
+//*******************************************************************************************************
 //برای مودال مصوبات طولانی
 function truncateText(text, maxWords = 15) {
     if (!text) return "-";
@@ -956,12 +928,12 @@ function truncateText(text, maxWords = 15) {
     return words.length > maxWords ? words.slice(0, maxWords).join(" ") + "..." : text;
 }
 
-
 //#endregion Common.js
 
 //#region btnRegister.js
 $("#btnRegister").on("click", function (e) {
     e.preventDefault();
+
     let invalidRows = [];
     $("#tblMinuteManagment tr.row-data").each(function () {
         const $row = $(this);
@@ -970,64 +942,72 @@ $("#btnRegister").on("click", function (e) {
             invalidRows.push($row);
         }
     });
-	if (invalidRows.length > 0) {
-	    // افکت چشمک زن برای ردیفهای ناقص
-	    invalidRows.forEach($row => {
-	        $row.addClass("row-invalid");
-	        setTimeout(() => $row.removeClass("row-invalid"), 1500);
-	    });
-	
-	    // اسکرول خودکار به اولین ردیف نامعتبر در div اسکرول‌دار
-	    const $firstInvalidRow = invalidRows[0];
-	    const $scrollContainer = $("#tblMinuteManagmentArea"); 
-	
-	    // محاسبه موقعیت نسبی ردیف داخل کانتینر و اسکرول نرم
-	    $scrollContainer.animate({
-	        scrollTop: $scrollContainer.scrollTop() + $firstInvalidRow.position().top - 40
-	    }, 400);
-	
-	    $.alert(
-	        'لطفاً وضعیت تأیید یا رد را در تمام ردیف ها مشخص کنید!',
-	        "",
-	        "rtl"
-	    );
-	    return;
-	}
+
+    if (invalidRows.length > 0) {
+        invalidRows.forEach($row => {
+            $row.addClass("row-invalid");
+            setTimeout(() => $row.removeClass("row-invalid"), 1500);
+        });
+
+        const $firstInvalidRow = invalidRows[0];
+        const $scrollContainer = $("#tblMinuteManagmentArea");
+        $scrollContainer.animate({
+            scrollTop: $scrollContainer.scrollTop() + $firstInvalidRow.position().top - 40
+        }, 400);
+
+        $.alert('لطفاً وضعیت تأیید یا رد را در تمام ردیف‌ها مشخص کنید!', "", "rtl");
+        return;
+    }
+
+    //  نمایش لودینگ پس از ولیدیشن
+    showLoading();
+
     const pk = $form.getPK();
     const list = {
         MeetingManagmentId: pk,
         ActorId: currentActorId
     };
+	
+	function runWithDelay(action) {
+    // تولید عدد تصادفی بین 0 تا 3 با دو رقم اعشار
+    const delay = Math.random() * 3;
+    const roundedDelay = Math.round(delay * 100) / 100; 
 
-    // اجرای سرویس فقط اگر هیچ ردیف نامشخص نیست
-	FormManager.meetingMinuteManagmentDetaiActionLogInsert(
-	    list,
-	    function (status, list) {
-		  const responseCode = status && status.ResponseValue ? status.ResponseValue : "0";
-		  Office.Inbox.setResponse(
-	            dialogArguments.WorkItem,
-	            responseCode,
-	            "",
-	            function (data) {
-	                $.alert("فرم ثبت و ارسال شد", "", "rtl", function () {
-	                    closeWindow({
-	                        OK: true,
-	                        Result: null
+    console.log( roundedDelay);
+    setTimeout(action, roundedDelay * 1000);
+	}
+	
+	runWithDelay(function () {
+	    FormManager.meetingMinuteManagmentDetaiActionLogInsert(
+	        list,
+	        function (status, list) {
+	            const responseCode = status && status.ResponseValue ? status.ResponseValue : "0";
+	            Office.Inbox.setResponse(
+	                dialogArguments.WorkItem,
+	                responseCode,
+	                "",
+	                function (data) {
+	                    hideLoading();
+	                    $.alert("فرم ثبت و ارسال شد", "", "rtl", function () {
+	                        closeWindow({
+	                            OK: true,
+	                            Result: null
+	                        });
 	                    });
-	                }); 
-	            }
-	        ); 	
-	    },
-	    function (err) {
-	        console.error("خطا در setResponse:", err);
-	        $.alert(
-	            "خطا در ارسال پاسخ: " + (err.message || "خطای ناشناخته"),
-	            "",
-	            "rtl"
-	        );
-	    }
-	); 
-
+	                }
+	            );
+	        },
+	        function (err) {
+	            console.error("خطا در setResponse:", err);
+	            hideLoading(); 
+	            $.alert(
+	                "خطا در ارسال پاسخ: " + (err.message || "خطای ناشناخته"),
+	                "",
+	                "rtl"
+	            );
+	        }
+	    );
+	});
 });
 
 //#endregion btnRegister.js
