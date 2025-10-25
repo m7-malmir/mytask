@@ -159,14 +159,5 @@ const FormManager = (() => {
 
 //#endregion
 
-
-
-
-
-
-
-
-
-
-
-
+ // معکوس‌سازی لیست
+ 
