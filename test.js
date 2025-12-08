@@ -14,29 +14,22 @@
   }
 }
 
-
 {
-  "currentCompanyId": 0,
+  "currentCompanyId": 1,
   "currentUserId": "2200,1662,501355",
-  "customMethodName": "string",
-  "clientApiKey": "string",
-  "serviceMethodName": "string",
-  "customParameters": {
-    "additionalProp1": "string",
-    "additionalProp2": "string",
-    "additionalProp3": "string"
-  },
+  "customMethodName": "",
+  "clientApiKey": "",
+  "serviceMethodName": "",
+  "CustomFilters": {"ReportTradeMarketingId":14},
   "viewModels": [
     {
-      "id": 12
+
     }
   ]
 }
 
 
 viewModel
-
-
 {
   "currentCompanyId": 1,
   "currentUserId": "2200,1662,501355",
@@ -50,9 +43,21 @@ viewModel
     }
 }
 
-
-
-
+{
+"CurrentCompanyId": 1,
+"CurrentUserId": "1,1,1",
+"PageSize": 50,
+"PageIndex": 0,
+"ClientApiKey": "",
+"ServiceMethodName": "",
+"SortOrder": [
+{ "Column": "Name", "Direction": "ASC" }
+],
+"FilterConditions": [{ "Column": "Name", "Operator": "Contains", "Value": "فروش" }
+],
+"CustomFilters": {
+}
+}
 
 
 {
@@ -64,18 +69,7 @@ viewModel
     customFilters: {},
     viewModel: null}
 
-
-
-
-
-
-
-
-
 {   "currentCompanyId": 1,   "currentUserId": "2200,1662,501355",   "customMethodName": "",   "clientApiKey": "",   "serviceMethodName": "",   "customParameters": {   },   "viewModel":     {       "id": 12     }  }
-
-
-
 
 
 {
@@ -93,19 +87,6 @@ viewModel
   "CustomFilters": {
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* ===================== Public variables ===================== */
@@ -264,3 +245,92 @@ $(function () {
     $form.init();
 
 });
+
+
+{
+"CurrentCompanyId": 1,
+"CurrentUserId": "2072,351,501314",
+"PageSize": 10,
+"PageIndex": 0,
+"ClientApiKey": "",
+"ServiceMethodName": "",
+"SortOrder": [{
+    "Column": "Id",
+    "Direction": "DESC"
+}],
+"FilterConditions": [{
+    "Column": "Id",
+    "Operator": "EqualTo",
+    "Value": "7"
+}],
+    "CustomFilters": {}
+}
+
+Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
+    function(data)
+    {
+        closeWindow({OK:true, Result:null});
+    }, function(err){ throw Error(err); }
+);
+
+
+function load(pageIndex = 0) {
+    showLoading();
+
+    let reportId = $("#lblReportTradeMarketingId").text().trim();
+
+    let params = {
+        currentCompanyId: 1,
+        currentUserId: CurrentUserId,
+        customMethodName: "",
+        clientApiKey: "",
+        serviceMethodName: "",
+        CustomFilters: {
+            ReportTradeMarketingId: Number(reportId) || 0
+        },
+        viewModels: [],
+        PageSize: pageSize,
+        PageIndex: pageIndex,
+        SortOrder: [currentSort],
+        FilterConditions: []
+    };
+
+    if ($("#pagination").length === 0) {
+        $("#lblPagination").html('<div id="gridPagination"></div>');
+    }
+
+    readRows(
+        params,
+        function (response) {
+            // *** فقط همین دو خط اصلاح شده ***
+            const list =
+                Array.isArray(response?.value?.data) ? response.value.data : [];
+
+            const total =response?.value ?.totalCount ? response.value.totalCount : list.length;
+            element.find(".row-data").remove();
+            if (list.length > 0) {
+                element.find("tr.no-data-row").remove();
+                list.forEach(addRow);
+
+                gridPagination(element, pageSize, total, 'ltr')(total, pageIndex + 1);
+
+            } else {
+                addNoDataRow(element);
+                gridPagination(element, pageSize, 0, 'ltr')(0, 1);
+            }
+
+            closeLoading();
+        },
+        function (error) {
+            closeLoading();
+            addNoDataRow(element);
+            errorDialog("Error", error.message, "rtl");
+        }
+    );
+}
+
+
+<Id>${requestId}</Id>
+<CompanyId>${CurrentCompanyId}</CompanyId>
+<DCId>${dcid}</DCId>
+<IsInTestMode>${isInTestMode()}</IsInTestMode>
