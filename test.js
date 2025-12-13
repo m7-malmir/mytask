@@ -259,9 +259,9 @@ $(function () {
     "Direction": "DESC"
 }],
 "FilterConditions": [{
-    "Column": "Id",
+    "Column": "LeaveDate",
     "Operator": "EqualTo",
-    "Value": "7"
+    "Value": ""
 }],
     "CustomFilters": {}
 }
@@ -334,3 +334,76 @@ function load(pageIndex = 0) {
 <CompanyId>${CurrentCompanyId}</CompanyId>
 <DCId>${dcid}</DCId>
 <IsInTestMode>${isInTestMode()}</IsInTestMode>
+
+
+
+{
+"CurrentCompanyId": 1,
+"CurrentUserId": "1,1,1",
+"PageSize": 50,
+"PageIndex": 0,
+"ClientApiKey": "",
+"ServiceMethodName": "",
+"SortOrder": [
+{ "Column": "Name", "Direction": "ASC" }
+],
+"FilterConditions": [
+    { "Column": "FullName", "Operator": "Contains", "Value": "فروش" },
+    {"Column": "LeaveDate","Operator": "EqualTo","Value": ""}
+],
+"CustomFilters": {
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function commafy(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+/*****************************************************************************************/
+function rcommafy(x) {
+    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
+	a=parseInt(a,10);
+	return a
+}
+
+
+
+
+
+
+
+
+
+
+#008000;     confirm
+#FF0000   not confirm
+#337AB7  in flow
+
+
+{
+"CurrentCompanyId": 1,
+"CurrentUserId": "2072,351,501314",
+"PageSize": 10,
+"PageIndex": 0,
+"ClientApiKey": "",
+"ServiceMethodName": "",
+"SortOrder": [{
+"Column": "Id",
+"Direction": "DESC"
+}],
+"FilterConditions": [],
+"CustomFilters": {}
+}
