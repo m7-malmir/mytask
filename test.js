@@ -1,6 +1,6 @@
 {
   "CurrentCompanyId": 1,
-  "CurrentUserId": "1,1,1",
+  "currentUserId": "2200,1662,501355",
   "PageSize": 50,
   "PageIndex": 0,
   "ClientApiKey": "",
@@ -14,13 +14,14 @@
   }
 }
 
+//
 {
   "currentCompanyId": 1,
   "currentUserId": "2200,1662,501355",
   "customMethodName": "",
   "clientApiKey": "",
   "serviceMethodName": "",
-  "CustomFilters": {"ReportTradeMarketingId":14},
+  "CustomFilters": {"pricingId":5},
   "viewModels": [
     {
 
@@ -68,8 +69,16 @@ viewModel
     serviceMethodName: "",
     customFilters: {},
     viewModel: null}
-
-{   "currentCompanyId": 1,   "currentUserId": "2200,1662,501355",   "customMethodName": "",   "clientApiKey": "",   "serviceMethodName": "",   "customParameters": {   },   "viewModel":     {       "id": 12     }  }
+// for get data
+{
+    "currentCompanyId": 1,
+    "currentUserId": "2200,1662,501355",
+    "customMethodName": "",
+    "clientApiKey": "",
+    "serviceMethodName": "",
+    "customParameters": {   },
+    "viewModel": {"PricingId": 5}
+}
 
 
 {
@@ -259,9 +268,9 @@ $(function () {
     "Direction": "DESC"
 }],
 "FilterConditions": [{
-    "Column": "LeaveDate",
+    "Column": "PricingId",
     "Operator": "EqualTo",
-    "Value": ""
+    "Value": "5"
 }],
     "CustomFilters": {}
 }
@@ -361,14 +370,6 @@ function load(pageIndex = 0) {
 
 
 
-
-
-
-
-
-
-
-
 function commafy(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -382,15 +383,6 @@ function rcommafy(x) {
 
 
 
-
-
-
-
-
-
-#008000;     confirm
-#FF0000   not confirm
-#337AB7  in flow
 
 
 {
@@ -407,3 +399,95 @@ function rcommafy(x) {
 "FilterConditions": [],
 "CustomFilters": {}
 }
+
+
+
+PricingDetail
+
+
+
+
+{currentCompanyId: 1, currentUserId: '2175,485,501348', customMethodName: '', clientApiKey: '', serviceMethodName: '', …}
+
+
+
+
+
+
+
+{   "CurrentCompanyId": 1,
+       "currentUserId": "2200,1662,501355",
+         "PageSize": 50,
+           "PageIndex": 0,
+             "ClientApiKey": "",
+               "ServiceMethodName": "",
+                  "SortOrder": [     { "Column": "Id", "Direction": "ASC" }   ],   "FilterConditions": [
+                  ],
+                   "CustomFilters": {
+                        "Column": "PricingId",
+                        "Operator": "EqualTo",
+                        "Value": "13"
+                    }
+                 }
+
+
+
+let params = {
+    currentCompanyId: 1,
+    currentUserId: CurrentUserId,
+    customMethodName: "",
+    clientApiKey: "",
+    serviceMethodName: "",
+
+    PageSize: pageSize,
+    PageIndex: pageIndex,
+    SortOrder: [currentSort],
+
+    FilterConditions: [
+        {
+            FieldName: "Detail.PricingId",
+            Operator: "EqualTo",
+            Value: Number(pricingId)
+        }
+    ]
+};
+
+
+{
+  "message": "Validation errors occurred.",
+  "errors": {
+    "config": [
+      "The config field is required."
+    ],
+    "$.viewModels[0]": [
+      "JSON deserialization for type 'Marina.ViewModels.PricingViewModels.PRPricingDetailViewModel' was missing required properties including: 'pricingId', 'goodsId', 'newConsumerPrice', 'samtInfoId'."
+    ]
+  }
+}
+
+
+
+{
+  "CurrentCompanyId": 1,
+  "currentUserId": "2200,1662,501355",
+  "PageSize": 50,
+  "PageIndex": 0,
+  "ClientApiKey": "",
+  "ServiceMethodName": "",
+  "SortOrder": [
+    { "Column": "Id", "Direction": "ASC" }
+  ],
+  "CustomFilters": "",
+  "FilterConditions": [
+    {
+      "Column": "IsDeleted",
+      "Operator": "EqualTo",
+      "Value": false
+    },{
+    "Column": "PricingId",
+    "Operator": "EqualTo",
+    "Value": 13
+  }
+  ]
+}
+
