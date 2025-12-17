@@ -537,14 +537,130 @@ const FormManager = (() => {
 })();
 //#endregion  Form.DAL.js
 
-//#region ready.js
+//#region btnAdd.js
+$("#btnAdd").click(function () {
+  function rcommafy(x) {
+    a = x.replace(/\,/g, ""); // 1125, but a string, so convert it to number
+    a = parseInt(a, 10);
+    return a;
+  }
+  const addRows = FormManager.addPricingDetail;
+  //چک کردن اینکه جزییات جدید است یا
+  let txt = $("#lblPricingId").text().trim();
+  let pricingId = /^\d+$/.test(txt) ? Number(txt) : 0;
+  if (
+    validateRequiredFields(
+      "gbxPricingDetails",
+      "متن هشدار",
+      "فیلدهای اجباری را تکمیل کنید",
+      "rtl"
+    )
+  ) {
+    // ساخت آبجکت دیتا
+    let data = {
+      pricingId: pricingId,
+      goodsId: parseInt($("#cmbGoodsId").val(), 10),
+      NewConsumerPrice: rcommafy($("#txtNewConsumerPrice").val()),
+      description:
+        ($("#txtDescription").val() || "").trim() === ""
+          ? null
+          : $("#txtDescription").val().trim(),
+      samtInfoId: 1,
+    };
 
-//#endregion ready.js
+    // بسته نهایی
+    let params = {
+      currentCompanyId: 1,
+      currentUserId: CurrentUserId,
+      clientApiKey: "",
+      serviceMethodName: "",
+      customParameters: {},
+      viewModels: [data],
+    };
+    addRows(
+      params,
+      function (response) {
+        successDialog("Add Success", "Data successfully submitted", "ltr");
+        closeWindow({ OK: true, Result: null });
+      },
+      function (error) {
+        errorDialog("Add Error", error.message, "ltr");
+      }
+    );
+  }
+});
 
-//#region ready.js
+//#endregion btnAdd.js
 
-//#endregion ready.js
+//#region cmbGoodsId.js
+function fillGoodsCombo($combo, placeholderText = "انتخاب کالا") {
+  $combo.select2({
+    placeholder: placeholderText,
+    dir: "rtl",
+    minimumInputLength: 0, // صفر یعنی با کلیک هم دیتا بیاد
 
-//#region ready.js
+    ajax: {
+      delay: 250,
 
-//#endregion ready.js
+      transport: function (params, success, failure) {
+        const term = params.data.term || "";
+        const page = params.data.page || 0; // صفحه مورد درخواست
+        let filter = [];
+
+        // فقط موقع سرچ (۳ به بالا سرچ فعال میشه)
+        if (term.length >= 3) {
+          filter.push({
+            Column: "GoodsName",
+            Operator: "Contains",
+            Value: term,
+          });
+        }
+
+        const req = {
+          CurrentCompanyId: 1,
+          CurrentUserId: CurrentUserId,
+          PageSize: 25,
+          PageIndex: page, // پشتیبانی صفحه‌بندی مثل برند
+          SortOrder: [{ Column: "Id", Direction: "ASC" }],
+          FilterConditions: filter,
+        };
+
+        FormManager.readGoodsPrice(
+          req,
+          function (res) {
+            const list = res.list || [];
+            const mapped = list.map((x) => ({
+              id: x.goodsId,
+              goodsId: x.goodsId,
+              text: x.goodsName,
+              goodsName: x.goodsName,
+            }));
+
+            success({
+              results: mapped,
+              pagination: {
+                more: list.length === 25,
+              },
+            });
+          },
+          function (err) {
+            failure(err);
+          }
+        );
+      },
+    },
+
+    multiple: false,
+  });
+
+  // وقتی آیتم انتخاب شد
+  $combo.on("select2:select", function (e) {
+    const item = e.params.data;
+  });
+}
+
+$(function () {
+  fillGoodsCombo($("#cmbGoodsId"), "انتخاب محصول");
+});
+
+//#endregion cmbGoodsId.js
