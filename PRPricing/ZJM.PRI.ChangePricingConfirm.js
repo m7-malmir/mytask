@@ -369,13 +369,167 @@ $(function () {
 //#endregion tblPricing.js
 
 //#region btnDecline.js
+$("#btnDecline").click(function () {
+  const hameshPopup = $(`
+        <div tabindex="1" style="direction:rtl;" class="ui-form">
+            <label tabindex="-1" class="ui-form-label" style="text-align:right;">
+                لطفاً دلیل رد را وارد نمایید:
+            </label>
+        </div>
+    `);
 
+  const commentInput = $("<textarea>", {
+    placeholder: "دلیل رد...",
+  })
+    .addClass("comment-input form-control")
+    .css({
+      height: "60px",
+      "font-size": "8pt",
+      resize: "none",
+    });
+
+  hameshPopup.append(commentInput);
+
+  styleDialog(
+    "#d35c64 url('/Cache/Images/ZJM.TCM.Contract/pcbUIWaveRed.png') 50% 50% repeat-x",
+    "1px solid #d35c64",
+    "white"
+  );
+
+  hameshPopup.dialog({
+    buttons: [
+      {
+        text: "ارسال",
+        click: function () {
+          LoadingSpinner.show();
+
+          if ($(this).find(".comment-input").val().trim().length > 0) {
+            let hameshDescription = $(this).find(".comment-input").val();
+            let params = {
+              Context: "درخواست رد (" + hameshDescription + ")",
+              DocumentId: DocumentId,
+              CreatorActorId: CurrentUserActorId,
+              InboxId: InboxId,
+            };
+
+            // Insert hamesh
+            FormManager.insertHamesh(params, function () {
+              // Run workflow
+              Office.Inbox.setResponse(
+                dialogArguments.WorkItem,
+                3,
+                "",
+                function () {
+                  LoadingSpinner.hide();
+                  closeWindow({ OK: true, Result: null });
+                },
+                function (error) {
+                  LoadingSpinner.hide();
+                  errorDialog("خطای سرویس گردش‌کار", error, "rtl");
+                }
+              );
+            });
+          } else {
+            LoadingSpinner.hide();
+            warningDialog("هشدار", "لطفاً توضیح رد را وارد نمایید.", "rtl");
+          }
+        },
+      },
+    ],
+  });
+});
 //#endregion btnDecline.js
 
 //#region btnReview.js
+$("#btnReview").click(function () {
+  const hameshPopup = $(`
+        <div tabindex="1" style="direction:rtl;" class="ui-form">
+            <label tabindex="-1" class="ui-form-label" style="text-align:right;">
+                لطفاً دلیل درخواست بازبینی را وارد نمایید:
+            </label>
+        </div>
+    `);
+
+  const commentInput = $("<textarea>", {
+    placeholder: "دلیل بازبینی...",
+  })
+    .addClass("comment-input form-control")
+    .css({
+      height: "60px",
+      "font-size": "8pt",
+      resize: "none",
+    });
+
+  hameshPopup.append(commentInput);
+
+  styleDialog(
+    "#d35c64 url('/Cache/Images/ZJM.TCM.Contract/pcbUIWaveRed.png') 50% 50% repeat-x",
+    "1px solid #d35c64",
+    "white"
+  );
+
+  hameshPopup.dialog({
+    buttons: [
+      {
+        text: "ارسال",
+        click: function () {
+          LoadingSpinner.show();
+
+          if ($(this).find(".comment-input").val().trim().length > 0) {
+            let hameshDescription = $(this).find(".comment-input").val();
+            let params = {
+              Context: "درخواست بازبینی / اصلاح (" + hameshDescription + ")",
+              DocumentId: DocumentId,
+              CreatorActorId: CurrentUserActorId,
+              InboxId: InboxId,
+            };
+
+            // Insert hamesh
+            FormManager.insertHamesh(params, function () {
+              // Run workflow
+              Office.Inbox.setResponse(
+                dialogArguments.WorkItem,
+                2,
+                "",
+                function () {
+                  LoadingSpinner.hide();
+                  closeWindow({ OK: true, Result: null });
+                },
+                function (error) {
+                  LoadingSpinner.hide();
+                  errorDialog("خطای سرویس گردش‌کار", error, "rtl");
+                }
+              );
+            });
+          } else {
+            LoadingSpinner.hide();
+            warningDialog(
+              "هشدار",
+              "لطفاً توضیح بازبینی را وارد نمایید.",
+              "rtl"
+            );
+          }
+        },
+      },
+    ],
+  });
+});
 
 //#endregion btnReview.js
 
 //#region btnConfirm.js
-
+$("#btnConfirm").click(function () {
+  // ==== workflow continue ====
+  Office.Inbox.setResponse(
+    dialogArguments.WorkItem,
+    1,
+    "",
+    function () {
+      closeWindow({ OK: true, Result: null });
+    },
+    function (error) {
+      errorDialog("Error WorkflowService", error, "ltr");
+    }
+  );
+});
 //#endregion btnConfirm.js
