@@ -73,13 +73,27 @@ viewModel
 {
     "currentCompanyId": 1,
     "currentUserId": "2200,1662,501355",
-    "customMethodName": "",
+    "customMethodName": "find",
     "clientApiKey": "",
     "serviceMethodName": "",
-    "customParameters": {   },
-    "viewModel": {"PricingId": 5}
+    "customParameters": {
+
+      },
+    "viewModel": {
+    }
 }
 
+{
+    "currentCompanyId": 1,
+    "currentUserId": "2200,1661,501355",
+    "customMethodName": "Find",
+    "clientApiKey": "",
+    "serviceMethodName": "",
+    "customFilters": {},
+    "viewModel": {
+    "id": 38
+    }
+}
 
 {
   "CurrentCompanyId": 1,
