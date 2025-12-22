@@ -505,3 +505,41 @@ let params = {
   ]
 }
 
+
+
+
+{
+"CurrentCompanyId": 1,
+"CurrentUserId": "2072,351,501314",
+  "customMethodName": "",
+  "clientApiKey": "",
+  "serviceMethodName": "",
+  "customParameters": {
+  },
+  "viewModels": [
+    {
+      "reportTradeMarketingId": 29,
+      "goodsId": 13,
+      "competitorBrandId": 3,
+      "samtInfoId": 1,
+      "competitorConsumerPrice": 1232345,
+      "promotion": 80,
+      "competitorPromotion": 81,
+      "discount": 90,
+      "competitorDiscount": 91,
+      "specialOffer": 1003,
+      "competitorSpecialOffer": 1002,
+      "foc": 1001,
+      "focDescription": "اپدیت شد",
+      "id": 48
+    }
+  ]
+}
+
+
+
+
+
+
+
+
