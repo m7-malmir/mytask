@@ -305,7 +305,7 @@ $(function () {
     let element = null;
     const columnMap = {
       1: "Id", //Id
-      // 2: "InnerRegNumber",	//innerRegNumber
+      2: "InnerRegNumber", //innerRegNumber
       3: "FullName", //fullName
     };
 
@@ -382,7 +382,7 @@ $(function () {
         .children("tbody")
         .children("tr.row-template")
         .clone();
-
+      processStatus = rowInfo.processStatus;
       // Prepare the row
       tempRow
         .show()
@@ -413,7 +413,11 @@ $(function () {
             `<a href="#" class="workflow-link" data-status="${rowInfo.ProcessStatus}" id="${args}">ارسال</a>`
           );
       } else {
-        tds.eq(6).html(`<span  class="workflow-link">ارسال شده</span>`);
+        tds.eq(6).html(`<a href="#"
+				       class="registered-document"
+				       data-inner-reg-number="${rowInfo.innerRegNumber}">
+				       گردش کار
+				    </a>`);
       }
 
       element.children("tbody").children("tr.row-template").before(tempRow);
@@ -421,7 +425,7 @@ $(function () {
 
     // ======================== Load =========================
     function load(pageIndex = 0) {
-      //LoadingSpinner.show();
+      LoadingSpinner.show();
 
       let params = {
         CurrentCompanyId: CurrentCompanyId,
@@ -486,10 +490,10 @@ $(function () {
             gridPagination(element, pageSize, 0, "ltr")(0, 1);
           }
 
-          closeLoading();
+          LoadingSpinner.hide();
         },
         function (error) {
-          closeLoading();
+          LoadingSpinner.hide();
           addNoDataRow(element);
           errorDialog("Error", error.message, "rtl");
         }
@@ -625,3 +629,5 @@ $("#tscReportInsight_Delete").click(function () {
   );
 });
 //#endregion tscReportInsight_Delete
+
+
