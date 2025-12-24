@@ -325,17 +325,106 @@ $(function () {
 //#endregion ready.js
 
 //#region  tscReportInsight_Edit.js
+$("#tscReportInsight_Edit").click(function () {
+  // ===== 1. ردیف انتخاب شده =====
+  const $checked = $("#tblReportInsightDetail input[type=radio]:checked");
+
+  if ($checked.length === 0) {
+    warningDialog("خطا", "لطفاً یک ردیف را انتخاب کنید", "rtl");
+    return;
+  }
+
+  const $row = $checked.closest("tr");
+  const info = $row.data("info");
+
+  if (!info) {
+    warningDialog("خطا", "اطلاعات ردیف یافت نشد", "rtl");
+    return;
+  }
+
+  // ===== 2. باز کردن PopUp =====
+  $.showModalForm(
+    {
+      registerKey: "ZJM.ITM.ReportInsightDetailsUpdate",
+      params: {
+        currentUserId: CurrentUserId,
+        id: info.id,
+        goodsName: info.goodsName,
+        goodsId: info.goodsId,
+        reportInsightId: info.reportInsightId,
+        willingnessPay: info.willingnessPay,
+        optimalPricePoint: info.optimalPricePoint,
+        acceptablePriceRange: info.acceptablePriceRange,
+        priceElasticityDemand: info.priceElasticityDemand,
+        samtInfoId: info.samtInfoId,
+      },
+    },
+    function () {
+      tblMain.refresh();
+    }
+  );
+});
 
 //#endregion
 
-//#region  ready.js
+//#region  tscTradeMarketing_Delete.js
+$("#tscTradeMarketing_Delete").click(function () {
+  // ====================== Variables ======================
+  const deleteRows = FormManager.deleteReportInsightDetail;
+  const $checkedRadio = $("input[name='ReportInsightId']:checked");
 
-//#endregion ready.js
+  // ================= Validation checkbox =================
+  if ($checkedRadio.length === 0) {
+    warningDialog("Warning", "لطفا حداق یک آیتم را انتخاب نمایید!", "rtl");
+    return;
+  }
 
-//#region  ready.js
+  // ================= Get id from checkbox ================
+  const $row = $checkedRadio.closest("tr");
+  const id = parseInt($checkedRadio.val().trim());
 
-//#endregion ready.js
+  $.confirm(
+    "آیا از حذف این آیتم مطمئن هستید؟",
+    "تایید",
+    "rtl",
+    function (date) {
+      switch (date) {
+        case "OK":
+          let params = {
+            CurrentCompanyId: CurrentCompanyId,
+            CurrentUserId: CurrentUserId,
+            ClientApiKey: "",
+            ServiceMethodName: "",
+            CustomParameters: {},
+            viewModels: [
+              {
+                id: id,
+              },
+            ],
+          };
+          deleteRows(
+            params,
+            function (response) {
+              successDialog("حذف موفق", "حذف با موفقیت انجام گردید", "rtl");
+              tblMain.refresh();
+            },
+            function (error) {
+              errorDialog("Delete Error", error.message, "rtl");
+            }
+          );
+          break;
+        case "Cancel":
+        default:
+          break;
+      }
+    }
+  );
 
-//#region  ready.js
-
-//#endregion ready.js
+  // Change style of the confirm
+  styleDialog(
+    "#d35c64 url('/Cache/Images/ZJM.TCM.Contract/pcbUIWaveRed.png') 50% 50% repeat-x",
+    "1px solid #d35c64",
+    "white"
+  );
+});
+//#endregion
