@@ -526,3 +526,65 @@ const FormManager = (() => {
 })();
 
 //#endregion DAL.js
+
+//#region tscTradeMarketing_Delete.js
+$("#tscTradeMarketing_Delete").click(function () {
+  // ====================== Variables ======================
+  const deleteRows = FormManager.deleteReportInsightDetail;
+  const $checkedRadio = $("input[name='ReportInsightId']:checked");
+
+  // ================= Validation checkbox =================
+  if ($checkedRadio.length === 0) {
+    warningDialog("Warning", "لطفا حداق یک آیتم را انتخاب نمایید!", "rtl");
+    return;
+  }
+
+  // ================= Get id from checkbox ================
+  const $row = $checkedRadio.closest("tr");
+  const id = parseInt($checkedRadio.val().trim());
+
+  $.confirm(
+    "آیا از حذف این آیتم مطمئن هستید؟",
+    "تایید",
+    "rtl",
+    function (date) {
+      switch (date) {
+        case "OK":
+          let params = {
+            CurrentCompanyId: CurrentCompanyId,
+            CurrentUserId: CurrentUserId,
+            ClientApiKey: "",
+            ServiceMethodName: "",
+            CustomParameters: {},
+            viewModels: [
+              {
+                id: id,
+              },
+            ],
+          };
+          deleteRows(
+            params,
+            function (response) {
+              successDialog("حذف موفق", "حذف با موفقیت انجام گردید", "rtl");
+              tblMain.refresh();
+            },
+            function (error) {
+              errorDialog("Delete Error", error.message, "rtl");
+            }
+          );
+          break;
+        case "Cancel":
+        default:
+          break;
+      }
+    }
+  );
+
+  // Change style of the confirm
+  styleDialog(
+    "#d35c64 url('/Cache/Images/ZJM.TCM.Contract/pcbUIWaveRed.png') 50% 50% repeat-x",
+    "1px solid #d35c64",
+    "white"
+  );
+});
+//#endregion
