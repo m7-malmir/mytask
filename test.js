@@ -1,545 +1,312 @@
-{
-  "CurrentCompanyId": 1,
-  "currentUserId": "2200,1662,501355",
-  "PageSize": 50,
-  "PageIndex": 0,
-  "ClientApiKey": "",
-  "ServiceMethodName": "",
-  "SortOrder": [
-    { "Column": "Id", "Direction": "ASC" }
-  ],
-  "FilterConditions": [
-  ],
-  "CustomFilters": {
-  }
-}
-
-//
-{
-  "currentCompanyId": 1,
-  "currentUserId": "2200,1662,501355",
-  "customMethodName": "",
-  "clientApiKey": "",
-  "serviceMethodName": "",
-  "CustomFilters": {"pricingId":5},
-  "viewModels": [
-    {
-
-    }
-  ]
-}
-
-
-viewModel
-{
-  "currentCompanyId": 1,
-  "currentUserId": "2200,1662,501355",
-  "customMethodName": "",
-  "clientApiKey": "",
-  "serviceMethodName": "",
-  "customParameters": {
-  },
-  "viewModel":
-    {
-    }
-}
-
-{
-"CurrentCompanyId": 1,
-"CurrentUserId": "1,1,1",
-"PageSize": 50,
-"PageIndex": 0,
-"ClientApiKey": "",
-"ServiceMethodName": "",
-"SortOrder": [
-{ "Column": "Name", "Direction": "ASC" }
-],
-"FilterConditions": [{ "Column": "Name", "Operator": "Contains", "Value": "فروش" }
-],
-"CustomFilters": {
-}
-}
-
-
-{
-    currentCompanyId: 1,
-    currentUserId: "324,444,222",
-    customMethodName: "GetAll",
-    clientApiKey: "",
-    serviceMethodName: "",
-    customFilters: {},
-    viewModel: null}
-// for get data
-{
-    "currentCompanyId": 1,
-    "currentUserId": "2200,1662,501355",
-    "customMethodName": "find",
-    "clientApiKey": "",
-    "serviceMethodName": "",
-    "customParameters": {
-
-      },
-    "viewModel": {
-    }
-}
-
-{
-    "currentCompanyId": 1,
-    "currentUserId": "2200,1661,501355",
-    "customMethodName": "Find",
-    "clientApiKey": "",
-    "serviceMethodName": "",
-    "customFilters": {},
-    "viewModel": {
-    "id": 38
-    }
-}
-
-{
-  "CurrentCompanyId": 1,
-  "CurrentUserId": "1,1,1",
-  "PageSize": 50,
-  "PageIndex": 0,
-  "ClientApiKey": "",
-  "ServiceMethodName": "",
-  "SortOrder": [
-    { "Column": "Name", "Direction": "ASC" }
-  ],
-  "FilterConditions": [{ "Column": "Name", "Operator": "Contains", "Value": "محمد" }
-  ],
-  "CustomFilters": {
-  }
-}
-
-
-/* ===================== Public variables ===================== */
-let $form;
-let CurrentUserId;
-let UnitID;
-
 $(function () {
+  tblCostRequestDetails = (function () {
+    // ====================== Variables ======================
+    const rowNumber = 15;
+    const readCostRequestDetail = FormManager.readCostRequestDetail;
+    const readCostRequest = FormManager.readCostRequest;
+    const primaryKeyName = "FormParams";
+    let tblCostRequestDetails = null;
+    let sumRequestCostPrice = 0;
+    let sumConfirmCostPrice = 0;
+    let element = null;
+    let costRequestId;
+    let inEditMode;
 
-    $form = (function () {
+    init();
 
-        // ===================== Aliases =====================
-        let readSEUnit = FormManager.readSEUnit;
+    // ======================= Init ==========================
+    function init() {
+      build();
+      load();
+      sortTable(element[0]);
+    }
 
-        // ===================== Init =====================
-        async function init() {
-            try {
-                console.log("Init started");
+    // ======================== Build =========================
+    function build() {
+      element = $("#tblCostRequestDetails");
+      // Make sure the template row is hidden
+      element.find("tr.row-template").hide();
+    }
 
-                CurrentUserId = dialogArguments["currentUserId"];
-                UnitID = dialogArguments["UnitID"];
+    // ====================== Add Row ========================
+    function addRow(rowInfo, index) {
+      index++;
 
-                console.log("CurrentUserId:", CurrentUserId);
-                console.log("UnitID:", UnitID);
+      const tbody = element.children("tbody");
+      const template = tbody.children("tr.row-template");
 
-                if (!CurrentUserId) {
-                    console.warn("CurrentUserId not found. Stopping initialization.");
-                    return;
-                }
+      // Clone and prepare row
+      const tempRow = template
+        .clone()
+        .show()
+        .removeClass("row-template")
+        .addClass("row-data")
+        .data("rowInfo", rowInfo);
 
-                if (!UnitID) {
-                    console.log("Add Mode: No UnitID provided");
-                    build();
-                    return;
-                }
+      // Get all <td> elements once
+      const tds = tempRow.children("td");
 
-                console.log("Edit Mode");
-                changeDialogTitle("Edit Unit");
-                $("#lblUnitVariableID").text(UnitID);
+      // format number with commas
+      const formatNumber = (num) =>
+        (num ?? 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                build();
-                await loadSEUnit();
-                console.log("loadSEUnit completed successfully");
+      // شناسه
+      tds.eq(0).text(rowInfo.Id);
 
-            } catch (err) {
-                console.error("Initialization failed:", err);
-            }
-        }
+      // شماره درخواست هزینه
+      const rowDataStr = encodeURIComponent(JSON.stringify(rowInfo));
+      tds
+        .eq(1)
+        .html(
+          `<a href="javascript:showMoadlDetails('${rowDataStr}')">${index}</a>`
+        );
 
-        // ===================== Build =====================
-        function build() {
-            changeDialogTitle("Add New");
+      // تاریخ هزینه
+      const [gmSD, gdSD, gySD] = rowInfo.CostDate.split("/").map((n) =>
+        parseInt(n, 10)
+      );
+      tds.eq(2).text(convertGregorianToJalali(gySD, gmSD, gdSD));
 
-            $("#cmbStatus").html(`
-                <option value="1">Active</option>
-                <option value="2">Deactive</option>
-            `);
-        }
+      // نوع جزئیات هزینه
+      tds.eq(3).text(rowInfo.CostRequestTypeName);
 
-        // ===================== Load SEUnit =====================
-        async function loadSEUnit() {
+      // نوع هزینه
+      tds.eq(4).text(rowInfo.CostRequestTypeDetailName);
 
-            let params = {
-                currentCompanyId: 1,
-                currentUserId: CurrentUserId,
-                customMethodName: "Find",
-                clientApiKey: "",
-                customFilters: {},
-                viewModel: { id: UnitID }
-            };
-            console.log("===== Payload Sent to readSEUnit =====");
-            console.log(JSON.stringify(params, null, 4));
+      // جزییات هزینه
+      tds.eq(5).text(rowInfo.CostRequestTypeSubDatailName);
 
-            return new Promise((resolve, reject) => {
+      // مبلغ هزینه
+      tds.eq(6).text(formatNumber(rowInfo.RequestCostPrice));
 
-                readSEUnit(
-                    params,
+      // هزینه تایید شده
+      const confirmCostPrice = parseFloat(rowInfo.ConfirmCostPrice ?? 0) || 0;
+      tds.eq(7).text(formatNumber(confirmCostPrice));
 
-                    // ======== SUCCESS CALLBACK ========
-                    response => {
-                        console.log("===== Raw Response From readSEUnit =====");
-                        console.log(response);
+      // كل هزينه‌ها درخواستي
+      sumRequestCostPrice += parseFloat(rowInfo.RequestCostPrice) || 0;
+      $("#txtTotalCosts").val(formatNumber(sumRequestCostPrice));
 
-                        let root =
-                            response?.value ||
-                            response?.list ||
-                            response?.value?.list ||
-                            [];
+      // كل هزينه‌هاي مصوب
+      sumConfirmCostPrice += confirmCostPrice;
+      $("#txtTotalCostsConfirm").val(formatNumber(sumConfirmCostPrice));
 
-                        console.log("Extracted root:", root);
+      // Insert row
+      template.before(tempRow);
 
-                        let item = Array.isArray(root) && root.length ? root[0] : null;
-                        console.log("Extracted item:", item);
+      // Add pagination div once
+      if (!$("#pagination-cost-request-details").length) {
+        $("#lblPagination").html(
+          '<div id="pagination-cost-request-details"></div>'
+        );
+      }
 
-                        if (!item) {
-                            console.error("No SEUnit data found");
-                            return reject(new Error("No SEUnit data found"));
-                        }
+      hideLoading();
+    }
 
-                        // -------- Set UnitId --------
-                        let unitIdStr = String(item.unitId ?? "").trim();
-                        console.log("unitId:", unitIdStr);
+    // ======================== Load =========================
+    function load() {
+      showLoading();
 
-                        if (unitIdStr) {
-                            let $cmb = $("#cmbUnitId");
-                            let opt = $cmb.find(`option[value='${unitIdStr}']`);
+      // ================= TEST MODE – چون بک‌اند فقط ۱ ردیف می‌دهد =================
+      element.find("tr.row-data").remove();
+      sumRequestCostPrice = 0;
+      sumConfirmCostPrice = 0;
 
-                            if (opt.length) {
-                                $cmb.val(unitIdStr).trigger("change.select2");
-                            } else {
-                                let newOption = new Option(item.unitTitle || unitIdStr, unitIdStr, true, true);
-                                $cmb.append(newOption).trigger("change");
-                            }
-                        }
-
-                        // -------- Set UserId --------
-                        let userIdStr = String(item.userId ?? "").trim();
-                        console.log("userId:", userIdStr);
-
-                        if (userIdStr) {
-                            let $cmb = $("#cmbUserId");
-                            let opt = $cmb.find(`option[value='${userIdStr}']`);
-
-                            if (opt.length) {
-                                $cmb.val(userIdStr).trigger("change.select2");
-                            } else {
-                                let newOption = new Option(item.userFullName || userIdStr, userIdStr, true, true);
-                                $cmb.append(newOption).trigger("change");
-                            }
-                        }
-
-                        // -------- Set Status --------
-                        let statusValue = item.status ? "1" : "2";
-                        console.log("status:", statusValue);
-                        $("#cmbStatus").val(statusValue).trigger("change");
-
-                        resolve();
-                    },
-
-                    // ======== ERROR CALLBACK ========
-                    err => {
-                        console.error("readSEUnit error:", err);
-                        reject(err);
-                    }
-                );
-            });
-        }
-
-        // ===================== Return =====================
-        return {
-            init: init
+      // ساخت ۲۰ ردیف ساختگی با استفاده از addRow واقعی
+      for (let i = 0; i < 20; i++) {
+        const mockRow = {
+          Id: 2000 + i,
+          RequestCostId: 900 + i,
+          CostDate: "12/23/2025",
+          CostRequestTypeName: "سایر",
+          CostRequestTypeDetailName: "جزئیات تست",
+          CostRequestTypeSubDatailName: "",
+          RequestCostPrice: (i + 1) * 100000,
+          ConfirmCostPrice: (i + 1) * 90000,
         };
 
-    })();
+        addRow(mockRow, i);
+      }
 
-    $form.init();
+      //بسیار مهم: pagination آخر کار
+      pagination(element, rowNumber);
 
+      closeLoading();
+      return; //  نذار بره سراغ API
+    }
+
+    // ====================== Refresh ========================
+    function refresh() {
+      sumRequestCostPrice = 0;
+      sumConfirmCostPrice = 0;
+      element.find("tr.row-data").remove();
+      load();
+    }
+
+    // ======================= Return ========================
+    return {
+      refresh: refresh,
+      load: load,
+      readRows: readCostRequestDetail,
+    };
+  })();
 });
 
+function load() {
+  showLoading();
 
-{
-"CurrentCompanyId": 1,
-"CurrentUserId": "2072,351,501314",
-"PageSize": 10,
-"PageIndex": 0,
-"ClientApiKey": "",
-"ServiceMethodName": "",
-"SortOrder": [{
-    "Column": "Id",
-    "Direction": "DESC"
-}],
-"FilterConditions": [{
-    "Column": "PricingId",
-    "Operator": "EqualTo",
-    "Value": "5"
-}],
-    "CustomFilters": {}
-}
+  let requestCostId = $("#lblCostRequestID").text().trim();
+  let params = {
+    Where: `CostRequestId = ${requestCostId}`,
+  };
 
-Office.Inbox.setResponse(dialogArguments.WorkItem,1, "",
-    function(data)
-    {
-        closeWindow({OK:true, Result:null});
-    }, function(err){ throw Error(err); }
-);
+  readCostRequest(
+    params,
+    function (list) {
+      if (Array.isArray(list) && list.length > 0) {
+        list.forEach(function (row) {
+          $("#txtRequestTitle").val(row.CostReuqestTitle);
+          $("#txtCostRequestNo").val(row.CostRequestNo);
 
+          $("#rpcCostRequestDetail_Refresh").css({
+            left: "1189px",
+          });
+        });
 
-function load(pageIndex = 0) {
-    showLoading();
+        let params = {
+          Where: `RequestCostId = ${requestCostId}`,
+        };
 
-    let reportId = $("#lblReportTradeMarketingId").text().trim();
+        readCostRequestDetail(
+          params,
+          function (list) {
+            if (Array.isArray(list) && list.length > 0) {
+              // sort by CostDate
+              list.sort(function (a, b) {
+                let aParts = a.CostDate.split("/");
+                let bParts = b.CostDate.split("/");
 
-    let params = {
-        currentCompanyId: 1,
-        currentUserId: CurrentUserId,
-        customMethodName: "",
-        clientApiKey: "",
-        serviceMethodName: "",
-        CustomFilters: {
-            ReportTradeMarketingId: Number(reportId) || 0
-        },
-        viewModels: [],
-        PageSize: pageSize,
-        PageIndex: pageIndex,
-        SortOrder: [currentSort],
-        FilterConditions: []
-    };
+                let aNum = parseInt(
+                  aParts[2] +
+                    aParts[0].padStart(2, "0") +
+                    aParts[1].padStart(2, "0")
+                );
 
-    if ($("#pagination").length === 0) {
-        $("#lblPagination").html('<div id="gridPagination"></div>');
-    }
+                let bNum = parseInt(
+                  bParts[2] +
+                    bParts[0].padStart(2, "0") +
+                    bParts[1].padStart(2, "0")
+                );
 
-    readRows(
-        params,
-        function (response) {
-            // *** فقط همین دو خط اصلاح شده ***
-            const list =
-                Array.isArray(response?.value?.data) ? response.value.data : [];
+                return aNum - bNum;
+              });
 
-            const total =response?.value ?.totalCount ? response.value.totalCount : list.length;
-            element.find(".row-data").remove();
-            if (list.length > 0) {
-                element.find("tr.no-data-row").remove();
-                list.forEach(addRow);
+              /* ✅ فقط این قسمت اضافه شده */
+              if (list.length < 20) {
+                let baseList = [...list];
 
-                gridPagination(element, pageSize, total, 'ltr')(total, pageIndex + 1);
-
-            } else {
-                addNoDataRow(element);
-                gridPagination(element, pageSize, 0, 'ltr')(0, 1);
-            }
-
-            closeLoading();
-        },
-        function (error) {
-            closeLoading();
-            addNoDataRow(element);
-            errorDialog("Error", error.message, "rtl");
-        }
-    );
-}
-
-
-<Id>${requestId}</Id>
-<CompanyId>${CurrentCompanyId}</CompanyId>
-<DCId>${dcid}</DCId>
-<IsInTestMode>${isInTestMode()}</IsInTestMode>
-
-
-
-{
-"CurrentCompanyId": 1,
-"CurrentUserId": "1,1,1",
-"PageSize": 50,
-"PageIndex": 0,
-"ClientApiKey": "",
-"ServiceMethodName": "",
-"SortOrder": [
-{ "Column": "Name", "Direction": "ASC" }
-],
-"FilterConditions": [
-    { "Column": "FullName", "Operator": "Contains", "Value": "فروش" },
-    {"Column": "LeaveDate","Operator": "EqualTo","Value": ""}
-],
-"CustomFilters": {
-}
-}
-
-
-
-
-
-
-
-function commafy(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-/*****************************************************************************************/
-function rcommafy(x) {
-    a=x.replace(/\,/g,''); // 1125, but a string, so convert it to number
-	a=parseInt(a,10);
-	return a
-}
-
-
-
-
-
-
-{
-"CurrentCompanyId": 1,
-"CurrentUserId": "2072,351,501314",
-"PageSize": 10,
-"PageIndex": 0,
-"ClientApiKey": "",
-"ServiceMethodName": "",
-"SortOrder": [{
-"Column": "Id",
-"Direction": "DESC"
-}],
-"FilterConditions": [],
-"CustomFilters": {}
-}
-
-
-
-PricingDetail
-
-
-
-
-{currentCompanyId: 1, currentUserId: '2175,485,501348', customMethodName: '', clientApiKey: '', serviceMethodName: '', …}
-
-
-
-
-
-
-
-{   "CurrentCompanyId": 1,
-       "currentUserId": "2200,1662,501355",
-         "PageSize": 50,
-           "PageIndex": 0,
-             "ClientApiKey": "",
-               "ServiceMethodName": "",
-                  "SortOrder": [     { "Column": "Id", "Direction": "ASC" }   ],   "FilterConditions": [
-                  ],
-                   "CustomFilters": {
-                        "Column": "PricingId",
-                        "Operator": "EqualTo",
-                        "Value": "13"
+                while (list.length < 20) {
+                  baseList.forEach(function (item) {
+                    if (list.length < 20) {
+                      let cloned = Object.assign({}, item);
+                      cloned.__mock = true; // فقط برای دیباگ
+                      list.push(cloned);
                     }
-                 }
+                  });
+                }
+              }
 
+              list.forEach(function (row, index) {
+                element.find("tr.no-data-row").remove();
+                addRow(row, index);
+              });
 
-
-let params = {
-    currentCompanyId: 1,
-    currentUserId: CurrentUserId,
-    customMethodName: "",
-    clientApiKey: "",
-    serviceMethodName: "",
-
-    PageSize: pageSize,
-    PageIndex: pageIndex,
-    SortOrder: [currentSort],
-
-    FilterConditions: [
-        {
-            FieldName: "Detail.PricingId",
-            Operator: "EqualTo",
-            Value: Number(pricingId)
-        }
-    ]
-};
-
-
-{
-  "message": "Validation errors occurred.",
-  "errors": {
-    "config": [
-      "The config field is required."
-    ],
-    "$.viewModels[0]": [
-      "JSON deserialization for type 'Marina.ViewModels.PricingViewModels.PRPricingDetailViewModel' was missing required properties including: 'pricingId', 'goodsId', 'newConsumerPrice', 'samtInfoId'."
-    ]
-  }
-}
-
-
-
-{
-  "CurrentCompanyId": 1,
-  "currentUserId": "2200,1662,501355",
-  "PageSize": 50,
-  "PageIndex": 0,
-  "ClientApiKey": "",
-  "ServiceMethodName": "",
-  "SortOrder": [
-    { "Column": "Id", "Direction": "ASC" }
-  ],
-  "CustomFilters": "",
-  "FilterConditions": [
-    {
-      "Column": "IsDeleted",
-      "Operator": "EqualTo",
-      "Value": false
-    },{
-    "Column": "PricingId",
-    "Operator": "EqualTo",
-    "Value": 13
-  }
-  ]
-}
-
-
-
-
-{
-"CurrentCompanyId": 1,
-"CurrentUserId": "2072,351,501314",
-  "customMethodName": "",
-  "clientApiKey": "",
-  "serviceMethodName": "",
-  "customParameters": {
-  },
-  "viewModels": [
-    {
-      "reportTradeMarketingId": 29,
-      "goodsId": 13,
-      "competitorBrandId": 3,
-      "samtInfoId": 1,
-      "competitorConsumerPrice": 1232345,
-      "promotion": 80,
-      "competitorPromotion": 81,
-      "discount": 90,
-      "competitorDiscount": 91,
-      "specialOffer": 1003,
-      "competitorSpecialOffer": 1002,
-      "foc": 1001,
-      "focDescription": "اپدیت شد",
-      "id": 48
+              pagination(element, rowNumber);
+              closeLoading();
+            } else {
+              addNoDataRow(element);
+              closeLoading();
+              console.warn("No data received.");
+            }
+          },
+          function (error) {
+            closeLoading();
+            alert(error || "خطایی رخ داده است");
+          }
+        );
+      } else {
+        closeLoading();
+        $.alert("شماره درخواست یافت نشد.", "توجه", "rtl");
+      }
+    },
+    function (error) {
+      closeLoading();
+      alert(error || "خطایی رخ داده است");
     }
-  ]
+  );
 }
 
+//=========================================================================
+function load() {
+  if (!CurrentUserId) {
+    return;
+  }
 
+  let params; // filters with query params
+  if ($("#txtSearchValue").val() != "") {
+    let $selectedSearchField = $("#cmbSearchField option:selected");
+    let type = $selectedSearchField.data("type");
+    let searchField = $selectedSearchField.val();
+    let searchValue = $("#txtSearchValue").val();
 
+    switch (type) {
+      case "string":
+        params = {
+          Where: `CreatorUserId = ${CurrentUserId} AND ${searchField} LIKE N'%${searchValue}%'`,
+        };
+        break;
+      case "number":
+      case "int":
+      default:
+        params = {
+          Where: `CreatorUserId = ${CurrentUserId} AND ${searchField} LIKE N'%${searchValue}%'`,
+        };
+        break;
+    }
+  } else {
+    params = {
+      Where: `CreatorUserId = ${CurrentUserId}`,
+    };
+  }
 
+  readCostRequest(
+    params,
+    function (list) {
+      if (Array.isArray(list) && list.length > 0) {
+        list.forEach(function (row, index) {
+          // Delete the "No data recorded" row if it exists
+          element.find("tr.no-data-row").remove();
 
+          // Add row of table
+          addRow(row, index + 1);
+        });
 
+        // Pagination the table
+        pagination(element, rowNumber);
 
-
+        // Close loading
+        closeLoading();
+      } else {
+        closeLoading();
+        addNoDataRow(element);
+        console.warn("No data received.");
+      }
+      closeLoading();
+    },
+    function (error) {
+      closeLoading();
+      alert(error || "خطایی رخ داده است");
+    }
+  );
+}
