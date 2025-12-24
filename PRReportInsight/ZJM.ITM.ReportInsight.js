@@ -632,246 +632,171 @@ $("#tscReportInsight_Delete").click(function () {
 
 //#region DAL.js
 const FormManager = (() => {
-  // ====================== Load Custom JS =======================
-  const script = document.createElement("script");
-  script.type = "text/javascript";
-  script.src = "/Web/Scripts/Custom/marinaUtility.js";
-  document.head.appendChild(script);
+	// ====================== Load Custom JS =======================
+	const script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = '/Web/Scripts/Custom/marinaUtility.js';
+	document.head.appendChild(script);
 
-  // ====================== Private methods ======================
-  //const MainURLB = "http://localhost:5113/api/";
-  const ControllerURL = "Pricing/PRReportInsight/";
+	// ====================== Private methods ======================
+	//const MainURLB = "http://localhost:5113/api/";
+	const ControllerURL = "Pricing/PRReportInsight/";
 
-  // ===== parseReportInsightList =======
-  function parseReportInsightList(data) {
-    const dataArray = getValidDataArray(data);
+	// ===== parseReportInsightList =======
+	function parseReportInsightList(data) {
+		const dataArray = getValidDataArray(data);
 
-    const list = dataArray.map((item) => ({
-      id: item.id,
-      createdDate: item.createdDate,
-      createdDateShamsi: item.createdDateShamsi,
-      userCreator: item.userCreator,
-      processStatus: item.processStatus,
-      fullName: item.fullName,
-      workFlowTitle: item.workFlowTitle,
-      innerRegNumber: item.innerRegNumber,
-    }));
+		const list = dataArray.map(item => ({
+			id: item.id,
+			createdDate: item.createdDate,
+			createdDateShamsi: item.createdDateShamsi,
+			userCreator: item.userCreator,
+			processStatus: item.processStatus,
+			fullName: item.fullName,
+			workFlowTitle: item.workFlowTitle,
+			innerRegNumber: item.innerRegNumber
+		}));
 
-    return list;
-  }
-  // ===== parseReportInsightDetailList =======
-  function parseReportInsightDetailList(dataArray) {
-    return dataArray.map((item) => ({
-      id: item.id,
-      goodsId: item.goodsId,
-      goodsName: item.goodsName,
-      priceElasticityDemand: item.priceElasticityDemand,
-      acceptablePriceRange: item.acceptablePriceRange,
-      optimalPricePoint: item.optimalPricePoint,
-      willingnessPay: item.willingnessPay,
-      samtInfoId: item.samtInfoId,
-      reportInsightId: item.reportInsightId,
-    }));
-  }
-  // ====== getValidDataArray =======
-  function getValidDataArray(data) {
-    if (data && data.value && Array.isArray(data.value.data)) {
-      return data.value.data;
-    }
+		return list;
+	}
 
-    console.warn("Invalid API response or no data:", data);
-    return [];
-  }
-  function getValidDatalistArray(data) {
-    if (data && data.successed) {
-      if (data.value && Array.isArray(data.value.data)) {
-        return data.value.data;
-      }
-    }
-    console.warn("Invalid API response:", data);
-    return [];
-  }
-  // ====== getValidViewModels ======
-  function getValidViewModels(requestParams, onError) {
-    var items =
-      requestParams && requestParams.viewModels ? requestParams.viewModels : [];
-    if (!items.length) {
-      handleError(
-        "deleteUnit",
-        "No valid [viewModels] were provided for deletion.",
-        onError
-      );
-      return [];
-    }
+	// ====== getValidDataArray =======
+	function getValidDataArray(data) {
+		if (data && data.value && Array.isArray(data.value.data)) {
+			return data.value.data;
+		}
 
-    var validItems = [];
-    for (var i = 0; i < items.length; i++) {
-      var vm = items[i];
-      if (vm && typeof vm.id === "number" && vm.id > 0) {
-        validItems.push(vm);
-      }
-    }
+		console.warn("Invalid API response or no data:", data);
+		return [];
+	}
+    // ====== getValidViewModels ======
+    function getValidViewModels(requestParams, onError) {
+        var items = (requestParams && requestParams.viewModels) ? requestParams.viewModels : [];
+        if (!items.length) {
+            handleError("deleteUnit", "No valid [viewModels] were provided for deletion.", onError);
+            return [];
+        }
 
-    if (!validItems.length) {
-      handleError("deleteUnit", "No valid [ID] found in viewModels", onError);
-      return [];
-    }
-
-    return validItems;
-  }
-  // ======== handleError ==========
-  function handleError(methodName, error, onError) {
-    const message = `An error occurred. (Method: ${methodName})`;
-    console.error("Error:", message);
-    console.error("Details:", error);
-    if ($.isFunction(onError)) {
-      onError({ message, details: error });
-    } else {
-      console.error(`${message} (No callback onError):`, error);
-    }
-  }
-
-  // ====================== Public methods ======================
-  return {
-    // ============= readReportInsight =========
-    readReportInsight(jsonParams, onSuccess, onError) {
-      const apiUrl = `${MarinaURL}${ControllerURL}Select`;
-
-      const defaultParams = {
-        CurrentCompanyId: 1,
-        CurrentUserId: "",
-        PageSize: 10,
-        PageIndex: 0,
-        ClientApiKey: "",
-        ServiceMethodName: "",
-        SortOrder: [{ Column: "Id", Direction: "DESC" }],
-        FilterConditions: [],
-        CustomFilters: {},
-      };
-
-      const requestParams = { ...defaultParams, ...jsonParams };
-
-      $.ajax({
-        url: apiUrl,
-        type: "GET",
-        data: {
-          DataListRequestConfig: JSON.stringify(requestParams),
-        },
-        success: function (data) {
-          if (data && data.successed) {
-            const list = parseReportInsightList(data);
-            if ($.isFunction(onSuccess)) {
-              onSuccess({
-                list: list,
-                totalCount: data.value.totalCount || 0,
-              });
+        var validItems = [];
+        for (var i = 0; i < items.length; i++) {
+            var vm = items[i];
+            if (vm && typeof vm.id === "number" && vm.id > 0) {
+                validItems.push(vm);
             }
-          } else {
-            handleError("readReportInsight", data.message, onError);
-          }
-        },
-        error: function (xhr, status, error) {
-          handleError("readReportInsight", error, onError);
-        },
-      });
-    },
-    //============= Read ReportInsightDetail =====================
-    readReportInsightDetail(jsonParams, onSuccess, onError) {
-      const apiUrl = `${MarinaURL}Pricing/PRReportInsightDetail/Select`;
+        }
 
-      const defaultParams = {
-        CurrentCompanyId: 1,
-        CurrentUserId: "",
-        PageSize: 10,
-        PageIndex: 0,
-        SortOrder: [{ Column: "Id", Direction: "DESC" }],
-        FilterConditions: [],
-        CustomFilters: {},
-        viewModels: [],
-      };
+        if (!validItems.length) {
+            handleError("deleteUnit", "No valid [ID] found in viewModels", onError);
+            return [];
+        }
 
-      const requestParams = { ...defaultParams, ...jsonParams };
+        return validItems;
+    }
+	// ======== handleError ==========
+	function handleError(methodName, error, onError) {
+		const message = `An error occurred. (Method: ${methodName})`;
+		console.error("Error:", message);
+		console.error("Details:", error);
+		if ($.isFunction(onError)) {
+			onError({ message, details: error });
+		} else {
+			console.error(`${message} (No callback onError):`, error);
+		}
+	}
 
-      $.ajax({
-        url: apiUrl,
-        type: "GET",
-        data: {
-          DataListRequestConfig: JSON.stringify(requestParams),
-        },
-        success: function (response) {
-          if (!response || !response.successed) {
-            return handleError(
-              "readReportInsightDetail",
-              response?.message,
-              onError
-            );
-          }
+	// ====================== Public methods ======================
+	return {
 
-          const dataArray = getValidDatalistArray(response);
+		// ============= readReportInsight =========
+		readReportInsight(jsonParams, onSuccess, onError) {
+			const apiUrl = `${MarinaURL}${ControllerURL}Select`;
 
-          const list = parseReportInsightDetailList(dataArray);
+			const defaultParams = {
+				CurrentCompanyId: 1,
+				CurrentUserId: "",
+				PageSize: 10,
+				PageIndex: 0,
+				ClientApiKey: "",
+				ServiceMethodName: "",
+				SortOrder: [{ Column: "Id", Direction: "DESC" }],
+				FilterConditions: [],
+				CustomFilters: {}
+			};
 
-          if ($.isFunction(onSuccess)) {
-            onSuccess({
-              list: list,
-              totalCount: response.value?.totalCount || list.length,
+			const requestParams = { ...defaultParams, ...jsonParams };
+
+			$.ajax({
+				url: apiUrl,
+				type: "GET",
+				data: {
+					DataListRequestConfig: JSON.stringify(requestParams)
+				},
+				success: function (data) {
+					if (data && data.successed) {
+						const list = parseReportInsightList(data);
+						if ($.isFunction(onSuccess)) {
+							onSuccess({
+								list: list,
+								totalCount: data.value.totalCount || 0
+							});
+						}
+					} else {
+						handleError("readReportInsight", data.message, onError);
+					}
+				},
+				error: function (xhr, status, error) {
+					handleError("readReportInsight", error, onError);
+				}
+			});
+		},
+        // ========== delete PRReportTradeMarketing ==========
+        deleteReportInsightList(jsonParams, onSuccess, onError) {
+
+            const apiUrl = `${MarinaURL}Pricing/PRReportInsight/Delete`;
+            const defaultParams = {
+                CurrentCompanyId: 1,
+                CurrentUserId: "",
+                ClientApiKey: "",
+                ServiceMethodName: "",
+                CustomParameters: {},
+                viewModels: []
+            };
+
+            // Merge default and custom params
+            const requestParams = { ...defaultParams, ...jsonParams };
+
+            // Validate viewModels and ID
+			var validItems = getValidViewModels(requestParams, onError);
+			if (!validItems.length) return;
+
+            // ID are numbers
+            requestParams.viewModels = validItems.map(function(vm) {
+			    return { id: Number(vm.id) };
+			});
+
+            $.ajax({
+                url: apiUrl,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(requestParams),
+                success: function (data) {
+
+                    if (data && data.successed) {
+                        if ($.isFunction(onSuccess)) {
+                            onSuccess({ message: "با موفقیت حذف گردید", data: data.value });
+                        }
+                    } else {
+                        const errorMessage = data.message || "Data deletion failed.";
+                        handleError("deleteReportInsightList", errorMessage, onError);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    handleError("deleteReportInsightList", `Error in deletion request: ${status} - ${error}`, onError);
+                }
             });
-          }
-        },
-        error: function (xhr, status, error) {
-          handleError("readReportInsightDetail", error, onError);
-        },
-      });
-    },
-    // ========== Delete ReportInsightDetail ==========
-    deleteReportInsightDetail(jsonParams, onSuccess, onError) {
-      const apiUrl = `${MarinaURL}Pricing/PRReportInsightDetail/Delete`;
-      const defaultParams = {
-        CurrentCompanyId: 1,
-        CurrentUserId: "",
-        ClientApiKey: "",
-        ServiceMethodName: "",
-        CustomParameters: {},
-        viewModels: [],
-      };
-
-      // Merge default and custom params
-      const requestParams = { ...defaultParams, ...jsonParams };
-
-      // Validate viewModels and ID
-      var validItems = getValidViewModels(requestParams, onError);
-      if (!validItems.length) return;
-
-      // ID are numbers
-      requestParams.viewModels = validItems.map(function (vm) {
-        return { id: Number(vm.id) };
-      });
-
-      $.ajax({
-        url: apiUrl,
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(requestParams),
-        success: function (data) {
-          if (data && data.successed) {
-            if ($.isFunction(onSuccess)) {
-              onSuccess({ message: "با موفقیت حذف شد", data: data.value });
-            }
-          } else {
-            const errorMessage = data.message || "Data deletion failed.";
-            handleError("deleteReportInsightDetail", errorMessage, onError);
-          }
-        },
-        error: function (xhr, status, error) {
-          handleError(
-            "deleteReportInsightDetail",
-            `Error in deletion request: ${status} - ${error}`,
-            onError
-          );
-        },
-      });
-    },
-  };
+        }
+	};
 })();
+
 
 //#endregion
