@@ -140,6 +140,201 @@ $(function () {
 });
 //#endregion
 
-//#region
+//#region DAL.js
+const FormManager = (() => {
+  // ====================== Load Custom JS =======================
+  const script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "/Web/Scripts/Custom/marinaUtility.js";
+  document.head.appendChild(script);
+
+  // ====================== Private methods ======================
+  //const MarinaURL = "http://localhost:5113/api/";
+  const ControllerURL = "Pricing/PRPricing/";
+
+  // ===== parsePricingList =======
+  function parsePricingList(data) {
+    const dataArray = getValidDataArray(data);
+
+    const list = dataArray.map((item) => ({
+      id: item.id,
+      createdDate: item.createdDate,
+      createdDateShamsi: item.createdDateShamsi,
+      userCreator: item.userCreator,
+      processStatus: item.processStatus,
+      fullName: item.fullName,
+      workFlowTitle: item.workFlowTitle,
+      innerRegNumber: item.innerRegNumber,
+    }));
+
+    return list;
+  }
+  // ===== parsePricingDetailList =======
+  function parsePricingDetailList(dataArray) {
+    return dataArray.map((item) => ({
+      id: item.id,
+      pricingId: item.pricingId,
+      goodsId: item.goodsId,
+      goodsName: item.goodsName,
+      newConsumerPrice: item.newConsumerPrice,
+      isManagerAccepted: item.isManagerAccepted,
+      isCEOAccepted: item.isCEOAccepted,
+      isDeleted: item.isDeleted,
+      description: item.description,
+      samtInfoId: item.samtInfoId,
+    }));
+
+    return list;
+  }
+
+  // ====== getValidDataArray =======
+  function getValidDataArray(data) {
+    if (data && data.value && Array.isArray(data.value.data)) {
+      return data.value.data;
+    }
+
+    console.warn("Invalid API response or no data:", data);
+    return [];
+  }
+  function getValidDatalistArray(data) {
+    if (data && data.successed) {
+      if (data.value && Array.isArray(data.value.data)) {
+        return data.value.data;
+      }
+    }
+    console.warn("Invalid API response:", data);
+    return [];
+  }
+
+  // ====== getValidViewModels ======
+  function getValidViewModels(requestParams, onError) {
+    var items =
+      requestParams && requestParams.viewModels ? requestParams.viewModels : [];
+    if (!items.length) {
+      handleError(
+        "deleteUnit",
+        "No valid [viewModels] were provided for deletion.",
+        onError
+      );
+      return [];
+    }
+
+    var validItems = [];
+    for (var i = 0; i < items.length; i++) {
+      var vm = items[i];
+      if (vm && typeof vm.id === "number" && vm.id > 0) {
+        validItems.push(vm);
+      }
+    }
+
+    if (!validItems.length) {
+      handleError("deleteUnit", "No valid [ID] found in viewModels", onError);
+      return [];
+    }
+
+    return validItems;
+  }
+  // ======== handleError ==========
+  function handleError(methodName, error, onError) {
+    const message = `An error occurred. (Method: ${methodName})`;
+    console.error("Error:", message);
+    console.error("Details:", error);
+    if ($.isFunction(onError)) {
+      onError({ message, details: error });
+    } else {
+      console.error(`${message} (No callback onError):`, error);
+    }
+  }
+
+  // ====================== Public methods ======================
+  return {
+    // ============= readReportInsight =========
+    readPricing(jsonParams, onSuccess, onError) {
+      const apiUrl = `${MarinaURL}${ControllerURL}Select`;
+
+      const defaultParams = {
+        CurrentCompanyId: 1,
+        CurrentUserId: "",
+        PageSize: 10,
+        PageIndex: 0,
+        ClientApiKey: "",
+        ServiceMethodName: "",
+        SortOrder: [{ Column: "Id", Direction: "DESC" }],
+        FilterConditions: [],
+        CustomFilters: {},
+      };
+
+      const requestParams = { ...defaultParams, ...jsonParams };
+
+      $.ajax({
+        url: apiUrl,
+        type: "GET",
+        data: {
+          DataListRequestConfig: JSON.stringify(requestParams),
+        },
+        success: function (data) {
+          if (data && data.successed) {
+            const list = parsePricingList(data);
+            if ($.isFunction(onSuccess)) {
+              onSuccess({
+                list: list,
+                totalCount: data.value.totalCount || 0,
+              });
+            }
+          } else {
+            handleError("readPricing", data.message, onError);
+          }
+        },
+        error: function (xhr, status, error) {
+          handleError("readPricing", error, onError);
+        },
+      });
+    },
+    //============= Read PricingDetail =====================
+    readPricingDetail(jsonParams, onSuccess, onError) {
+      const apiUrl = `${MarinaURL}Pricing/PRPricingDetail/Select`;
+
+      const defaultParams = {
+        CurrentCompanyId: 1,
+        CurrentUserId: "",
+        PageSize: 10,
+        PageIndex: 0,
+        SortOrder: [{ Column: "Id", Direction: "DESC" }],
+        FilterConditions: [],
+        CustomFilters: {},
+        viewModels: [],
+      };
+
+      const requestParams = { ...defaultParams, ...jsonParams };
+
+      $.ajax({
+        url: apiUrl,
+        type: "GET",
+        data: {
+          DataListRequestConfig: JSON.stringify(requestParams),
+        },
+        success: function (response) {
+          if (!response || !response.successed) {
+            return handleError("readPricingDetail", response?.message, onError);
+          }
+
+          const dataArray = getValidDatalistArray(response);
+
+          const list = parsePricingDetailList(dataArray);
+
+          if ($.isFunction(onSuccess)) {
+            onSuccess({
+              list: list,
+              totalCount: response.value?.totalCount || list.length,
+            });
+          }
+        },
+        error: function (xhr, status, error) {
+          handleError("readPricingDetail", error, onError);
+        },
+      });
+    },
+  };
+})();
 
 //#endregion
