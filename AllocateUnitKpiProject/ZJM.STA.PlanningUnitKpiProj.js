@@ -356,3 +356,195 @@ $(function () {
 });
 
 //#endregion
+
+//#region DAL.js
+const FormManager = (() => {
+  // ====================== Load Custom JS =======================
+  const script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "/Web/Scripts/Custom/marinaUtility.js";
+  document.head.appendChild(script);
+
+  // ====================== Private methods ======================
+  const MarinaURL = "http://localhost:5113/api/";
+  const VisionURL = "StrategyEvaluation/SEVision/";
+  const FocusAreaURL = "StrategyEvaluation/SEFocusArea/";
+  const ObjectiveURL = "StrategyEvaluation/SEObjective/";
+  const KpiProjURL = "SEPlanningUnitKpiProj/Select";
+
+  // ===== parsePlanningUnitKpiProjList =====
+  function parsePlanningUnitKpiProjList(data) {
+    const dataArray = getValidDataArray(data);
+    return dataArray.map((item) => ({
+      id: item.id,
+      planningUnitKpiCount: item.planningUnitKpiCount,
+      planningUnitProjCount: item.planningUnitProjCount,
+      createdDateShamsi: item.createdDateShamsi,
+      actorIdCreator: item.actorIdCreator,
+      actorNameCreator: item.actorNameCreator,
+      processStatus: item.processStatus,
+      rejectStatus: item.rejectStatus,
+      isCancel: item.isCancel,
+      isCancelName: item.isCancelName,
+      typeId: item.type,
+      typeName: item.typeName,
+      unitId: item.unitId,
+      unitName: item.unitName,
+    }));
+  }
+  // ====== getValidDataArray =======
+  function getValidDataArray(data) {
+    if (!data || !data.successed || !data.value) {
+      console.warn("Invalid API response:", data);
+      return [];
+    }
+    if (Array.isArray(data.value)) {
+      return data.value;
+    }
+    if (data.value.data && Array.isArray(data.value.data)) {
+      return data.value.data;
+    }
+
+    console.warn("Expected array but got:", data.value);
+    return [];
+  }
+  // ====== getValidViewModels ======
+  function getValidViewModels(requestParams, onError) {
+    var items =
+      requestParams && requestParams.viewModels ? requestParams.viewModels : [];
+    if (!items.length) {
+      handleError(
+        "deleteObjective",
+        "No valid [viewModels] were provided for deletion.",
+        onError
+      );
+      return [];
+    }
+
+    var validItems = [];
+    for (var i = 0; i < items.length; i++) {
+      var vm = items[i];
+      if (vm && typeof vm.id === "number" && vm.id > 0) {
+        validItems.push(vm);
+      }
+    }
+
+    if (!validItems.length) {
+      handleError(
+        "deleteObjective",
+        "No valid [ID] found in viewModels",
+        onError
+      );
+      return [];
+    }
+
+    return validItems;
+  }
+
+  // ======== handleError ==========
+  function handleError(methodName, error, onError) {
+    const message = `An error occurred. (Method: ${methodName})`;
+    console.error("Error:", message);
+    console.error("Details:", error);
+    if ($.isFunction(onError)) {
+      onError({ message, details: error });
+    } else {
+      console.error(`${message} (No callback onError):`, error);
+    }
+  }
+
+  // ====================== Public methods ======================
+
+  return {
+    // ============= readPricing =========
+    readPlaningKpiProj(jsonParams, onSuccess, onError) {
+      const apiUrl = `${MarinaURL}Planning/SEPlanningUnitKpiProj/Select`;
+      const defaultParams = {
+        CurrentCompanyId: 1,
+        CurrentUserId: "",
+        PageSize: 10,
+        PageIndex: 0,
+        ClientApiKey: "",
+        ServiceMethodName: "",
+        SortOrder: [{ Column: "Id", Direction: "DESC" }],
+        FilterConditions: [],
+        CustomFilters: {},
+      };
+
+      const requestParams = { ...defaultParams, ...jsonParams };
+
+      $.ajax({
+        url: apiUrl,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(requestParams),
+        success: function (data) {
+          if (data && data.successed) {
+            const list = parsePlanningUnitKpiProjList(data);
+            if ($.isFunction(onSuccess)) {
+              onSuccess({
+                list: list,
+                totalCount: data.value.totalCount || 0,
+              });
+            }
+          } else {
+            handleError("readPlaningKpiProj", data.message, onError);
+          }
+        },
+        error: function (xhr, status, error) {
+          handleError("readPlaningKpiProj", error, onError);
+        },
+      });
+    },
+
+    // ========== deleteObjective ==========
+    deletePlanning(jsonParams, onSuccess, onError) {
+      const apiUrl = `${MarinaURL}Planning/SEPlanningUnitKpiProj/Delete`;
+      const defaultParams = {
+        CurrentCompanyId: 1,
+        CurrentUserId: "",
+        ClientApiKey: "",
+        ServiceMethodName: "",
+        CustomParameters: {},
+        viewModels: [],
+      };
+
+      // Merge default and custom params
+      const requestParams = { ...defaultParams, ...jsonParams };
+
+      // Validate viewModels and ID
+      var validItems = getValidViewModels(requestParams, onError);
+      if (!validItems.length) return;
+
+      // ID are numbers
+      requestParams.viewModels = validItems.map(function (vm) {
+        return { id: Number(vm.id) };
+      });
+
+      $.ajax({
+        url: apiUrl,
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(requestParams),
+        success: function (data) {
+          if (data && data.successed) {
+            if ($.isFunction(onSuccess)) {
+              onSuccess({ message: "Deleted successfully.", data: data.value });
+            }
+          } else {
+            const errorMessage = data.message || "Data deletion failed.";
+            handleError("deleteObjective", errorMessage, onError);
+          }
+        },
+        error: function (xhr, status, error) {
+          handleError(
+            "deleteObjective",
+            `Error in deletion request: ${status} - ${error}`,
+            onError
+          );
+        },
+      });
+    },
+  };
+})();
+//#endregion
