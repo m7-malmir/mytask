@@ -525,3 +525,72 @@ $("#tscUnit_Edit").click(function () {
   );
 });
 //#endregion
+
+//#region delete.js
+$("#tscUnit_Delete").click(function () {
+  // ====================== Variables ======================
+  const deleteRows = FormManager.deleteUnit;
+  const $checkedRadio = $("input[name='UnitId']:checked");
+
+  // ================= Validation checkbox =================
+  if ($checkedRadio.length === 0) {
+    warningDialog("Warning", "Please select an item to delete", "ltr");
+
+    return;
+  }
+
+  // ================= Get id from checkbox ================
+  const $row = $checkedRadio.closest("tr");
+  const id = parseInt($checkedRadio.val().trim());
+
+  $.confirm(
+    "Are you sure you want to delete this item?",
+    "Remove",
+    "ltr",
+    function (date) {
+      switch (date) {
+        case "OK":
+          let params = {
+            CurrentCompanyId: CurrentCompanyId,
+            CurrentUserId: CurrentUserId,
+            ClientApiKey: "",
+            ServiceMethodName: "",
+            CustomParameters: {},
+            viewModels: [
+              {
+                id: id,
+              },
+            ],
+          };
+          deleteRows(
+            params,
+            function (response) {
+              successDialog(
+                "Delete Success",
+                "The selected row was successfully deleted",
+                "ltr",
+              );
+
+              tblMain.refresh();
+            },
+            function (error) {
+              errorDialog("Delete Error", error.message, "ltr");
+            },
+          );
+          break;
+        case "Cancel":
+        default:
+          break;
+      }
+    },
+  );
+
+  // Change style of the confirm
+  styleDialog(
+    "#d35c64 url('/Cache/Images/ZJM.TCM.Contract/pcbUIWaveRed.png') 50% 50% repeat-x",
+    "1px solid #d35c64",
+    "white",
+  );
+});
+
+//#endregion
