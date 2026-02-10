@@ -487,5 +487,41 @@ const FormManager = (() => {
 })();
 //#endregion
 
-//#region tbl.js
+//#region tscUnit_Add.js
+$("#tscUnit_Add").click(function () {
+  $.showModalForm(
+    { registerKey: "ZJM.SE.UnitAdd", params: { currentUserId: CurrentUserId } },
+    function (retVal) {
+      tblMain.refresh();
+    },
+  );
+});
+//#endregion
+
+//#regiontscUnit_Edit
+$("#tscUnit_Edit").click(function () {
+  // ====================== Variables ======================
+  const $checkedRadio = $("input[name='UnitId']:checked");
+
+  // ================= Validation checkbox =================
+  if ($checkedRadio.length === 0) {
+    warningDialog("Warning", "Please select an item to edit", "ltr");
+
+    return;
+  }
+
+  // ================= Get id from checkbox ================
+  const $row = $checkedRadio.closest("tr");
+  const id = parseInt($checkedRadio.val().trim());
+
+  $.showModalForm(
+    {
+      registerKey: "ZJM.SE.UnitUpdate",
+      params: { UnitID: id, currentUserId: CurrentUserId },
+    },
+    function (retVal) {
+      tblMain.refresh();
+    },
+  );
+});
 //#endregion
